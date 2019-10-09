@@ -14,7 +14,7 @@ namespace CacheTower
 		}
 	}
 
-	public class CacheEntry<T> : CacheEntry
+	public class CacheEntry<T> : CacheEntry, IEquatable<CacheEntry<T>>
 	{
 		public T Value { get; }
 
@@ -22,6 +22,32 @@ namespace CacheTower
 		{
 			Value = value;
 			EndOfLife = DateTime.UtcNow + timeToLive;
+		}
+
+		public bool Equals(CacheEntry<T> other)
+		{
+			if (other == null)
+			{
+				return false;
+			}
+
+			return Equals(Value, other.Value) &&
+				EndOfLife == other.EndOfLife;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj is CacheEntry<T> objOfType)
+			{
+				return Equals(objOfType);
+			}
+
+			return false;
+		}
+
+		public override int GetHashCode()
+		{
+			return (Value?.GetHashCode() ?? 1) ^ EndOfLife.GetHashCode();
 		}
 	}
 }
