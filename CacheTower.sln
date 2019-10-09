@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29326.143
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower", "src\CacheTower\CacheTower.csproj", "{BF3D00C3-F61B-4271-8DC0-6FA5CB3B2B0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower", "src\CacheTower\CacheTower.csproj", "{BF3D00C3-F61B-4271-8DC0-6FA5CB3B2B0C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E261C038-498E-4F5A-B2D7-B79AB36FFEB0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{91095A10-6DD6-412A-B47A-ADD020DB7DF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Tests", "tests\CacheTower.Tests\CacheTower.Tests.csproj", "{61A28743-8CD4-4CB9-9C39-6796E3DFC1A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +21,17 @@ Global
 		{BF3D00C3-F61B-4271-8DC0-6FA5CB3B2B0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF3D00C3-F61B-4271-8DC0-6FA5CB3B2B0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF3D00C3-F61B-4271-8DC0-6FA5CB3B2B0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61A28743-8CD4-4CB9-9C39-6796E3DFC1A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61A28743-8CD4-4CB9-9C39-6796E3DFC1A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61A28743-8CD4-4CB9-9C39-6796E3DFC1A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61A28743-8CD4-4CB9-9C39-6796E3DFC1A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BF3D00C3-F61B-4271-8DC0-6FA5CB3B2B0C} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
+		{61A28743-8CD4-4CB9-9C39-6796E3DFC1A5} = {91095A10-6DD6-412A-B47A-ADD020DB7DF5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F159337A-B345-49EE-8D58-A72EF1643174}
