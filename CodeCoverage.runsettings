@@ -11,7 +11,7 @@
                 <ModulePath>.*\.dll$</ModulePath>
               </Include>  
               <Exclude>  
-                <ModulePath>MongoFramework.Tests.dll</ModulePath>  
+                <ModulePath>CacheTower.Tests.dll</ModulePath>  
               </Exclude>  
             </ModulePaths>  
 
