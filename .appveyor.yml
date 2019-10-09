@@ -1,0 +1,43 @@
+version: 'Build {build}'
+image: Visual Studio 2019
+skip_branch_with_pr: true
+
+install:
+  - choco install opencover.portable codecov
+  - ps: .\build\dotnet-install.ps1 -Version 3.0.100
+
+  
+build_script:
+  - ps: .\build.appveyor.ps1
+  
+test: false
+artifacts:
+  - path: '.\build-artifacts\*'
+
+deploy:
+  - provider: NuGet
+    artifact: /.*nupkg/
+    api_key:
+      secure: eCdbkZMnfQfn//yoFtvyHHVUkoIX1yUfs6qRtOGsRxQq95pDPNMUMD0+XN9itbKp
+    on:
+      APPVEYOR_REPO_TAG: true
+  
+  - provider: NuGet
+    server: https://nuget.pkg.github.com/TurnerSoftware/index.json
+    artifact: /.*nupkg/
+    skip_symbols: true
+    username: TurnerSoftware
+    api_key:
+      secure: XnTMWCpraeRGwQ/HGCQIneJDAIIsF7MypVnaShycKC95P3+IA0MF+qXV16c8/5jg
+    on:
+      APPVEYOR_REPO_TAG: true
+
+  - provider: GitHub
+    artifact: /.*nupkg/
+    draft: true
+    release: $(APPVEYOR_REPO_TAG_NAME)
+    description: 'TODO'
+    auth_token:
+      secure: 8WGv8noklaCJAQEBpcs+VShk/Hql5zbyx0VPhMvzUw0RcG7rAd2KxKIh4gazXlBi
+    on:
+      APPVEYOR_REPO_TAG: true

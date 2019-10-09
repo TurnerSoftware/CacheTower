@@ -13,7 +13,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Tests", "tests\C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "global", "global", "{28E0B5FC-C8CB-4369-83A4-1576D870672E}"
 	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
+		.codecov.yml = .codecov.yml
+		.editorconfig = .editorconfig
 		.gitignore = .gitignore
+		build.appveyor.ps1 = build.appveyor.ps1
+		build.ps1 = build.ps1
+		buildconfig.json = buildconfig.json
 		License.txt = License.txt
 		README.md = README.md
 	EndProjectSection
