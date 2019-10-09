@@ -127,7 +127,7 @@ namespace CacheTower
 				cacheEntry = await Get<T>(cacheKey);
 
 				//Confirm that once we have the lock, the latest cache entry still needs updating
-				if (cacheEntry == null || cacheEntry.HasElapsed(settings.TimeAllowedStale))
+				if (cacheEntry == null || cacheEntry.HasElapsed(settings.TimeToLive))
 				{
 					var oldValue = default(T);
 					if (cacheEntry == null)
