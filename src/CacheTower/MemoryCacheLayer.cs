@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CacheTower
 {
-	public class MemoryCache : ICacheLayer
+	public class MemoryCacheLayer : ICacheLayer
 	{
 		private ConcurrentDictionary<string, CacheEntry> Cache { get; } = new ConcurrentDictionary<string, CacheEntry>();
 
