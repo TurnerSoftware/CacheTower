@@ -130,7 +130,7 @@ namespace CacheTower
 				if (cacheEntry == null || cacheEntry.HasElapsed(settings.TimeToLive))
 				{
 					var oldValue = default(T);
-					if (cacheEntry == null)
+					if (cacheEntry != null)
 					{
 						oldValue = cacheEntry.Value;
 					}
