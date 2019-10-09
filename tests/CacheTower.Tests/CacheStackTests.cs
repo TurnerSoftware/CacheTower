@@ -59,7 +59,6 @@ namespace CacheTower.Tests
 			Assert.AreEqual(cacheEntry, await layer2.Get<int>("Set_SetsAllTheLayers"));
 		}
 
-
 		[TestMethod]
 		public async Task Get_BackPropagatesToEarlierCacheLayers()
 		{
@@ -76,6 +75,53 @@ namespace CacheTower.Tests
 			Assert.AreEqual(cacheEntry, cacheEntryFromStack);
 			Assert.AreEqual(cacheEntry, await layer1.Get<int>("Get_BackPropagatesToEarlierCacheLayers"));
 			Assert.IsNull(await layer3.Get<int>("Get_BackPropagatesToEarlierCacheLayers"));
+		}
+
+		[TestMethod]
+		public async Task GetOrSet_CacheMiss()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+
+			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheMiss", (oldValue, context) =>
+			{
+				return Task.FromResult(5);
+			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(1) });
+
+			Assert.AreEqual(5, result);
+		}
+
+		[TestMethod]
+		public async Task GetOrSet_CacheHit()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+
+			await cacheStack.Set("GetOrSet_CacheHit", 17, TimeSpan.FromDays(2));
+
+			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHit", (oldValue, context) =>
+			{
+				return Task.FromResult(27);
+			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(1) });
+
+			Assert.AreEqual(17, result);
+		}
+
+		[TestMethod]
+		public async Task GetOrSet_CacheHitBackgroundRefresh()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+
+			await cacheStack.Set("GetOrSet_CacheHitBackgroundRefresh", 17, TimeSpan.FromDays(1));
+
+			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHitBackgroundRefresh", (oldValue, context) =>
+			{
+				return Task.FromResult(27);
+			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(2) });
+			Assert.AreEqual(17, result);
+
+			await Task.Delay(TimeSpan.FromSeconds(1));
+
+			var refetchedResult = await cacheStack.Get<int>("GetOrSet_CacheHitBackgroundRefresh");
+			Assert.AreEqual(27, refetchedResult.Value);
 		}
 	}
 }
