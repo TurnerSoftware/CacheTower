@@ -37,13 +37,14 @@ namespace CacheTower
 			}
 		}
 
-		public async Task Set<T>(string cacheKey, T value, TimeSpan timeToLive)
+		public async Task<CacheEntry<T>> Set<T>(string cacheKey, T value, TimeSpan timeToLive)
 		{
 			var entry = new CacheEntry<T>(value, timeToLive);
 			foreach (var layer in CacheLayers)
 			{
 				await layer.Set(cacheKey, entry);
 			}
+			return entry;
 		}
 
 		public async Task<CacheEntry<T>> Get<T>(string cacheKey)
@@ -80,37 +81,62 @@ namespace CacheTower
 				{
 					if (cacheEntry.HasElapsed(settings.TimeAllowedStale))
 					{
-						return await RefreshValue(cacheKey, getter, settings);
+						//Refresh the value in the current thread though short circuit if we're unable to establish a lock
+						//If the lock isn't established, it will instead use the stale cache entry (even if past the allowed stale period)
+						var refreshedCacheEntry = await RefreshValue(cacheKey, getter, settings, exitOnLockFailure: true);
+						if (refreshedCacheEntry != default)
+						{
+							cacheEntry = refreshedCacheEntry;
+						}
 					}
-
-					BackgroundRefreshValue(cacheKey, getter, settings);
+					else
+					{
+						//Refresh the value in the background
+						_ = Task.Run(() => RefreshValue(cacheKey, getter, settings, exitOnLockFailure: true));
+					}
 				}
 
 				return cacheEntry.Value;
 			}
 			else
 			{
-				return await RefreshValue(cacheKey, getter, settings);
+				//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
+				cacheEntry = await RefreshValue(cacheKey, getter, settings, exitOnLockFailure: false);
 			}
+
+			return cacheEntry.Value;
 		}
 
-		private async Task<T> RefreshValue<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
+		private async Task<CacheEntry<T>> RefreshValue<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool exitOnLockFailure)
 		{
 			var lockObj = CacheKeyLock.GetOrAdd(cacheKey, (key) => new object());
-			Monitor.Enter(lockObj);
 
-			T value = default;
+			if (exitOnLockFailure && !Monitor.TryEnter(lockObj))
+			{
+				return default;
+			}
+			else
+			{
+				Monitor.Enter(lockObj);
+			}
+
+			CacheEntry<T> cacheEntry = default;
 
 			try
 			{
-				var lockCheckCacheEntry = await Get<T>(cacheKey);
-				value = lockCheckCacheEntry.Value;
+				cacheEntry = await Get<T>(cacheKey);
 
 				//Confirm that once we have the lock, the latest cache entry still needs updating
-				if (lockCheckCacheEntry.HasElapsed(settings.TimeAllowedStale))
+				if (cacheEntry == null || cacheEntry.HasElapsed(settings.TimeAllowedStale))
 				{
-					value = await getter(lockCheckCacheEntry.Value, Context);
-					await Set(cacheKey, value, settings.TimeToLive);
+					var oldValue = default(T);
+					if (cacheEntry == null)
+					{
+						oldValue = cacheEntry.Value;
+					}
+
+					var value = await getter(oldValue, Context);
+					cacheEntry = await Set(cacheKey, value, settings.TimeToLive);
 				}
 			}
 			finally
@@ -119,15 +145,7 @@ namespace CacheTower
 				Monitor.Exit(lockObj);
 			}
 
-			return value;
-		}
-
-		private void BackgroundRefreshValue<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
-		{
-			if (!CacheKeyLock.ContainsKey(cacheKey))
-			{
-				Task.Run(() => RefreshValue(cacheKey, getter, settings));
-			}
+			return cacheEntry;
 		}
 	}
 }
