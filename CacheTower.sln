@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower", "src\CacheTower\CacheTower.csproj", "{BF3D00C3-F61B-4271-8DC0-6FA5CB3B2B0C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E261C038-498E-4F5A-B2D7-B79AB36FFEB0}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.build.props = src\Directory.build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{91095A10-6DD6-412A-B47A-ADD020DB7DF5}"
 EndProject
