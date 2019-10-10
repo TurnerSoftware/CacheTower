@@ -124,7 +124,6 @@ namespace CacheTower.Tests
 			Assert.AreEqual(27, refetchedResult.Value);
 		}
 
-
 		[TestMethod]
 		public async Task GetOrSet_CacheHitButAllowedStalePoint()
 		{
@@ -137,6 +136,34 @@ namespace CacheTower.Tests
 				return Task.FromResult(27);
 			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(1) });
 			Assert.AreEqual(27, result);
+		}
+
+		[TestMethod]
+		public async Task GetOrSet_ConcurrentStaleCacheHits()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+
+			await cacheStack.Set("GetOrSet_ConcurrentStaleCacheHits", 23, TimeSpan.FromDays(-1));
+
+			Task<int> DoRequest()
+			{
+				return cacheStack.GetOrSet<int>("GetOrSet_ConcurrentStaleCacheHits", async (oldValue, context) =>
+				{
+					await Task.Delay(1000);
+					return 99;
+				}, new CacheSettings { TimeToLive = TimeSpan.FromDays(2) });
+			}
+
+			//Request 1 gets the lock on the refresh and ends up being tied up due to the Task.Delay(1000) above
+			var request1Task = DoRequest();
+			//Request 2 sees there is a lock already and because we still at least have old data, rather than wait
+			//it is given the old cache data even though we are past the point where even stale data should be removed
+			var request2Result = await DoRequest();
+			//We wait for Request 1 to complete so we can confirm it gets the newer data
+			var request1Result = await request1Task;
+
+			Assert.AreEqual(99, request1Result);
+			Assert.AreEqual(23, request2Result);
 		}
 	}
 }
