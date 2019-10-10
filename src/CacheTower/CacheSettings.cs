@@ -6,7 +6,19 @@ namespace CacheTower
 {
 	public struct CacheSettings
 	{
-		public TimeSpan TimeToLive { get; set; }
-		public TimeSpan TimeAllowedStale { get; set; }
+		public TimeSpan TimeToLive { get; }
+		public TimeSpan StaleAfter { get; }
+
+		public CacheSettings(TimeSpan timeToLive)
+		{
+			TimeToLive = timeToLive;
+			StaleAfter = timeToLive;
+		}
+
+		public CacheSettings(TimeSpan timeToLive, TimeSpan staleAfter)
+		{
+			TimeToLive = timeToLive;
+			StaleAfter = staleAfter;
+		}
 	}
 }

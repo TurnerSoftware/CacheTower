@@ -22,11 +22,11 @@ namespace CacheTower
 			CacheLayers = cacheLayers;
 		}
 
-		public async Task Cleanup(TimeSpan maxTimeStale)
+		public async Task Cleanup()
 		{
 			foreach (var layer in CacheLayers)
 			{
-				await layer.Cleanup(maxTimeStale);
+				await layer.Cleanup();
 			}
 		}
 
@@ -40,7 +40,7 @@ namespace CacheTower
 
 		public async Task<CacheEntry<T>> Set<T>(string cacheKey, T value, TimeSpan timeToLive)
 		{
-			var entry = new CacheEntry<T>(value, timeToLive);
+			var entry = new CacheEntry<T>(value, DateTime.UtcNow, timeToLive);
 			foreach (var layer in CacheLayers)
 			{
 				await layer.Set(cacheKey, entry);
@@ -78,9 +78,9 @@ namespace CacheTower
 			var cacheEntry = await Get<T>(cacheKey);
 			if (cacheEntry != default)
 			{
-				if (cacheEntry.HasElapsed(settings.TimeToLive))
+				if (cacheEntry.HasElapsed(settings.StaleAfter))
 				{
-					if (cacheEntry.HasElapsed(settings.TimeAllowedStale))
+					if (cacheEntry.HasElapsed(settings.TimeToLive))
 					{
 						//Refresh the value in the current thread though short circuit if we're unable to establish a lock
 						//If the lock isn't established, it will instead use the stale cache entry (even if past the allowed stale period)
@@ -129,7 +129,7 @@ namespace CacheTower
 					cacheEntry = await Get<T>(cacheKey);
 
 					//Confirm that once we have the lock, the latest cache entry still needs updating
-					if (cacheEntry == null || cacheEntry.HasElapsed(settings.TimeToLive))
+					if (cacheEntry == null || cacheEntry.HasElapsed(settings.StaleAfter))
 					{
 						var oldValue = default(T);
 						if (cacheEntry != null)

@@ -7,7 +7,7 @@ namespace CacheTower
 {
 	public interface ICacheLayer
 	{
-		Task Cleanup(TimeSpan maxTimeStale);
+		Task Cleanup();
 		Task Evict(string cacheKey);
 		Task<CacheEntry<T>> Get<T>(string cacheKey);
 		Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry);

@@ -6,16 +6,19 @@ namespace CacheTower
 {
 	public abstract class CacheEntry
 	{
-		public DateTime EndOfLife { get; }
+		public DateTime CachedAt { get; }
 
-		protected CacheEntry(TimeSpan timeToLive)
+		public TimeSpan TimeToLive { get; }
+
+		protected CacheEntry(DateTime cachedAt, TimeSpan timeToLive)
 		{
-			EndOfLife = DateTime.UtcNow + timeToLive;
+			CachedAt = cachedAt;
+			TimeToLive = timeToLive;
 		}
 
 		public bool HasElapsed(TimeSpan timeSpan)
 		{
-			return EndOfLife < DateTime.UtcNow.Add(timeSpan);
+			return CachedAt.Add(timeSpan) < DateTime.UtcNow;
 		}
 	}
 
@@ -23,7 +26,7 @@ namespace CacheTower
 	{
 		public T Value { get; }
 
-		public CacheEntry(T value, TimeSpan timeToLive) : base(timeToLive)
+		public CacheEntry(T value, DateTime cachedAt, TimeSpan timeToLive) : base(cachedAt, timeToLive)
 		{
 			Value = value;
 		}
@@ -36,7 +39,8 @@ namespace CacheTower
 			}
 
 			return Equals(Value, other.Value) &&
-				EndOfLife == other.EndOfLife;
+				CachedAt == other.CachedAt &&
+				TimeToLive == other.TimeToLive;
 		}
 
 		public override bool Equals(object obj)
@@ -51,7 +55,7 @@ namespace CacheTower
 
 		public override int GetHashCode()
 		{
-			return (Value?.GetHashCode() ?? 1) ^ EndOfLife.GetHashCode();
+			return (Value?.GetHashCode() ?? 1) ^ CachedAt.GetHashCode() ^ TimeToLive.GetHashCode();
 		}
 	}
 }

@@ -10,12 +10,12 @@ namespace CacheTower
 	{
 		private ConcurrentDictionary<string, CacheEntry> Cache { get; } = new ConcurrentDictionary<string, CacheEntry>();
 
-		public Task Cleanup(TimeSpan maxTimeStale)
+		public Task Cleanup()
 		{
 			foreach (var cachePair in Cache)
 			{
 				var cacheEntry = cachePair.Value;
-				if (cacheEntry.HasElapsed(maxTimeStale))
+				if (cacheEntry.HasElapsed(cacheEntry.TimeToLive))
 				{
 					Cache.TryRemove(cachePair.Key, out var _);
 				}

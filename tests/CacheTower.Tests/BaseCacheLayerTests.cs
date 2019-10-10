@@ -10,7 +10,7 @@ namespace CacheTower.Tests
 	{
 		protected static async Task AssertGetSetCache(ICacheLayer cacheLayer)
 		{
-			var cacheEntry = new CacheEntry<int>(12, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(12, DateTime.UtcNow, TimeSpan.FromDays(1));
 			await cacheLayer.Set("AssertGetSetCache", cacheEntry);
 			var cacheEntryGet = await cacheLayer.Get<int>("AssertGetSetCache");
 
@@ -24,7 +24,7 @@ namespace CacheTower.Tests
 
 		protected static async Task AssertCacheEviction(ICacheLayer cacheLayer)
 		{
-			var cacheEntry = new CacheEntry<int>(77, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(77, DateTime.UtcNow, TimeSpan.FromDays(1));
 			await cacheLayer.Set("AssertCacheEviction-ToEvict", cacheEntry);
 			await cacheLayer.Set("AssertCacheEviction-ToKeep", cacheEntry);
 
@@ -43,26 +43,23 @@ namespace CacheTower.Tests
 
 		protected static async Task AssertCacheCleanup(ICacheLayer cacheLayer)
 		{
-			async Task<CacheEntry<int>> DoCleanupTest(TimeSpan timeToLive, TimeSpan maxTimeStale)
+			async Task<CacheEntry<int>> DoCleanupTest(TimeSpan timeToLive)
 			{
-				var cacheKey = $"AssertCacheCleanup-(TTL:{timeToLive})-(MaxTimeStale:{maxTimeStale})";
+				var cacheKey = $"AssertCacheCleanup-(TTL:{timeToLive})";
 
-				var cacheEntry = new CacheEntry<int>(98, timeToLive);
+				var cacheEntry = new CacheEntry<int>(98, DateTime.UtcNow, timeToLive);
 				await cacheLayer.Set(cacheKey, cacheEntry);
 
 				var cacheEntryGetPreCleanup = await cacheLayer.Get<int>(cacheKey);
 				Assert.AreEqual(cacheEntry, cacheEntryGetPreCleanup);
 
-				await cacheLayer.Cleanup(maxTimeStale);
+				await cacheLayer.Cleanup();
 
 				return await cacheLayer.Get<int>(cacheKey);
 			}
 
-			Assert.IsNotNull(await DoCleanupTest(timeToLive: TimeSpan.FromDays(1), maxTimeStale: TimeSpan.Zero), "Cleanup removed entry where TTL is ahead of Max Time Stale");
-			Assert.IsNull(await DoCleanupTest(timeToLive: TimeSpan.FromDays(-1), maxTimeStale: TimeSpan.Zero), "Cleanup kept entry where TTL is behind Max Time Stale");
-
-			Assert.IsNotNull(await DoCleanupTest(timeToLive: TimeSpan.Zero, maxTimeStale: TimeSpan.FromDays(-1)), "Cleanup removed entry where TTL is ahead of Max Time Stale");
-			Assert.IsNull(await DoCleanupTest(timeToLive: TimeSpan.Zero, maxTimeStale: TimeSpan.FromDays(1)), "Cleanup kept entry where TTL is behind Max Time Stale");
+			Assert.IsNotNull(await DoCleanupTest(timeToLive: TimeSpan.FromDays(1)), "Cleanup removed entry that was still live");
+			Assert.IsNull(await DoCleanupTest(timeToLive: TimeSpan.FromDays(-1)), "Cleanup kept entry past the end of life");
 		}
 	}
 }

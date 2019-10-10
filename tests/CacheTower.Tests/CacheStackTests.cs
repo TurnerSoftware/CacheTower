@@ -22,7 +22,7 @@ namespace CacheTower.Tests
 			Assert.AreEqual(cacheEntry, await layer1.Get<int>("Cleanup_CleansAllTheLayers"));
 			Assert.AreEqual(cacheEntry, await layer2.Get<int>("Cleanup_CleansAllTheLayers"));
 
-			await cacheStack.Cleanup(TimeSpan.Zero);
+			await cacheStack.Cleanup();
 
 			Assert.IsNull(await layer1.Get<int>("Cleanup_CleansAllTheLayers"));
 			Assert.IsNull(await layer2.Get<int>("Cleanup_CleansAllTheLayers"));
@@ -68,7 +68,7 @@ namespace CacheTower.Tests
 
 			var cacheStack = new CacheStack(null, new[] { layer1, layer2, layer3 });
 
-			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow, TimeSpan.FromDays(1));
 			await layer2.Set("Get_BackPropagatesToEarlierCacheLayers", cacheEntry);
 
 			var cacheEntryFromStack = await cacheStack.Get<int>("Get_BackPropagatesToEarlierCacheLayers");
@@ -85,7 +85,7 @@ namespace CacheTower.Tests
 			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheMiss", (oldValue, context) =>
 			{
 				return Task.FromResult(5);
-			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(1) });
+			}, new CacheSettings(TimeSpan.FromDays(1)));
 
 			Assert.AreEqual(5, result);
 		}
@@ -100,7 +100,7 @@ namespace CacheTower.Tests
 			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHit", (oldValue, context) =>
 			{
 				return Task.FromResult(27);
-			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(1) });
+			}, new CacheSettings(TimeSpan.FromDays(1)));
 
 			Assert.AreEqual(17, result);
 		}
@@ -115,7 +115,7 @@ namespace CacheTower.Tests
 			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHitBackgroundRefresh", (oldValue, context) =>
 			{
 				return Task.FromResult(27);
-			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(2) });
+			}, new CacheSettings(TimeSpan.FromDays(1)));
 			Assert.AreEqual(17, result);
 
 			await Task.Delay(TimeSpan.FromSeconds(1));
@@ -134,7 +134,7 @@ namespace CacheTower.Tests
 			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHitButAllowedStalePoint", (oldValue, context) =>
 			{
 				return Task.FromResult(27);
-			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(1) });
+			}, new CacheSettings(TimeSpan.FromDays(1)));
 			Assert.AreEqual(27, result);
 		}
 
@@ -151,7 +151,7 @@ namespace CacheTower.Tests
 				{
 					await Task.Delay(1000);
 					return 99;
-				}, new CacheSettings { TimeToLive = TimeSpan.FromDays(2) });
+				}, new CacheSettings(TimeSpan.FromDays(2)));
 			}
 
 			//Request 1 gets the lock on the refresh and ends up being tied up due to the Task.Delay(1000) above
