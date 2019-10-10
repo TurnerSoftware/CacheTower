@@ -6,7 +6,12 @@ namespace CacheTower
 {
 	public abstract class CacheEntry
 	{
-		public DateTime EndOfLife { get; protected set; }
+		public DateTime EndOfLife { get; }
+
+		protected CacheEntry(TimeSpan timeToLive)
+		{
+			EndOfLife = DateTime.UtcNow + timeToLive;
+		}
 
 		public bool HasElapsed(TimeSpan timeSpan)
 		{
@@ -18,10 +23,9 @@ namespace CacheTower
 	{
 		public T Value { get; }
 
-		public CacheEntry(T value, TimeSpan timeToLive)
+		public CacheEntry(T value, TimeSpan timeToLive) : base(timeToLive)
 		{
 			Value = value;
-			EndOfLife = DateTime.UtcNow + timeToLive;
 		}
 
 		public bool Equals(CacheEntry<T> other)
