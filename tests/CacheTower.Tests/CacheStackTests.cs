@@ -123,5 +123,20 @@ namespace CacheTower.Tests
 			var refetchedResult = await cacheStack.Get<int>("GetOrSet_CacheHitBackgroundRefresh");
 			Assert.AreEqual(27, refetchedResult.Value);
 		}
+
+
+		[TestMethod]
+		public async Task GetOrSet_CacheHitButAllowedStalePoint()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+
+			await cacheStack.Set("GetOrSet_CacheHitButAllowedStalePoint", 17, TimeSpan.FromDays(-1));
+
+			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHitButAllowedStalePoint", (oldValue, context) =>
+			{
+				return Task.FromResult(27);
+			}, new CacheSettings { TimeToLive = TimeSpan.FromDays(1) });
+			Assert.AreEqual(27, result);
+		}
 	}
 }
