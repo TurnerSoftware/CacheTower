@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "global", "global", "{28E0B5
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Benchmarks", "tests\CacheTower.Benchmarks\CacheTower.Benchmarks.csproj", "{69B32250-DCB9-430E-8DBA-7EBFE5ECD032}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Providers.FileSystem", "src\CacheTower.Providers.FileSystem\CacheTower.Providers.FileSystem.csproj", "{A2BFB1FA-A086-4761-9FFF-7EE0F75A14EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.FileSystem", "src\CacheTower.Providers.FileSystem\CacheTower.Providers.FileSystem.csproj", "{A2BFB1FA-A086-4761-9FFF-7EE0F75A14EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -121,14 +121,16 @@ namespace CacheTower.Providers.FileSystem
 
 			if (CacheManifest.TryRemove(cacheKey, out var fileName))
 			{
-				var lockObj = FileLock.GetOrAdd(fileName, (name) => new AsyncReaderWriterLock());
-				using (await lockObj.WriterLockAsync())
+				if (FileLock.TryRemove(fileName, out var lockObj))
 				{
-					var path = Path.Combine(Directory, fileName);
-					if (File.Exists(path))
+					using (await lockObj.WriterLockAsync())
 					{
-						File.Delete(path);
-						await SaveManifest();
+						var path = Path.Combine(Directory, fileName);
+						if (File.Exists(path))
+						{
+							File.Delete(path);
+							await SaveManifest();
+						}
 					}
 				}
 			}

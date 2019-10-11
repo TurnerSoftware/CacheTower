@@ -3,83 +3,89 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Horology;
+using BenchmarkDotNet.Jobs;
 
 namespace CacheTower.Benchmarks.CacheLayers
 {
 	public abstract class BaseCacheLayerBenchmark
 	{
-		protected Func<ICacheLayer> CacheLayerProvider { get; set; }
+		public class ConfigSettings : ManualConfig
+		{
+			public ConfigSettings()
+			{
+				Add(Job.Core);
+				Add(MemoryDiagnoser.Default);
 
-		[Params(10, 1000)]
-		public int Iterations;
+				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(true, SizeUnit.B, TimeUnit.Nanosecond);
+			}
+
+		}
+		protected Func<ICacheLayer> CacheLayerProvider { get; set; }
 
 		[Benchmark]
 		public async Task GetMiss()
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
-			for (var i = 0; i < Iterations; i++)
-			{
-				await cacheLayer.Get<int>("CacheMiss");
-			}
+			await cacheLayer.Get<int>("GetMiss");
 		}
 
 		[Benchmark]
 		public async Task GetHit()
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
-			await cacheLayer.Set("CacheHit", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
-
-			for (var i = 0; i < Iterations; i++)
-			{
-				await cacheLayer.Get<int>("CacheHit");
-			}
+			await cacheLayer.Set("GetHit", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheLayer.Get<int>("GetHit");
 		}
 		[Benchmark]
 		public async Task GetHitSimultaneous()
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
-			await cacheLayer.Set("CacheHit", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheLayer.Set("GetHitSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
 
-			for (var i = 0; i < Iterations; i += 2)
-			{
-				var aTask = cacheLayer.Get<int>("CacheHit");
-				var bTask = cacheLayer.Get<int>("CacheHit");
+			var aTask = cacheLayer.Get<int>("GetHitSimultaneous");
+			var bTask = cacheLayer.Get<int>("GetHitSimultaneous");
 
-				await aTask;
-				await bTask;
-			}
+			await aTask;
+			await bTask;
 		}
 
+		[Benchmark]
+		public async Task SetNew()
+		{
+			var cacheLayer = CacheLayerProvider.Invoke();
+			await cacheLayer.Set("SetNew", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+		}
 		[Benchmark]
 		public async Task SetExisting()
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
-			for (var i = 0; i < Iterations; i++)
-			{
-				await cacheLayer.Set("SetSame", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
-			}
+			await cacheLayer.Set("SetExisting", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheLayer.Set("SetExisting", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
 		}
 		[Benchmark]
 		public async Task SetExistingSimultaneous()
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
-			for (var i = 0; i < Iterations; i += 2)
-			{
-				var aTask = cacheLayer.Set("SetSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
-				var bTask = cacheLayer.Set("SetSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheLayer.Set("SetExistingSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
 
-				await aTask;
-				await bTask;
-			}
+			var aTask = cacheLayer.Set("SetExistingSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			var bTask = cacheLayer.Set("SetExistingSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+
+			await aTask;
+			await bTask;
 		}
 
 		[Benchmark]
-		public async Task SetUnique()
+		public async Task SetMany()
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
-			for (var i = 0; i < Iterations; i++)
+			for (var i = 0; i < 100; i++)
 			{
-				await cacheLayer.Set("SetDifferent_" + i, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				await cacheLayer.Set("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
 			}
 		}
 	}

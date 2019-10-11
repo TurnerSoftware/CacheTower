@@ -10,7 +10,7 @@ using CacheTower.Providers.FileSystem;
 
 namespace CacheTower.Benchmarks.Providers.FileSystem
 {
-	[CoreJob, MemoryDiagnoser]
+	[Config(typeof(ConfigSettings))]
 	public class JsonFileCacheBenchmark : BaseCacheLayerBenchmark
 	{
 		public const string DirectoryPath = "FileSystemProviders/JsonFileCacheLayer";
@@ -19,17 +19,24 @@ namespace CacheTower.Benchmarks.Providers.FileSystem
 		public void Setup()
 		{
 			CacheLayerProvider = () => new JsonFileCacheLayer(DirectoryPath);
+
+			if (Directory.Exists(DirectoryPath))
+			{
+				Directory.Delete(DirectoryPath, true);
+			}
 		}
 
 		[IterationSetup]
 		public void IterationSetup()
 		{
-			if (Directory.Exists(DirectoryPath))
-			{
-				Directory.Delete(DirectoryPath, true);
-			}
-
 			Directory.CreateDirectory(DirectoryPath);
+		}
+
+
+		[IterationCleanup]
+		public void IterationCleanup()
+		{
+			Directory.Delete(DirectoryPath, true);
 		}
 
 		[GlobalCleanup]
