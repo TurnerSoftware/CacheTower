@@ -1,4 +1,4 @@
-# CacheTower
+# Cache Tower
 A multi-layered caching system for .NET
 
 [![AppVeyor](https://img.shields.io/appveyor/ci/Turnerj/cachetower/master.svg)](https://ci.appveyor.com/project/Turnerj/cachetower)
