@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CacheTower.Providers.FileSystem\CacheTower.Providers.FileSystem.csproj" />
     <ProjectReference Include="..\..\src\CacheTower\CacheTower.csproj" />
   </ItemGroup>
 
