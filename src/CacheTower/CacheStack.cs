@@ -40,12 +40,17 @@ namespace CacheTower
 
 		public async Task<CacheEntry<T>> Set<T>(string cacheKey, T value, TimeSpan timeToLive)
 		{
-			var entry = new CacheEntry<T>(value, DateTime.UtcNow, timeToLive);
+			var cacheEntry = new CacheEntry<T>(value, DateTime.UtcNow, timeToLive);
+			await Set(cacheKey, cacheEntry);
+			return cacheEntry;
+		}
+
+		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		{
 			foreach (var layer in CacheLayers)
 			{
-				await layer.Set(cacheKey, entry);
+				await layer.Set(cacheKey, cacheEntry);
 			}
-			return entry;
 		}
 
 		public async Task<CacheEntry<T>> Get<T>(string cacheKey)

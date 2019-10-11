@@ -109,16 +109,17 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_CacheHitBackgroundRefresh()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-1), TimeSpan.FromDays(2));
+			await cacheStack.Set("GetOrSet_CacheHitBackgroundRefresh", cacheEntry);
 
-			await cacheStack.Set("GetOrSet_CacheHitBackgroundRefresh", 17, TimeSpan.FromDays(1));
-
-			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHitBackgroundRefresh", (oldValue, context) =>
+			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHitBackgroundRefresh", async (oldValue, context) =>
 			{
-				return Task.FromResult(27);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+				await Task.Delay(500);
+				return 27;
+			}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
 			Assert.AreEqual(17, result);
 
-			await Task.Delay(TimeSpan.FromSeconds(1));
+			await Task.Delay(1000);
 
 			var refetchedResult = await cacheStack.Get<int>("GetOrSet_CacheHitBackgroundRefresh");
 			Assert.AreEqual(27, refetchedResult.Value);
@@ -128,13 +129,13 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_CacheHitButAllowedStalePoint()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
-
-			await cacheStack.Set("GetOrSet_CacheHitButAllowedStalePoint", 17, TimeSpan.FromDays(-1));
+			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
+			await cacheStack.Set("GetOrSet_CacheHitButAllowedStalePoint", cacheEntry);
 
 			var result = await cacheStack.GetOrSet<int>("GetOrSet_CacheHitButAllowedStalePoint", (oldValue, context) =>
 			{
 				return Task.FromResult(27);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.Zero));
 			Assert.AreEqual(27, result);
 		}
 
@@ -142,20 +143,23 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_ConcurrentStaleCacheHits()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
-
-			await cacheStack.Set("GetOrSet_ConcurrentStaleCacheHits", 23, TimeSpan.FromDays(-1));
+			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
+			await cacheStack.Set("GetOrSet_ConcurrentStaleCacheHits", cacheEntry);
 
 			Task<int> DoRequest()
 			{
 				return cacheStack.GetOrSet<int>("GetOrSet_ConcurrentStaleCacheHits", async (oldValue, context) =>
 				{
-					await Task.Delay(1000);
+					await Task.Delay(2000);
 					return 99;
-				}, new CacheSettings(TimeSpan.FromDays(2)));
+				}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
 			}
 
 			//Request 1 gets the lock on the refresh and ends up being tied up due to the Task.Delay(1000) above
 			var request1Task = DoRequest();
+
+			await Task.Delay(1000);
+
 			//Request 2 sees there is a lock already and because we still at least have old data, rather than wait
 			//it is given the old cache data even though we are past the point where even stale data should be removed
 			var request2Result = await DoRequest();
