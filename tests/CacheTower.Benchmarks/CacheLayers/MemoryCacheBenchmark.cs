@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using CacheTower.Providers.Memory;
 
 namespace CacheTower.Benchmarks.CacheLayers
 {

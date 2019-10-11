@@ -1,3 +1,4 @@
+using CacheTower.Providers.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 
