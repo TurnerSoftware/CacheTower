@@ -18,6 +18,8 @@ namespace CacheTower.Providers.FileSystem
 		private AsyncLock ManifestLock { get; } = new AsyncLock();
 		private bool? IsManifestAvailable { get; set; }
 
+		private HashAlgorithm FileNameHashAlgorithm { get; } = MD5.Create();
+
 		private ConcurrentDictionary<string, ManifestEntry> CacheManifest { get; set; }
 		private ConcurrentDictionary<string, AsyncReaderWriterLock> FileLock { get; } = new ConcurrentDictionary<string, AsyncReaderWriterLock>();
 
@@ -88,24 +90,21 @@ namespace CacheTower.Providers.FileSystem
 
 		private string GetFileName(string cacheKey)
 		{
-			using (var md5 = MD5.Create())
+			var bytes = Encoding.UTF8.GetBytes(cacheKey);
+			var hashBytes = FileNameHashAlgorithm.ComputeHash(bytes);
+			var builder = new StringBuilder();
+
+			for (var i = 0; i < hashBytes.Length; i++)
 			{
-				var bytes = Encoding.UTF8.GetBytes(cacheKey);
-				var hashBytes = md5.ComputeHash(bytes);
-				var builder = new StringBuilder();
-
-				for (var i = 0; i < hashBytes.Length; i++)
-				{
-					builder.Append(hashBytes[i].ToString("X2"));
-				}
-				
-				if (FileExtension != null)
-				{
-					builder.Append(FileExtension);
-				}
-
-				return builder.ToString();
+				builder.Append(hashBytes[i].ToString("X2"));
 			}
+
+			if (FileExtension != null)
+			{
+				builder.Append(FileExtension);
+			}
+
+			return builder.ToString();
 		}
 
 		public async Task Cleanup()
@@ -238,6 +237,7 @@ namespace CacheTower.Providers.FileSystem
 			{
 				//TODO: Async disposing
 				_ = SaveManifest();
+				FileNameHashAlgorithm.Dispose();
 			}
 
 			Disposed = true;
