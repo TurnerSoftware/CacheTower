@@ -16,22 +16,23 @@ namespace CacheTower.Tests
 		[DataTestMethod]
 		public async Task SimulatenousGetOrSet_CacheMiss(int iterations)
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
-
-			Task<int> lastTask = null;
-
-			for (var i = 0; i < iterations; i++)
+			using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }))
 			{
-				var index = i;
-				lastTask = cacheStack.GetOrSet<int>("SimulatenousGetOrSet", async (oldValue, context) => {
-					await Task.Delay(100);
-					return index;
-				}, new CacheSettings(TimeSpan.FromDays(1)));
+				Task<int> lastTask = null;
+
+				for (var i = 0; i < iterations; i++)
+				{
+					var index = i;
+					lastTask = cacheStack.GetOrSet<int>("SimulatenousGetOrSet", async (oldValue, context) => {
+						await Task.Delay(100);
+						return index;
+					}, new CacheSettings(TimeSpan.FromDays(1)));
+				}
+
+				var result = await lastTask;
+
+				Assert.AreEqual(0, result);
 			}
-
-			var result = await lastTask;
-
-			Assert.AreEqual(0, result);
 		}
 
 
@@ -40,22 +41,23 @@ namespace CacheTower.Tests
 		[DataTestMethod]
 		public async Task SimulatenousGetOrSet_CacheMiss_UniqueKeys(int iterations)
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
-
-			Task<int> lastTask = null;
-
-			for (var i = 0; i < iterations; i++)
+			using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }))
 			{
-				var index = i;
-				lastTask = cacheStack.GetOrSet<int>($"SimulatenousGetOrSet_{index}", async (oldValue, context) => {
-					await Task.Delay(100);
-					return index + 1;
-				}, new CacheSettings(TimeSpan.FromDays(1)));
+				Task<int> lastTask = null;
+
+				for (var i = 0; i < iterations; i++)
+				{
+					var index = i;
+					lastTask = cacheStack.GetOrSet<int>($"SimulatenousGetOrSet_{index}", async (oldValue, context) => {
+						await Task.Delay(100);
+						return index + 1;
+					}, new CacheSettings(TimeSpan.FromDays(1)));
+				}
+
+				var result = await lastTask;
+
+				Assert.AreEqual(iterations, result);
 			}
-
-			var result = await lastTask;
-
-			Assert.AreEqual(iterations, result);
 		}
 	}
 }

@@ -26,33 +26,40 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 			Directory.CreateDirectory(DirectoryPath);
 		}
 
-		private JsonFileCacheLayer CreateCacheLayer()
-		{
-			return new JsonFileCacheLayer(DirectoryPath);
-		}
-
 		[TestMethod]
 		public async Task GetSetCache()
 		{
-			await AssertGetSetCache(CreateCacheLayer());
+			using (var cacheLayer = new JsonFileCacheLayer(DirectoryPath))
+			{
+				await AssertGetSetCache(cacheLayer);
+			}
 		}
 
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
-			await AssertCacheAvailability(CreateCacheLayer(), true);
+			using (var cacheLayer = new JsonFileCacheLayer(DirectoryPath))
+			{
+				await AssertCacheAvailability(cacheLayer, true);
+			}
 		}
 
 		[TestMethod]
 		public async Task EvictFromCache()
 		{
-			await AssertCacheEviction(CreateCacheLayer());
+			using (var cacheLayer = new JsonFileCacheLayer(DirectoryPath))
+			{
+				await AssertCacheEviction(cacheLayer);
+			}
 		}
 
 		[TestMethod]
 		public async Task CacheCleanup()
 		{
-			await AssertCacheCleanup(CreateCacheLayer());
+			using (var cacheLayer = new JsonFileCacheLayer(DirectoryPath))
+			{
+				await AssertCacheCleanup(cacheLayer);
+			}
 		}
 	}
 }
