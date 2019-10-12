@@ -16,7 +16,11 @@ namespace CacheTower.Tests
 		[DataTestMethod]
 		public async Task SimulatenousGetOrSet_CacheMiss(int iterations)
 		{
+#if NETCOREAPP3_0
+			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }))
+#else
 			using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }))
+#endif
 			{
 				Task<int> lastTask = null;
 
@@ -41,7 +45,11 @@ namespace CacheTower.Tests
 		[DataTestMethod]
 		public async Task SimulatenousGetOrSet_CacheMiss_UniqueKeys(int iterations)
 		{
+#if NETCOREAPP3_0
+			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }))
+#else
 			using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }))
+#endif
 			{
 				Task<int> lastTask = null;
 

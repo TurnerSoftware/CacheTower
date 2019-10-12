@@ -9,7 +9,11 @@ using Nito.AsyncEx;
 
 namespace CacheTower
 {
+#if NETSTANDARD2_0
 	public class CacheStack : IDisposable
+#elif NETSTANDARD2_1
+	public class CacheStack : IAsyncDisposable
+#endif
 	{
 		private bool Disposed = false;
 
@@ -181,6 +185,7 @@ namespace CacheTower
 			}
 		}
 
+#if NETSTANDARD2_0
 		public void Dispose()
 		{
 			Dispose(true);
@@ -207,5 +212,28 @@ namespace CacheTower
 
 			Disposed = true;
 		}
+#elif NETSTANDARD2_1
+		public async ValueTask DisposeAsync()
+		{
+			if (Disposed)
+			{
+				return;
+			}
+
+			foreach (var layer in CacheLayers)
+			{
+				if (layer is IDisposable disposableLayer)
+				{
+					disposableLayer.Dispose();
+				}
+				else if (layer is IAsyncDisposable asyncDisposableLayer)
+				{
+					await asyncDisposableLayer.DisposeAsync();
+				}
+			}
+
+			Disposed = true;
+		}
+#endif
 	}
 }

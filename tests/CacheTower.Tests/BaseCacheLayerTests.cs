@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CacheTower.Tests
 {
-	public abstract class BaseCacheLayerTests
+	public abstract class BaseCacheLayerTests : TestBase
 	{
 		protected static async Task AssertGetSetCache(ICacheLayer cacheLayer)
 		{

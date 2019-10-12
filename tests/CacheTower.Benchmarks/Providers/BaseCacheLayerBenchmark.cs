@@ -26,12 +26,24 @@ namespace CacheTower.Benchmarks.CacheLayers
 		}
 		protected Func<ICacheLayer> CacheLayerProvider { get; set; }
 
+		private async Task DisposeOf(ICacheLayer cacheLayer)
+		{
+			if (cacheLayer is IDisposable disposableLayer)
+			{
+				disposableLayer.Dispose();
+			}
+			else if (cacheLayer is IAsyncDisposable asyncDisposableLayer)
+			{
+				await asyncDisposableLayer.DisposeAsync();
+			}
+		}
+
 		[Benchmark]
 		public async Task GetMiss()
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
 			await cacheLayer.Get<int>("GetMiss");
-			(cacheLayer as IDisposable)?.Dispose();
+			await DisposeOf(cacheLayer);
 		}
 
 		[Benchmark]
@@ -40,7 +52,7 @@ namespace CacheTower.Benchmarks.CacheLayers
 			var cacheLayer = CacheLayerProvider.Invoke();
 			await cacheLayer.Set("GetHit", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
 			await cacheLayer.Get<int>("GetHit");
-			(cacheLayer as IDisposable)?.Dispose();
+			await DisposeOf(cacheLayer);
 		}
 		[Benchmark]
 		public async Task GetHitSimultaneous()
@@ -53,7 +65,7 @@ namespace CacheTower.Benchmarks.CacheLayers
 
 			await aTask;
 			await bTask;
-			(cacheLayer as IDisposable)?.Dispose();
+			await DisposeOf(cacheLayer);
 		}
 
 		[Benchmark]
@@ -61,7 +73,7 @@ namespace CacheTower.Benchmarks.CacheLayers
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
 			await cacheLayer.Set("SetNew", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
-			(cacheLayer as IDisposable)?.Dispose();
+			await DisposeOf(cacheLayer);
 		}
 		[Benchmark]
 		public async Task SetExisting()
@@ -69,7 +81,7 @@ namespace CacheTower.Benchmarks.CacheLayers
 			var cacheLayer = CacheLayerProvider.Invoke();
 			await cacheLayer.Set("SetExisting", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
 			await cacheLayer.Set("SetExisting", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
-			(cacheLayer as IDisposable)?.Dispose();
+			await DisposeOf(cacheLayer);
 		}
 		[Benchmark]
 		public async Task SetExistingSimultaneous()
@@ -82,7 +94,7 @@ namespace CacheTower.Benchmarks.CacheLayers
 
 			await aTask;
 			await bTask;
-			(cacheLayer as IDisposable)?.Dispose();
+			await DisposeOf(cacheLayer);
 		}
 
 		[Benchmark]
@@ -93,7 +105,7 @@ namespace CacheTower.Benchmarks.CacheLayers
 			{
 				await cacheLayer.Set("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
 			}
-			(cacheLayer as IDisposable)?.Dispose();
+			await DisposeOf(cacheLayer);
 		}
 	}
 }

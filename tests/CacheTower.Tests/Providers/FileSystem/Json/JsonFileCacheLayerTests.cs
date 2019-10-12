@@ -29,37 +29,33 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 		[TestMethod]
 		public async Task GetSetCache()
 		{
-			using (var cacheLayer = new JsonFileCacheLayer(DirectoryPath))
-			{
-				await AssertGetSetCache(cacheLayer);
-			}
+			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
+			await AssertGetSetCache(cacheLayer);
+			await DisposeOf(cacheLayer);
 		}
 
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
-			using (var cacheLayer = new JsonFileCacheLayer(DirectoryPath))
-			{
-				await AssertCacheAvailability(cacheLayer, true);
-			}
+			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
+			await AssertCacheAvailability(cacheLayer, true);
+			await DisposeOf(cacheLayer);
 		}
 
 		[TestMethod]
 		public async Task EvictFromCache()
 		{
-			using (var cacheLayer = new JsonFileCacheLayer(DirectoryPath))
-			{
-				await AssertCacheEviction(cacheLayer);
-			}
+			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
+			await AssertCacheEviction(cacheLayer);
+			await DisposeOf(cacheLayer);
 		}
 
 		[TestMethod]
 		public async Task CacheCleanup()
 		{
-			using (var cacheLayer = new JsonFileCacheLayer(DirectoryPath))
-			{
-				await AssertCacheCleanup(cacheLayer);
-			}
+			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
+			await AssertCacheCleanup(cacheLayer);
+			await DisposeOf(cacheLayer);
 		}
 	}
 }
