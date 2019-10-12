@@ -2,6 +2,8 @@ version: 'Build {build}'
 image: Visual Studio 2019
 skip_branch_with_pr: true
 
+services:
+  - mongodb
 install:
   - choco install opencover.portable codecov
   - ps: .\build\dotnet-install.ps1 -Version 3.0.100
