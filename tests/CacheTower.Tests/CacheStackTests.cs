@@ -144,7 +144,7 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_ConcurrentStaleCacheHits()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
-			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-3), TimeSpan.FromDays(1));
 			await cacheStack.Set("GetOrSet_ConcurrentStaleCacheHits", cacheEntry);
 
 			Task<int> DoRequest()
