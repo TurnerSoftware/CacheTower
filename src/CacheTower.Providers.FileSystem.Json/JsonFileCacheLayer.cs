@@ -14,13 +14,25 @@ namespace CacheTower.Providers.FileSystem.Json
 	{
 		public JsonFileCacheLayer(string directoryPath) : base(directoryPath, ".json") { }
 
+		private class DataWrapper<T>
+		{
+			public T Value { get; set; }
+		}
+
 		protected override async Task<T> Deserialize<T>(Stream stream)
 		{
 			using (var streamReader = new StreamReader(stream))
 			using (var jsonReader = new JsonTextReader(streamReader))
 			{
 				var jObj = await JObject.LoadAsync(jsonReader);
-				return jObj.ToObject<T>();
+				var wrapper = jObj.ToObject<DataWrapper<T>>();
+
+				if (wrapper == default)
+				{
+					return default;
+				}
+
+				return wrapper.Value;
 			}
 		}
 
@@ -29,7 +41,12 @@ namespace CacheTower.Providers.FileSystem.Json
 			using (var streamWriter = new StreamWriter(stream))
 			using (var jsonWriter = new JsonTextWriter(streamWriter))
 			{
-				var jObj = JObject.FromObject(value);
+				var wrapper = new DataWrapper<T>
+				{
+					Value = value
+				};
+
+				var jObj = JObject.FromObject(wrapper);
 				await jObj.WriteToAsync(jsonWriter);
 			}
 		}
