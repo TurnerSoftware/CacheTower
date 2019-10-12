@@ -8,8 +8,9 @@ using Nito.AsyncEx;
 
 namespace CacheTower.Providers.FileSystem
 {
-	public abstract class FileCacheLayerBase : ICacheLayer
+	public abstract class FileCacheLayerBase : ICacheLayer, IDisposable
 	{
+		private bool Disposed = false;
 		private string DirectoryPath { get; }
 		private string ManifestPath { get; }
 		private string FileExtension { get; }
@@ -111,16 +112,12 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifest();
 
-			var manifestUpdated = false;
-
 			foreach (var cachePair in CacheManifest)
 			{
 				var manifestEntry = cachePair.Value;
 				var expiryDate = manifestEntry.CachedAt.Add(manifestEntry.TimeToLive);
 				if (expiryDate < DateTime.UtcNow && CacheManifest.TryRemove(cachePair.Key, out var _))
 				{
-					manifestUpdated = true;
-
 					if (FileLock.TryRemove(manifestEntry.FileName, out var lockObj))
 					{
 						using (await lockObj.WriterLockAsync())
@@ -133,11 +130,6 @@ namespace CacheTower.Providers.FileSystem
 						}
 					}
 				}
-			}
-
-			if (manifestUpdated)
-			{
-				await SaveManifest();
 			}
 		}
 
@@ -155,7 +147,6 @@ namespace CacheTower.Providers.FileSystem
 						if (File.Exists(path))
 						{
 							File.Delete(path);
-							await SaveManifest();
 						}
 					}
 				}
@@ -228,9 +219,28 @@ namespace CacheTower.Providers.FileSystem
 					await Serialize(stream, cacheEntry.Value);
 				}
 			}
+		}
 
-			//TODO: Implement queue (or timed) saving & IDisposable-forced saving
-			await SaveManifest();
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (Disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				//TODO: Async disposing
+				_ = SaveManifest();
+			}
+
+			Disposed = true;
 		}
 	}
 }
