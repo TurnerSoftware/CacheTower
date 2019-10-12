@@ -12,27 +12,26 @@ Intel Core i7-6700HQ CPU 2.60GHz (Skylake), 1 CPU, 8 logical and 4 physical core
 Job=Core  Runtime=Core
 ```
 
-
 ## MemoryCacheLayer
 
-|                  Method |   Mean [ns] | Error [ns] | StdDev [ns] |   Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
-|------------------------ |------------:|-----------:|------------:|--------:|------:|------:|--------------:|
-|                 GetMiss |    200.2 ns |   3.728 ns |    3.487 ns |  0.2499 |     - |     - |         784 B |
-|                  GetHit |    426.2 ns |   3.121 ns |    2.919 ns |  0.3057 |     - |     - |         960 B |
-|      GetHitSimultaneous |    499.3 ns |   9.374 ns |    8.310 ns |  0.3290 |     - |     - |        1032 B |
-|                  SetNew |    359.5 ns |   6.540 ns |    6.118 ns |  0.2828 |     - |     - |         888 B |
-|             SetExisting |    603.5 ns |  11.706 ns |   10.377 ns |  0.3386 |     - |     - |        1064 B |
-| SetExistingSimultaneous |    865.6 ns |  14.221 ns |   13.302 ns |  0.3948 |     - |     - |        1240 B |
-|                 SetMany | 36,441.5 ns | 723.026 ns |  676.319 ns | 15.6860 |     - |     - |       49304 B |
+|                  Method |   Mean [ns] | Error [ns] |  StdDev [ns] |   Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|------------------------ |------------:|-----------:|-------------:|--------:|------:|------:|--------------:|
+|                 GetMiss |    263.8 ns |   5.107 ns |     7.160 ns |  0.2499 |     - |     - |         784 B |
+|                  GetHit |    500.5 ns |   9.462 ns |     8.850 ns |  0.3052 |     - |     - |         960 B |
+|      GetHitSimultaneous |    597.5 ns |  11.746 ns |    17.217 ns |  0.3290 |     - |     - |        1032 B |
+|                  SetNew |    461.4 ns |  11.080 ns |    32.670 ns |  0.2828 |     - |     - |         888 B |
+|             SetExisting |    668.6 ns |  13.347 ns |    12.485 ns |  0.3386 |     - |     - |        1064 B |
+| SetExistingSimultaneous |    976.5 ns |  20.851 ns |    31.209 ns |  0.3948 |     - |     - |        1240 B |
+|                 SetMany | 37,740.0 ns | 747.389 ns | 1,790.697 ns | 12.0239 |     - |     - |       37776 B |
 
 ## JsonFileCacheLayer
 
-|                  Method |        Mean [ns] |     Error [ns] |    StdDev [ns] |     Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
-|------------------------ |-----------------:|---------------:|---------------:|----------:|------:|------:|--------------:|
-|                 GetMiss |     782,938.2 ns |    40,287.0 ns |   111,635.0 ns |         - |     - |     - |       13976 B |
-|                  GetHit |   3,354,977.2 ns |   153,793.6 ns |   433,777.6 ns |         - |     - |     - |       49712 B |
-|      GetHitSimultaneous |   3,974,364.6 ns |   234,284.9 ns |   675,965.5 ns |         - |     - |     - |       58160 B |
-|                  SetNew |   2,382,111.7 ns |   104,956.3 ns |   299,446.3 ns |         - |     - |     - |       40856 B |
-|             SetExisting |   3,389,554.7 ns |   206,822.2 ns |   562,675.1 ns |         - |     - |     - |       53416 B |
-| SetExistingSimultaneous |   4,133,131.6 ns |   208,807.6 ns |   599,108.0 ns |         - |     - |     - |       67752 B |
-|                 SetMany | 146,527,917.1 ns | 2,899,614.5 ns | 4,764,149.8 ns | 1000.0000 |     - |     - |      598272 B |
+|                  Method |       Mean [ns] |     Error [ns] |    StdDev [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|------------------------ |----------------:|---------------:|---------------:|------:|------:|------:|--------------:|
+|                 GetMiss |  2,423,792.5 ns |   113,176.0 ns |   321,061.5 ns |     - |     - |     - |       29432 B |
+|                  GetHit |  4,582,400.0 ns |   253,495.1 ns |   731,391.4 ns |     - |     - |     - |       39768 B |
+|      GetHitSimultaneous |  4,899,756.2 ns |   233,517.4 ns |   647,075.7 ns |     - |     - |     - |       48440 B |
+|                  SetNew |  3,693,362.1 ns |   172,958.0 ns |   496,248.8 ns |     - |     - |     - |       45056 B |
+|             SetExisting |  4,518,695.8 ns |   221,226.8 ns |   634,741.1 ns |     - |     - |     - |       57672 B |
+| SetExistingSimultaneous |  5,359,984.0 ns |   268,811.9 ns |   779,872.1 ns |     - |     - |     - |       70296 B |
+|                 SetMany | 93,359,150.0 ns | 1,836,856.7 ns | 2,115,326.9 ns |     - |     - |     - |     1621800 B |
