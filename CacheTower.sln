@@ -31,7 +31,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Benchmarks", "te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.FileSystem.Json", "src\CacheTower.Providers.FileSystem.Json\CacheTower.Providers.FileSystem.Json.csproj", "{A2BFB1FA-A086-4761-9FFF-7EE0F75A14EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Providers.FileSystem.Protobuf", "src\CacheTower.Providers.FileSystem.Protobuf\CacheTower.Providers.FileSystem.Protobuf.csproj", "{6E506ADC-22ED-4D41-9DB3-19CC087E3CEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.FileSystem.Protobuf", "src\CacheTower.Providers.FileSystem.Protobuf\CacheTower.Providers.FileSystem.Protobuf.csproj", "{6E506ADC-22ED-4D41-9DB3-19CC087E3CEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Providers.Database.MongoDB", "src\CacheTower.Providers.Database.MongoDB\CacheTower.Providers.Database.MongoDB.csproj", "{D878CE3B-7B20-4733-9C81-4A3291DCC115}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,10 @@ Global
 		{6E506ADC-22ED-4D41-9DB3-19CC087E3CEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E506ADC-22ED-4D41-9DB3-19CC087E3CEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E506ADC-22ED-4D41-9DB3-19CC087E3CEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D878CE3B-7B20-4733-9C81-4A3291DCC115}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D878CE3B-7B20-4733-9C81-4A3291DCC115}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D878CE3B-7B20-4733-9C81-4A3291DCC115}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D878CE3B-7B20-4733-9C81-4A3291DCC115}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +75,7 @@ Global
 		{69B32250-DCB9-430E-8DBA-7EBFE5ECD032} = {91095A10-6DD6-412A-B47A-ADD020DB7DF5}
 		{A2BFB1FA-A086-4761-9FFF-7EE0F75A14EB} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 		{6E506ADC-22ED-4D41-9DB3-19CC087E3CEC} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
+		{D878CE3B-7B20-4733-9C81-4A3291DCC115} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F159337A-B345-49EE-8D58-A72EF1643174}
