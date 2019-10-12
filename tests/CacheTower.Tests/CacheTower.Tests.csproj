@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CacheTower.Providers.FileSystem\CacheTower.Providers.FileSystem.csproj" />
+    <ProjectReference Include="..\..\src\CacheTower.Providers.FileSystem.Json\CacheTower.Providers.FileSystem.Json.csproj" />
     <ProjectReference Include="..\..\src\CacheTower\CacheTower.csproj" />
   </ItemGroup>
 

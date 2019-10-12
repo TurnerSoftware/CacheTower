@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Nito.AsyncEx;
 
-namespace CacheTower.Providers.FileSystem
+namespace CacheTower.Providers.FileSystem.Json
 {
 	public class JsonFileCacheLayer : FileCacheLayer, ICacheLayer
 	{

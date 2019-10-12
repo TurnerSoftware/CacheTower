@@ -5,9 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CacheTower.Providers.FileSystem;
+using CacheTower.Providers.FileSystem.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace CacheTower.Tests.Providers.FileSystem
+namespace CacheTower.Tests.Providers.FileSystem.Json
 {
 	[TestClass]
 	public class JsonFileCacheLayerTests : BaseCacheLayerTests

@@ -7,8 +7,9 @@ using CacheTower.Providers.Memory;
 using CacheTower.Benchmarks.CacheLayers;
 using System.IO;
 using CacheTower.Providers.FileSystem;
+using CacheTower.Providers.FileSystem.Json;
 
-namespace CacheTower.Benchmarks.Providers.FileSystem
+namespace CacheTower.Benchmarks.Providers.FileSystem.Json
 {
 	[Config(typeof(ConfigSettings))]
 	public class JsonFileCacheBenchmark : BaseCacheLayerBenchmark
