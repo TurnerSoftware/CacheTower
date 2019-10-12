@@ -6,7 +6,7 @@ using ProtoBuf.Meta;
 
 namespace CacheTower.Providers.FileSystem.Protobuf
 {
-	public class ProtobufFileCacheLayer : FileCacheLayerBase<ManifestEntry>
+	public class ProtobufFileCacheLayer : FileCacheLayerBase<ProtobufManifestEntry>
 	{
 		public ProtobufFileCacheLayer(string directoryPath) : base(directoryPath, ".bin") { }
 
