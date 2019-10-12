@@ -10,7 +10,7 @@ using Nito.AsyncEx;
 
 namespace CacheTower.Providers.FileSystem.Json
 {
-	public class JsonFileCacheLayer : FileCacheLayer, ICacheLayer
+	public class JsonFileCacheLayer : FileCacheLayerBase, ICacheLayer
 	{
 		public JsonFileCacheLayer(string directoryPath) : base(directoryPath, ".json") { }
 

@@ -8,7 +8,7 @@ using Nito.AsyncEx;
 
 namespace CacheTower.Providers.FileSystem
 {
-	public abstract class FileCacheLayer : ICacheLayer
+	public abstract class FileCacheLayerBase : ICacheLayer
 	{
 		private string DirectoryPath { get; }
 		private string ManifestPath { get; }
@@ -20,7 +20,7 @@ namespace CacheTower.Providers.FileSystem
 		private ConcurrentDictionary<string, ManifestEntry> CacheManifest { get; set; }
 		private ConcurrentDictionary<string, AsyncReaderWriterLock> FileLock { get; } = new ConcurrentDictionary<string, AsyncReaderWriterLock>();
 
-		protected FileCacheLayer(string directoryPath, string fileExtension)
+		protected FileCacheLayerBase(string directoryPath, string fileExtension)
 		{
 			DirectoryPath = directoryPath;
 			FileExtension = fileExtension;
