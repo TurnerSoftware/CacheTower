@@ -27,14 +27,20 @@ namespace CacheTower.Benchmarks.Providers
 			await cacheLayer.Get<int>("GetHit");
 			await cacheLayer.Set("GetHit", new CacheEntry<int>(3, DateTime.UtcNow, TimeSpan.FromDays(1)));
 
-			for (var i = 0; i < 200; i++)
+			for (var i = 0; i < 300; i++)
 			{
-				await cacheLayer.Set("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				await cacheLayer.Set("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
 			}
-			for (var i = 0; i < 200; i++)
+			for (var i = 0; i < 100; i++)
 			{
 				await cacheLayer.Get<int>("SetMany_" + i);
 			}
+			for (var i = 100; i < 200; i++)
+			{
+				await cacheLayer.Evict("SetMany_" + i);
+			}
+
+			await cacheLayer.Cleanup();
 		}
 
 		[GlobalSetup]
