@@ -27,13 +27,6 @@ namespace CacheTower.Benchmarks.Providers.FileSystem.Json
 			}
 		}
 
-		[IterationSetup]
-		public void IterationSetup()
-		{
-			Directory.CreateDirectory(DirectoryPath);
-		}
-
-
 		[IterationCleanup]
 		public void IterationCleanup()
 		{

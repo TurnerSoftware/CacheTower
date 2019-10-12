@@ -58,6 +58,11 @@ namespace CacheTower.Providers.FileSystem
 						}
 						else
 						{
+							if (!Directory.Exists(DirectoryPath))
+							{
+								Directory.CreateDirectory(DirectoryPath);
+							}
+
 							CacheManifest = new ConcurrentDictionary<string, ManifestEntry>();
 							using (var stream = new FileStream(ManifestPath, FileMode.OpenOrCreate, FileAccess.Write))
 							{
@@ -106,12 +111,16 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifest();
 
+			var manifestUpdated = false;
+
 			foreach (var cachePair in CacheManifest)
 			{
 				var manifestEntry = cachePair.Value;
 				var expiryDate = manifestEntry.CachedAt.Add(manifestEntry.TimeToLive);
-				if (expiryDate < DateTime.UtcNow)
+				if (expiryDate < DateTime.UtcNow && CacheManifest.TryRemove(cachePair.Key, out var _))
 				{
+					manifestUpdated = true;
+
 					if (FileLock.TryRemove(manifestEntry.FileName, out var lockObj))
 					{
 						using (await lockObj.WriterLockAsync())
@@ -126,7 +135,10 @@ namespace CacheTower.Providers.FileSystem
 				}
 			}
 
-			await SaveManifest();
+			if (manifestUpdated)
+			{
+				await SaveManifest();
+			}
 		}
 
 		public async Task Evict(string cacheKey)
