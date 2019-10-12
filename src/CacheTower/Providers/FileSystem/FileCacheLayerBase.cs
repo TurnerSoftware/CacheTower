@@ -81,10 +81,23 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
+#if NETSTANDARD2_0
 		private unsafe string GetFileName(string cacheKey)
 		{
 			var bytes = Encoding.UTF8.GetBytes(cacheKey);
 			var hashBytes = FileNameHashAlgorithm.ComputeHash(bytes);
+		
+#elif NETSTANDARD2_1
+		private unsafe string GetFileName(ReadOnlySpan<char> cacheKey)
+		{
+			var encoding = Encoding.UTF8;
+			var bytesRequired = encoding.GetByteCount(cacheKey);
+			Span<byte> bytes = stackalloc byte[bytesRequired];
+			encoding.GetBytes(cacheKey, bytes);
+
+			Span<byte> hashBytes = stackalloc byte[16];
+			FileNameHashAlgorithm.TryComputeHash(bytes, hashBytes, out var _);
+#endif
 
 			var fileExtensionLength = FileExtension?.Length ?? 0;
 
