@@ -4,8 +4,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Nito.AsyncEx;
 
 namespace CacheTower.Providers.FileSystem
@@ -19,7 +17,7 @@ namespace CacheTower.Providers.FileSystem
 		private AsyncLock ManifestLock { get; } = new AsyncLock();
 		private bool? IsManifestAvailable { get; set; }
 
-		private ConcurrentDictionary<string, string> CacheManifest { get; set; }
+		private ConcurrentDictionary<string, ManifestEntry> CacheManifest { get; set; }
 		private ConcurrentDictionary<string, AsyncReaderWriterLock> FileLock { get; } = new ConcurrentDictionary<string, AsyncReaderWriterLock>();
 
 		protected FileCacheLayer(string directoryPath, string fileExtension)
@@ -32,6 +30,13 @@ namespace CacheTower.Providers.FileSystem
 		protected abstract Task<T> Deserialize<T>(Stream stream);
 
 		protected abstract Task Serialize<T>(Stream stream, T value);
+
+		private class ManifestEntry
+		{
+			public string FileName { get; set; }
+			public DateTime CachedAt { get; set; }
+			public TimeSpan TimeToLive { get; set; }
+		}
 
 		private async Task TryLoadManifest()
 		{
@@ -48,12 +53,12 @@ namespace CacheTower.Providers.FileSystem
 							using (var stream = new FileStream(ManifestPath, FileMode.Open, FileAccess.Read))
 							{
 
-								CacheManifest = await Deserialize<ConcurrentDictionary<string, string>>(stream);
+								CacheManifest = await Deserialize<ConcurrentDictionary<string, ManifestEntry>>(stream);
 							}
 						}
 						else
 						{
-							CacheManifest = new ConcurrentDictionary<string, string>();
+							CacheManifest = new ConcurrentDictionary<string, ManifestEntry>();
 							using (var stream = new FileStream(ManifestPath, FileMode.OpenOrCreate, FileAccess.Write))
 							{
 								await Serialize(stream, CacheManifest);
@@ -100,20 +105,41 @@ namespace CacheTower.Providers.FileSystem
 		public async Task Cleanup()
 		{
 			await TryLoadManifest();
-			throw new NotImplementedException();
+
+			foreach (var cachePair in CacheManifest)
+			{
+				var manifestEntry = cachePair.Value;
+				var expiryDate = manifestEntry.CachedAt.Add(manifestEntry.TimeToLive);
+				if (expiryDate < DateTime.UtcNow)
+				{
+					if (FileLock.TryRemove(manifestEntry.FileName, out var lockObj))
+					{
+						using (await lockObj.WriterLockAsync())
+						{
+							var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
+							if (File.Exists(path))
+							{
+								File.Delete(path);
+							}
+						}
+					}
+				}
+			}
+
+			await SaveManifest();
 		}
 
 		public async Task Evict(string cacheKey)
 		{
 			await TryLoadManifest();
 
-			if (CacheManifest.TryRemove(cacheKey, out var fileName))
+			if (CacheManifest.TryRemove(cacheKey, out var manifestEntry))
 			{
-				if (FileLock.TryRemove(fileName, out var lockObj))
+				if (FileLock.TryRemove(manifestEntry.FileName, out var lockObj))
 				{
 					using (await lockObj.WriterLockAsync())
 					{
-						var path = Path.Combine(DirectoryPath, fileName);
+						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
 						if (File.Exists(path))
 						{
 							File.Delete(path);
@@ -128,18 +154,19 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifest();
 
-			if (CacheManifest.TryGetValue(cacheKey, out var fileName))
+			if (CacheManifest.TryGetValue(cacheKey, out var manifestEntry))
 			{
-				var lockObj = FileLock.GetOrAdd(fileName, (name) => new AsyncReaderWriterLock());
+				var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, (name) => new AsyncReaderWriterLock());
 				using (await lockObj.ReaderLockAsync())
 				{
 					//By the time we have the lock, confirm we still have a cache
 					if (CacheManifest.ContainsKey(cacheKey))
 					{
-						var path = Path.Combine(DirectoryPath, fileName);
+						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
 						using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read))
 						{
-							return await Deserialize<CacheEntry<T>>(stream);
+							var value = await Deserialize<T>(stream);
+							return new CacheEntry<T>(value, manifestEntry.CachedAt, manifestEntry.TimeToLive);
 						}
 					}
 				}
@@ -170,27 +197,28 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifest();
 
-			var isUpdatingExisting = CacheManifest.ContainsKey(cacheKey);
+			var manifestEntry = CacheManifest.GetOrAdd(cacheKey, (key) => new ManifestEntry
+			{
+				FileName = GetFileName(cacheKey)
+			});
 
-			var fileName = CacheManifest.GetOrAdd(cacheKey, (key) => GetFileName(cacheKey));
-			var lockObj = FileLock.GetOrAdd(fileName, (name) => new AsyncReaderWriterLock());
+			//Update the manifest entry with the new cache entry date/times
+			manifestEntry.CachedAt = cacheEntry.CachedAt;
+			manifestEntry.TimeToLive = cacheEntry.TimeToLive;
+
+			var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, (name) => new AsyncReaderWriterLock());
 
 			using (await lockObj.WriterLockAsync())
 			{
-				var path = Path.Combine(DirectoryPath, fileName);
+				var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
 				using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
 				{
-					await Serialize(stream, cacheEntry);
+					await Serialize(stream, cacheEntry.Value);
 				}
 			}
 
-			//Even with the potential race condition from ContainsKey to GetOrAdd, this still limits
-			//the number of potential saves performed of the manifest if we are just updating data
-			//rather than adding new items to the cache
-			if (!isUpdatingExisting)
-			{
-				await SaveManifest();
-			}
+			//TODO: Implement queue (or timed) saving & IDisposable-forced saving
+			await SaveManifest();
 		}
 	}
 }
