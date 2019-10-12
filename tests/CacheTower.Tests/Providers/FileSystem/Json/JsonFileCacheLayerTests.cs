@@ -49,7 +49,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 			await AssertCacheEviction(CreateCacheLayer());
 		}
 
-		[TestMethod, Ignore]
+		[TestMethod]
 		public async Task CacheCleanup()
 		{
 			await AssertCacheCleanup(CreateCacheLayer());
