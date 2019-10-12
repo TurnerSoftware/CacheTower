@@ -17,9 +17,9 @@ namespace CacheTower.Benchmarks.CacheLayers
 		{
 			public ConfigSettings()
 			{
-				Add(Job.Core);
+				Add(Job.Core.WithMaxIterationCount(200));
 				Add(MemoryDiagnoser.Default);
-
+				
 				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(true, SizeUnit.B, TimeUnit.Nanosecond);
 			}
 
