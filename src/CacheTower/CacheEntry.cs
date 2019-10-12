@@ -12,7 +12,7 @@ namespace CacheTower
 
 		protected CacheEntry(DateTime cachedAt, TimeSpan timeToLive)
 		{
-			CachedAt = cachedAt;
+			CachedAt = cachedAt.TrimToSeconds();
 			TimeToLive = timeToLive;
 		}
 
