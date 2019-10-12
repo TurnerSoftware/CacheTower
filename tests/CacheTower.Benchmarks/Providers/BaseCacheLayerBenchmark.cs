@@ -9,7 +9,7 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
 
-namespace CacheTower.Benchmarks.CacheLayers
+namespace CacheTower.Benchmarks.Providers
 {
 	public abstract class BaseCacheLayerBenchmark
 	{
