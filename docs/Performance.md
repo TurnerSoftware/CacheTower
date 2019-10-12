@@ -12,7 +12,18 @@ Intel Core i7-6700HQ CPU 2.60GHz (Skylake), 1 CPU, 8 logical and 4 physical core
 Job=Core  Runtime=Core
 ```
 
-## MemoryCacheLayer
+## Comparison Benchmark
+
+|                 Method |         Mean |          Error |         StdDev |       Median |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 | Allocated |
+|----------------------- |-------------:|---------------:|---------------:|-------------:|---------:|--------:|-----------:|------:|------:|----------:|
+|       MemoryCacheLayer |     119.8 us |      0.8869 us |      0.8296 us |     119.8 us |     1.00 |    0.00 |    41.5039 |     - |     - |  127.8 KB |
+|     JsonFileCacheLayer | 287,845.6 us |  5,670.3751 us | 11,059.6311 us | 283,510.8 us | 2,413.65 |   93.61 |  1000.0000 |     - |     - |   37.2 KB |
+| ProtobufFileCacheLayer | 196,682.4 us |  3,849.4664 us |  5,878.5417 us | 196,468.8 us | 1,661.74 |   50.66 |          - |     - |     - |    8.8 KB |
+|      MongoDbCacheLayer | 705,356.0 us | 14,710.5053 us | 19,638.1020 us | 706,164.0 us | 5,911.43 |  152.64 | 18000.0000 |     - |     - | 394.92 KB |
+
+## Individual Benchmarks
+
+### MemoryCacheLayer
 
 |                  Method |   Mean [ns] | Error [ns] |  StdDev [ns] |   Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |------------------------ |------------:|-----------:|-------------:|--------:|------:|------:|--------------:|
@@ -24,7 +35,7 @@ Job=Core  Runtime=Core
 | SetExistingSimultaneous |    976.5 ns |  20.851 ns |    31.209 ns |  0.3948 |     - |     - |        1240 B |
 |                 SetMany | 37,740.0 ns | 747.389 ns | 1,790.697 ns | 12.0239 |     - |     - |       37776 B |
 
-## JsonFileCacheLayer
+### JsonFileCacheLayer
 
 |                  Method |       Mean [ns] |     Error [ns] |    StdDev [ns] |     Median [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |------------------------ |----------------:|---------------:|---------------:|----------------:|------:|------:|------:|--------------:|
@@ -36,7 +47,7 @@ Job=Core  Runtime=Core
 | SetExistingSimultaneous |  4,536,801.5 ns |   126,976.1 ns |   529,251.3 ns |  4,523,300.0 ns |     - |     - |     - |       68152 B |
 |                 SetMany | 82,476,826.5 ns | 1,643,888.4 ns | 2,654,573.3 ns | 82,139,100.0 ns |     - |     - |     - |     1511520 B |
 
-## ProtobufFileCacheLayer
+### ProtobufFileCacheLayer
 
 |                  Method |       Mean [ns] |     Error [ns] |    StdDev [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |------------------------ |----------------:|---------------:|---------------:|------:|------:|------:|--------------:|
@@ -48,7 +59,7 @@ Job=Core  Runtime=Core
 | SetExistingSimultaneous |  3,311,651.1 ns |    79,057.1 ns |   325,997.4 ns |     - |     - |     - |        9184 B |
 |                 SetMany | 54,680,116.9 ns | 1,092,052.1 ns | 2,419,912.0 ns |     - |     - |     - |        8848 B |
 
-## MongoDbCacheLayer
+### MongoDbCacheLayer
 
 |                  Method |        Mean [ns] |     Error [ns] |     StdDev [ns] |      Median [ns] |     Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |------------------------ |-----------------:|---------------:|----------------:|-----------------:|----------:|------:|------:|--------------:|
