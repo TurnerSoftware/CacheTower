@@ -35,3 +35,15 @@ Job=Core  Runtime=Core
 |             SetExisting |  4,237,861.2 ns |   125,704.5 ns |   526,728.7 ns |     - |     - |     - |       55912 B |
 | SetExistingSimultaneous |  4,844,010.3 ns |   145,462.3 ns |   606,304.1 ns |     - |     - |     - |       68280 B |
 |                 SetMany | 82,661,490.9 ns | 1,598,303.2 ns | 2,535,078.2 ns |     - |     - |     - |     1525360 B |
+
+## ProtobufFileCacheLayer
+
+|                  Method |       Mean [ns] |     Error [ns] |    StdDev [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|------------------------ |----------------:|---------------:|---------------:|------:|------:|------:|--------------:|
+|                 GetMiss |  1,324,066.8 ns |    36,272.2 ns |   147,114.0 ns |     - |     - |     - |        6896 B |
+|                  GetHit |  2,736,456.8 ns |    66,406.5 ns |   273,832.0 ns |     - |     - |     - |        9488 B |
+|      GetHitSimultaneous |  2,820,197.3 ns |    60,540.5 ns |   247,601.1 ns |     - |     - |     - |        9440 B |
+|                  SetNew |  2,387,651.3 ns |    63,394.7 ns |   262,121.2 ns |     - |     - |     - |        9408 B |
+|             SetExisting |  2,779,610.1 ns |    64,542.3 ns |   264,695.3 ns |     - |     - |     - |        9296 B |
+| SetExistingSimultaneous |  3,138,250.0 ns |    71,011.2 ns |   292,819.5 ns |     - |     - |     - |        9200 B |
+|                 SetMany | 55,322,587.0 ns | 1,094,397.3 ns | 2,308,455.3 ns |     - |     - |     - |        9160 B |
