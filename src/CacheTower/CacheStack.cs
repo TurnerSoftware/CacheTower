@@ -2,14 +2,17 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 
 namespace CacheTower
 {
-	public class CacheStack
+	public class CacheStack : IDisposable
 	{
+		private bool Disposed = false;
+
 		private ConcurrentDictionary<string, AsyncLock> CacheKeyLock { get; } = new ConcurrentDictionary<string, AsyncLock>();
 
 		private ICacheLayer[] CacheLayers { get; }
@@ -22,8 +25,19 @@ namespace CacheTower
 			CacheLayers = cacheLayers;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void ThrowIfDisposed()
+		{
+			if (Disposed)
+			{
+				throw new ObjectDisposedException("CacheStack is disposed");
+			}
+		}
+
 		public async Task Cleanup()
 		{
+			ThrowIfDisposed();
+			
 			foreach (var layer in CacheLayers)
 			{
 				await layer.Cleanup();
@@ -32,6 +46,8 @@ namespace CacheTower
 
 		public async Task Evict(string cacheKey)
 		{
+			ThrowIfDisposed();
+
 			foreach (var layer in CacheLayers)
 			{
 				await layer.Evict(cacheKey);
@@ -40,6 +56,8 @@ namespace CacheTower
 
 		public async Task<CacheEntry<T>> Set<T>(string cacheKey, T value, TimeSpan timeToLive)
 		{
+			ThrowIfDisposed();
+
 			var cacheEntry = new CacheEntry<T>(value, DateTime.UtcNow, timeToLive);
 			await Set(cacheKey, cacheEntry);
 			return cacheEntry;
@@ -47,6 +65,8 @@ namespace CacheTower
 
 		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
+			ThrowIfDisposed();
+
 			foreach (var layer in CacheLayers)
 			{
 				await layer.Set(cacheKey, cacheEntry);
@@ -55,6 +75,8 @@ namespace CacheTower
 
 		public async Task<CacheEntry<T>> Get<T>(string cacheKey)
 		{
+			ThrowIfDisposed();
+
 			for (var i = 0; i < CacheLayers.Length; i++)
 			{
 				var cacheLayer = CacheLayers[i];
@@ -80,6 +102,8 @@ namespace CacheTower
 
 		public async Task<T> GetOrSet<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
 		{
+			ThrowIfDisposed();
+
 			var cacheEntry = await Get<T>(cacheKey);
 			if (cacheEntry != default)
 			{
@@ -115,6 +139,8 @@ namespace CacheTower
 
 		private async Task<CacheEntry<T>> RefreshValue<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool exitIfLocked)
 		{
+			ThrowIfDisposed();
+
 			//Technically this doesn't confirm it is locked, just the presence of a key
 			//This does mean there is a race condition where multiple threads still get locked
 			//Ultimately though, once each releases and they find the key in the cache, they will still exit without reprocessing
@@ -153,6 +179,33 @@ namespace CacheTower
 
 				return cacheEntry;
 			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (Disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				foreach (var layer in CacheLayers)
+				{
+					if (layer is IDisposable disposableLayer)
+					{
+						disposableLayer.Dispose();
+					}
+				}
+			}
+
+			Disposed = true;
 		}
 	}
 }
