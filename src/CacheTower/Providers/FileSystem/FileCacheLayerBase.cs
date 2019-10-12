@@ -92,12 +92,25 @@ namespace CacheTower.Providers.FileSystem
 		{
 			var bytes = Encoding.UTF8.GetBytes(cacheKey);
 			var hashBytes = FileNameHashAlgorithm.ComputeHash(bytes);
-			var builder = new StringBuilder();
+			var builder = new StringBuilder(32 + FileExtension?.Length ?? 0);
 
-			for (var i = 0; i < hashBytes.Length; i++)
-			{
-				builder.Append(hashBytes[i].ToString("X2"));
-			}
+			//MD5 bytes = 16
+			builder.Append(hashBytes[0].ToString("X2"));
+			builder.Append(hashBytes[1].ToString("X2"));
+			builder.Append(hashBytes[2].ToString("X2"));
+			builder.Append(hashBytes[3].ToString("X2"));
+			builder.Append(hashBytes[4].ToString("X2"));
+			builder.Append(hashBytes[5].ToString("X2"));
+			builder.Append(hashBytes[6].ToString("X2"));
+			builder.Append(hashBytes[7].ToString("X2"));
+			builder.Append(hashBytes[8].ToString("X2"));
+			builder.Append(hashBytes[9].ToString("X2"));
+			builder.Append(hashBytes[10].ToString("X2"));
+			builder.Append(hashBytes[11].ToString("X2"));
+			builder.Append(hashBytes[12].ToString("X2"));
+			builder.Append(hashBytes[13].ToString("X2"));
+			builder.Append(hashBytes[14].ToString("X2"));
+			builder.Append(hashBytes[15].ToString("X2"));
 
 			if (FileExtension != null)
 			{
