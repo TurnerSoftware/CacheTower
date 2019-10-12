@@ -8,7 +8,7 @@ using Nito.AsyncEx;
 
 namespace CacheTower.Providers.FileSystem
 {
-	public abstract class FileCacheLayerBase : ICacheLayer, IDisposable
+	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IDisposable where TManifest : IManifestEntry, new()
 	{
 		private bool Disposed = false;
 		private string DirectoryPath { get; }
@@ -20,7 +20,7 @@ namespace CacheTower.Providers.FileSystem
 
 		private HashAlgorithm FileNameHashAlgorithm { get; } = MD5.Create();
 
-		private ConcurrentDictionary<string, ManifestEntry> CacheManifest { get; set; }
+		private ConcurrentDictionary<string, IManifestEntry> CacheManifest { get; set; }
 		private ConcurrentDictionary<string, AsyncReaderWriterLock> FileLock { get; } = new ConcurrentDictionary<string, AsyncReaderWriterLock>();
 
 		protected FileCacheLayerBase(string directoryPath, string fileExtension)
@@ -33,13 +33,6 @@ namespace CacheTower.Providers.FileSystem
 		protected abstract Task<T> Deserialize<T>(Stream stream);
 
 		protected abstract Task Serialize<T>(Stream stream, T value);
-
-		private class ManifestEntry
-		{
-			public string FileName { get; set; }
-			public DateTime CachedAt { get; set; }
-			public TimeSpan TimeToLive { get; set; }
-		}
 
 		private async Task TryLoadManifest()
 		{
@@ -56,7 +49,7 @@ namespace CacheTower.Providers.FileSystem
 							using (var stream = new FileStream(ManifestPath, FileMode.Open, FileAccess.Read))
 							{
 
-								CacheManifest = await Deserialize<ConcurrentDictionary<string, ManifestEntry>>(stream);
+								CacheManifest = await Deserialize<ConcurrentDictionary<string, IManifestEntry>>(stream);
 							}
 						}
 						else
@@ -66,7 +59,7 @@ namespace CacheTower.Providers.FileSystem
 								Directory.CreateDirectory(DirectoryPath);
 							}
 
-							CacheManifest = new ConcurrentDictionary<string, ManifestEntry>();
+							CacheManifest = new ConcurrentDictionary<string, IManifestEntry>();
 							using (var stream = new FileStream(ManifestPath, FileMode.OpenOrCreate, FileAccess.Write))
 							{
 								await Serialize(stream, CacheManifest);
@@ -218,7 +211,7 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifest();
 
-			var manifestEntry = CacheManifest.GetOrAdd(cacheKey, (key) => new ManifestEntry
+			var manifestEntry = CacheManifest.GetOrAdd(cacheKey, (key) => new TManifest
 			{
 				FileName = GetFileName(cacheKey)
 			});
