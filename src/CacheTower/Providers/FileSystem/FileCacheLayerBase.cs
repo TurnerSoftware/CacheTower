@@ -265,7 +265,8 @@ namespace CacheTower.Providers.FileSystem
 
 			if (disposing)
 			{
-				_ = SaveManifest();
+				var saveManifestWrappedTask = new Task(async () => await SaveManifest());
+				saveManifestWrappedTask.RunSynchronously();
 				FileNameHashAlgorithm.Dispose();
 			}
 
