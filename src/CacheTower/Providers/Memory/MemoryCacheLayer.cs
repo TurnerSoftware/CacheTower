@@ -10,6 +10,8 @@ namespace CacheTower.Providers.Memory
 	{
 		private ConcurrentDictionary<string, CacheEntry> Cache { get; } = new ConcurrentDictionary<string, CacheEntry>();
 
+		private static readonly Task<bool> CompletedTaskTrue = Task.FromResult(true);
+
 		public Task Cleanup()
 		{
 			foreach (var cachePair in Cache)
@@ -42,7 +44,7 @@ namespace CacheTower.Providers.Memory
 
 		public Task<bool> IsAvailable(string cacheKey)
 		{
-			return Task.FromResult(true);
+			return CompletedTaskTrue;
 		}
 
 		public Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
