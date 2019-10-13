@@ -1,47 +1,49 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CacheTower.Entities;
+using CacheTower.Providers.Database.MongoDB.Commands;
 using MongoFramework;
+using MongoFramework.Infrastructure;
+using MongoFramework.Infrastructure.Commands;
 
 namespace CacheTower.Providers.Database.MongoDB
 {
 	public class MongoDbCacheLayer : ICacheLayer
 	{
 		private bool? IsDatabaseAvailable { get; set; }
-		private IMongoDbConnection Connection { get; }
+		private IEntityReader<DbCachedEntry> EntityReader { get; }
+		private ICommandWriter<DbCachedEntry> CommandWriter { get; }
 
 		public MongoDbCacheLayer(IMongoDbConnection connection)
 		{
-			Connection = connection;
+			EntityReader = new EntityReader<DbCachedEntry>(connection);
+			CommandWriter = new CommandWriter<DbCachedEntry>(connection);
 		}
 
 		public async Task Cleanup()
 		{
-			var dbSet = new MongoDbSet<DbCachedEntry>();
-			dbSet.SetConnection(Connection);
-			var expiredEntities = dbSet.Where(e => e.Expiry < DateTime.UtcNow);
-			foreach (var entity in expiredEntities)
+			var expiredEntityIds = EntityReader.AsQueryable().Where(e => e.Expiry < DateTime.UtcNow).Select(e => e.Id);
+			var writeCommands = new List<IWriteCommand<DbCachedEntry>>();
+
+			foreach (var entityId in expiredEntityIds)
 			{
-				dbSet.Remove(entity);
+				writeCommands.Add(new RemoveEntityByIdCommand<DbCachedEntry>(entityId));
 			}
-			await dbSet.SaveChangesAsync();
+
+			await CommandWriter.WriteAsync(writeCommands);
 		}
 
 		public async Task Evict(string cacheKey)
 		{
-			var dbSet = new MongoDbSet<DbCachedEntry>();
-			dbSet.SetConnection(Connection);
-			var dbEntry = dbSet.Where(e => e.CacheKey == cacheKey).FirstOrDefault();
-			dbSet.Remove(dbEntry);
-			await dbSet.SaveChangesAsync();
+			var entityId = EntityReader.AsQueryable().Where(e => e.CacheKey == cacheKey).Select(e => e.Id).FirstOrDefault();
+			await CommandWriter.WriteAsync(new[] { new RemoveEntityByIdCommand<DbCachedEntry>(entityId) });
 		}
 
 		public Task<CacheEntry<T>> Get<T>(string cacheKey)
 		{
-			var dbSet = new MongoDbSet<DbCachedEntry>();
-			dbSet.SetConnection(Connection);
-			var dbEntry = dbSet.Where(e => e.CacheKey == cacheKey).FirstOrDefault();
+			var dbEntry = EntityReader.AsQueryable().Where(e => e.CacheKey == cacheKey).FirstOrDefault();
 			var cacheEntry = default(CacheEntry<T>);
 
 			if (dbEntry != default)
@@ -54,15 +56,16 @@ namespace CacheTower.Providers.Database.MongoDB
 
 		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			var dbSet = new MongoDbSet<DbCachedEntry>();
-			dbSet.SetConnection(Connection);
-			var dbEntry = dbSet.Where(e => e.CacheKey == cacheKey).FirstOrDefault();
+			var dbEntry = EntityReader.AsQueryable().Where(e => e.CacheKey == cacheKey).FirstOrDefault();
+
+			IWriteCommand<DbCachedEntry> command;
 
 			if (dbEntry != default)
 			{
 				dbEntry.CachedAt = cacheEntry.CachedAt;
 				dbEntry.TimeToLive = cacheEntry.TimeToLive;
 				dbEntry.Value = cacheEntry.Value;
+				command = new ReplaceEntityCommand<DbCachedEntry>(dbEntry);
 			}
 			else
 			{
@@ -73,10 +76,10 @@ namespace CacheTower.Providers.Database.MongoDB
 					TimeToLive = cacheEntry.TimeToLive,
 					Value = cacheEntry.Value
 				};
-				dbSet.Add(dbEntry);
+				command = new Commands.AddEntityCommand<DbCachedEntry>(dbEntry);
 			}
 
-			await dbSet.SaveChangesAsync();
+			await CommandWriter.WriteAsync(new[] { command });
 		}
 
 		public Task<bool> IsAvailable(string cacheKey)
@@ -85,9 +88,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			{
 				try
 				{
-					var dbSet = new MongoDbSet<DbCachedEntry>();
-					dbSet.SetConnection(Connection);
-					dbSet.Select(e => e.Id).FirstOrDefault();
+					EntityReader.AsQueryable().Select(e => e.Id).FirstOrDefault();
 					IsDatabaseAvailable = true;
 				}
 				catch
