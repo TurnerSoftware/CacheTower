@@ -1,4 +1,4 @@
 {
   "TestProject": "tests/CacheTower.Tests/CacheTower.Tests.csproj",
-  "TestCoverageFilter": "+[CacheTower]* -[CacheTower.Tests]*"
+  "TestCoverageFilter": "+[CacheTower]* +[CacheTower.*]* -[CacheTower.Tests]*"
 }
