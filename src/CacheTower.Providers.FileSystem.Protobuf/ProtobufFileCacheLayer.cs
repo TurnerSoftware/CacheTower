@@ -8,7 +8,7 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 {
 	public class ProtobufFileCacheLayer : FileCacheLayerBase<ProtobufManifestEntry>
 	{
-		private static object RuntimeTypeLock = new object();
+		private static readonly object RuntimeTypeLock = new object();
 
 		public ProtobufFileCacheLayer(string directoryPath) : base(directoryPath, ".bin")
 		{
