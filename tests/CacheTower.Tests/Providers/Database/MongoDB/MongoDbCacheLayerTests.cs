@@ -69,5 +69,11 @@ namespace CacheTower.Tests.Providers.Database.MongoDB
 		{
 			await AssertCacheCleanup(new MongoDbCacheLayer(GetConnection()));
 		}
+
+		[TestMethod]
+		public async Task CachingComplexTypes()
+		{
+			await AssertComplexTypeCaching(new MongoDbCacheLayer(GetConnection()));
+		}
 	}
 }

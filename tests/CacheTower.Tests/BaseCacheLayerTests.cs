@@ -1,6 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -60,6 +63,31 @@ namespace CacheTower.Tests
 
 			Assert.IsNotNull(await DoCleanupTest(timeToLive: TimeSpan.FromDays(1)), "Cleanup removed entry that was still live");
 			Assert.IsNull(await DoCleanupTest(timeToLive: TimeSpan.FromDays(-1)), "Cleanup kept entry past the end of life");
+		}
+
+		protected static async Task AssertComplexTypeCaching(ICacheLayer cacheLayer)
+		{
+			var complexTypeOneEntry = new CacheEntry<ComplexTypeCaching_TypeOne>(new ComplexTypeCaching_TypeOne
+			{
+				ExampleString = "Hello World",
+				ExampleNumber = 99,
+				ListOfNumbers = new List<int>() { 1, 2, 4, 8 }
+			}, DateTime.UtcNow, TimeSpan.FromDays(1));
+			await cacheLayer.Set("ComplexTypeOne", complexTypeOneEntry);
+			var complexTypeOneEntryGet = await cacheLayer.Get<ComplexTypeCaching_TypeOne>("ComplexTypeOne");
+
+			Assert.AreEqual(complexTypeOneEntry, complexTypeOneEntryGet, "Set value in cache doesn't match retrieved value");
+
+			var complexTypeTwoEntry = new CacheEntry<ComplexTypeCaching_TypeTwo>(new ComplexTypeCaching_TypeTwo
+			{
+				ExampleString = "Hello World",
+				ArrayOfObjects = new[] { complexTypeOneEntry.Value },
+				DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "Z", 26 } }
+			}, DateTime.UtcNow, TimeSpan.FromDays(1));
+			await cacheLayer.Set("ComplexTypeTwo", complexTypeTwoEntry);
+			var complexTypeTwoEntryGet = await cacheLayer.Get<ComplexTypeCaching_TypeTwo>("ComplexTypeTwo");
+
+			Assert.AreEqual(complexTypeTwoEntry, complexTypeTwoEntryGet, "Set value in cache doesn't match retrieved value");
 		}
 	}
 }

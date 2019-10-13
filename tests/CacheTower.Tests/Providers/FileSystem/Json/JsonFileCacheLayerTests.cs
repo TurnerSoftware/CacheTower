@@ -57,5 +57,13 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 			await AssertCacheCleanup(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
+
+		[TestMethod]
+		public async Task CachingComplexTypes()
+		{
+			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
+			await AssertComplexTypeCaching(cacheLayer);
+			await DisposeOf(cacheLayer);
+		}
 	}
 }

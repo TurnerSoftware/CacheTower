@@ -30,5 +30,11 @@ namespace CacheTower.Tests.Providers.Memory
 		{
 			await AssertCacheCleanup(new MemoryCacheLayer());
 		}
+
+		[TestMethod]
+		public async Task CachingComplexTypes()
+		{
+			await AssertComplexTypeCaching(new MemoryCacheLayer());
+		}
 	}
 }

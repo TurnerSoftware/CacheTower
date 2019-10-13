@@ -62,5 +62,13 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 			await AssertCacheCleanup(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
+
+		[TestMethod]
+		public async Task CachingComplexTypes()
+		{
+			var cacheLayer = new ProtobufFileCacheLayer(DirectoryPath);
+			await AssertComplexTypeCaching(cacheLayer);
+			await DisposeOf(cacheLayer);
+		}
 	}
 }
