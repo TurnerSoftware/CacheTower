@@ -74,7 +74,7 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
-		private async Task SaveManifest()
+		public async Task SaveManifest()
 		{
 			using (await ManifestLock.LockAsync())
 			{
