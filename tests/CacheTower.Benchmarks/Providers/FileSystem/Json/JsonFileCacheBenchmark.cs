@@ -11,34 +11,13 @@ using CacheTower.Providers.FileSystem.Json;
 namespace CacheTower.Benchmarks.Providers.FileSystem.Json
 {
 	[Config(typeof(ConfigSettings))]
-	public class JsonFileCacheBenchmark : BaseCacheLayerBenchmark
+	public class JsonFileCacheBenchmark : BaseFileCacheLayerBenchmark
 	{
-		public const string DirectoryPath = "FileSystemProviders/JsonFileCacheLayer";
-
 		[GlobalSetup]
 		public void Setup()
 		{
+			DirectoryPath = "FileSystemProviders/JsonFileCacheLayer";
 			CacheLayerProvider = () => new JsonFileCacheLayer(DirectoryPath);
-
-			if (Directory.Exists(DirectoryPath))
-			{
-				Directory.Delete(DirectoryPath, true);
-			}
-		}
-
-		[IterationCleanup]
-		public void IterationCleanup()
-		{
-			Directory.Delete(DirectoryPath, true);
-		}
-
-		[GlobalCleanup]
-		public void Cleanup()
-		{
-			if (Directory.Exists(DirectoryPath))
-			{
-				Directory.Delete(DirectoryPath, true);
-			}
 		}
 	}
 }

@@ -10,34 +10,13 @@ using CacheTower.Providers.FileSystem.Protobuf;
 namespace CacheTower.Benchmarks.Providers.FileSystem.Protobuf
 {
 	[Config(typeof(ConfigSettings))]
-	public class ProtobufFileCacheBenchmark : BaseCacheLayerBenchmark
+	public class ProtobufFileCacheBenchmark : BaseFileCacheLayerBenchmark
 	{
-		public const string DirectoryPath = "FileSystemProviders/ProtobufFileCacheLayer";
-
 		[GlobalSetup]
 		public void Setup()
 		{
+			DirectoryPath = "FileSystemProviders/ProtobufFileCacheLayer";
 			CacheLayerProvider = () => new ProtobufFileCacheLayer(DirectoryPath);
-
-			if (Directory.Exists(DirectoryPath))
-			{
-				Directory.Delete(DirectoryPath, true);
-			}
-		}
-
-		[IterationCleanup]
-		public void IterationCleanup()
-		{
-			Directory.Delete(DirectoryPath, true);
-		}
-
-		[GlobalCleanup]
-		public void Cleanup()
-		{
-			if (Directory.Exists(DirectoryPath))
-			{
-				Directory.Delete(DirectoryPath, true);
-			}
 		}
 	}
 }

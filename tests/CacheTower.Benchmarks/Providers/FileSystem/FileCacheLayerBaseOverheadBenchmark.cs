@@ -9,10 +9,8 @@ using CacheTower.Providers.FileSystem;
 namespace CacheTower.Benchmarks.Providers.FileSystem
 {
 	[Config(typeof(ConfigSettings))]
-	public class FileCacheLayerBaseOverheadBenchmark : BaseCacheLayerBenchmark
+	public class FileCacheLayerBaseOverheadBenchmark : BaseFileCacheLayerBenchmark
 	{
-		public const string DirectoryPath = "FileSystemProviders/NoOpFileCacheLayer";
-
 		private class NoOpFileCacheLayer : FileCacheLayerBase<ManifestEntry>
 		{
 			public NoOpFileCacheLayer(string directoryPath) : base(directoryPath, ".noop") { }
@@ -31,27 +29,8 @@ namespace CacheTower.Benchmarks.Providers.FileSystem
 		[GlobalSetup]
 		public void Setup()
 		{
+			DirectoryPath = "FileSystemProviders/NoOpFileCacheLayer";
 			CacheLayerProvider = () => new NoOpFileCacheLayer(DirectoryPath);
-
-			if (Directory.Exists(DirectoryPath))
-			{
-				Directory.Delete(DirectoryPath, true);
-			}
-		}
-
-		[IterationCleanup]
-		public void IterationCleanup()
-		{
-			Directory.Delete(DirectoryPath, true);
-		}
-
-		[GlobalCleanup]
-		public void Cleanup()
-		{
-			if (Directory.Exists(DirectoryPath))
-			{
-				Directory.Delete(DirectoryPath, true);
-			}
 		}
 	}
 }
