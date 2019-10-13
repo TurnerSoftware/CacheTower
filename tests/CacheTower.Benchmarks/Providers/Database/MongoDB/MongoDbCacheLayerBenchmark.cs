@@ -8,7 +8,6 @@ using MongoFramework;
 
 namespace CacheTower.Benchmarks.Providers.Database.MongoDB
 {
-	[Config(typeof(ConfigSettings))]
 	public class MongoDbCacheLayerBenchmark : BaseCacheLayerBenchmark
 	{
 		private IMongoDbConnection Connection { get; set; }

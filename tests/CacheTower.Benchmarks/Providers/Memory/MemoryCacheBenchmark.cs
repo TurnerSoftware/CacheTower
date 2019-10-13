@@ -7,7 +7,6 @@ using CacheTower.Providers.Memory;
 
 namespace CacheTower.Benchmarks.Providers.Memory
 {
-	[Config(typeof(ConfigSettings))]
 	public class MemoryCacheBenchmark : BaseCacheLayerBenchmark
 	{
 		[GlobalSetup]

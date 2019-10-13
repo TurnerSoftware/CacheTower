@@ -8,7 +8,6 @@ using CacheTower.Providers.FileSystem;
 
 namespace CacheTower.Benchmarks.Providers.FileSystem
 {
-	[Config(typeof(ConfigSettings))]
 	public class FileCacheLayerBaseOverheadBenchmark : BaseFileCacheLayerBenchmark
 	{
 		private class NoOpFileCacheLayer : FileCacheLayerBase<ManifestEntry>

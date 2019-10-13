@@ -11,6 +11,7 @@ using BenchmarkDotNet.Jobs;
 
 namespace CacheTower.Benchmarks.Providers
 {
+	[Config(typeof(ConfigSettings))]
 	public abstract class BaseCacheLayerBenchmark
 	{
 		public class ConfigSettings : ManualConfig

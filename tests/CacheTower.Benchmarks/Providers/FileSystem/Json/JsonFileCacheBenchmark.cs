@@ -10,7 +10,6 @@ using CacheTower.Providers.FileSystem.Json;
 
 namespace CacheTower.Benchmarks.Providers.FileSystem.Json
 {
-	[Config(typeof(ConfigSettings))]
 	public class JsonFileCacheBenchmark : BaseFileCacheLayerBenchmark
 	{
 		[GlobalSetup]

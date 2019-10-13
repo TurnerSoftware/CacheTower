@@ -9,7 +9,6 @@ using CacheTower.Providers.FileSystem.Protobuf;
 
 namespace CacheTower.Benchmarks.Providers.FileSystem.Protobuf
 {
-	[Config(typeof(ConfigSettings))]
 	public class ProtobufFileCacheBenchmark : BaseFileCacheLayerBenchmark
 	{
 		[GlobalSetup]
