@@ -1,8 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <RootNamespace>CacheTower</RootNamespace>
-
     <Company>Turner Software</Company>
 
     <PackageId>$(AssemblyName)</PackageId>
