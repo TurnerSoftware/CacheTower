@@ -78,7 +78,6 @@ namespace CacheTower.Benchmarks.Providers
 		public void Setup()
 		{
 			MongoDbHelper.DropDatabase();
-			CacheTower.Providers.FileSystem.Protobuf.ProtobufFileCacheLayer.ConfigureProtobuf();
 		}
 
 		[Benchmark(Baseline = true)]

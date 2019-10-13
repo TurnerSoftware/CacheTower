@@ -8,12 +8,18 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 {
 	public class ProtobufFileCacheLayer : FileCacheLayerBase<ProtobufManifestEntry>
 	{
-		public ProtobufFileCacheLayer(string directoryPath) : base(directoryPath, ".bin") { }
+		private static object RuntimeTypeLock = new object();
 
-		public static void ConfigureProtobuf()
+		public ProtobufFileCacheLayer(string directoryPath) : base(directoryPath, ".bin")
 		{
-			RuntimeTypeModel.Default.Add(typeof(IManifestEntry))
-				.AddSubType(1, typeof(ProtobufManifestEntry));
+			lock (RuntimeTypeLock)
+			{
+				if (!RuntimeTypeModel.Default.IsDefined(typeof(IManifestEntry)))
+				{
+					RuntimeTypeModel.Default.Add(typeof(IManifestEntry))
+						.AddSubType(1, typeof(ProtobufManifestEntry));
+				}
+			}
 		}
 
 		protected override async Task<T> Deserialize<T>(Stream stream)

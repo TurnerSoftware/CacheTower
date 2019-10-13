@@ -17,8 +17,6 @@ namespace CacheTower.Benchmarks.Providers.FileSystem.Protobuf
 		[GlobalSetup]
 		public void Setup()
 		{
-			ProtobufFileCacheLayer.ConfigureProtobuf();
-
 			CacheLayerProvider = () => new ProtobufFileCacheLayer(DirectoryPath);
 
 			if (Directory.Exists(DirectoryPath))

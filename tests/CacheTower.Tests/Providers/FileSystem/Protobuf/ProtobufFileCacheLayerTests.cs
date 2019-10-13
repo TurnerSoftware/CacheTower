@@ -14,12 +14,6 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 	{
 		public const string DirectoryPath = "FileSystemProviders/ProtobufFileCacheLayer";
 
-		[AssemblyInitialize]
-		public static void AssemblySetup(TestContext testContext)
-		{
-			ProtobufFileCacheLayer.ConfigureProtobuf();
-		}
-
 		[TestInitialize]
 		public void Setup()
 		{
