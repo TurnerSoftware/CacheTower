@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.IdGenerators;
 using MongoFramework.Attributes;
 
-namespace CacheTower.Entities
+namespace CacheTower.Providers.Database.MongoDB.Entities
 {
 	public class DbCachedEntry
 	{
-		public string Id { get; set; }
+		public ObjectId Id { get; set; }
 
 		[Index(MongoFramework.IndexSortOrder.Ascending)]
 		public string CacheKey { get; set; }

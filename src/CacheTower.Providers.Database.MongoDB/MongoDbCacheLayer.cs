@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CacheTower.Entities;
 using CacheTower.Providers.Database.MongoDB.Commands;
+using CacheTower.Providers.Database.MongoDB.Entities;
 using MongoFramework;
 using MongoFramework.Infrastructure;
 using MongoFramework.Infrastructure.Commands;
+using MongoFramework.Infrastructure.Indexing;
+using MongoFramework.Infrastructure.Mapping;
 
 namespace CacheTower.Providers.Database.MongoDB
 {
@@ -15,34 +17,42 @@ namespace CacheTower.Providers.Database.MongoDB
 		private bool? IsDatabaseAvailable { get; set; }
 		private IEntityReader<DbCachedEntry> EntityReader { get; }
 		private ICommandWriter<DbCachedEntry> CommandWriter { get; }
+		private IEntityIndexWriter<DbCachedEntry> IndexWriter { get; }
+
+		private bool HasSetIndexes = false;
 
 		public MongoDbCacheLayer(IMongoDbConnection connection)
 		{
 			EntityReader = new EntityReader<DbCachedEntry>(connection);
 			CommandWriter = new CommandWriter<DbCachedEntry>(connection);
+			IndexWriter = new EntityIndexWriter<DbCachedEntry>(connection);
+		}
+
+		private async Task TryConfigureIndexes()
+		{
+			if (!HasSetIndexes)
+			{
+				HasSetIndexes = true;
+				await IndexWriter.ApplyIndexingAsync();
+			}
 		}
 
 		public async Task Cleanup()
 		{
-			var expiredEntityIds = EntityReader.AsQueryable().Where(e => e.Expiry < DateTime.UtcNow).Select(e => e.Id);
-			var writeCommands = new List<IWriteCommand<DbCachedEntry>>();
-
-			foreach (var entityId in expiredEntityIds)
-			{
-				writeCommands.Add(new RemoveEntityByIdCommand<DbCachedEntry>(entityId));
-			}
-
-			await CommandWriter.WriteAsync(writeCommands);
+			await TryConfigureIndexes();
+			await CommandWriter.WriteAsync(new[] { new CleanupCommand() });
 		}
 
 		public async Task Evict(string cacheKey)
 		{
-			var entityId = EntityReader.AsQueryable().Where(e => e.CacheKey == cacheKey).Select(e => e.Id).FirstOrDefault();
-			await CommandWriter.WriteAsync(new[] { new RemoveEntityByIdCommand<DbCachedEntry>(entityId) });
+			await TryConfigureIndexes();
+			await CommandWriter.WriteAsync(new[] { new EvictCommand(cacheKey) });
 		}
 
-		public Task<CacheEntry<T>> Get<T>(string cacheKey)
+		public async Task<CacheEntry<T>> Get<T>(string cacheKey)
 		{
+			await TryConfigureIndexes();
+
 			var dbEntry = EntityReader.AsQueryable().Where(e => e.CacheKey == cacheKey).FirstOrDefault();
 			var cacheEntry = default(CacheEntry<T>);
 
@@ -51,44 +61,30 @@ namespace CacheTower.Providers.Database.MongoDB
 				cacheEntry = new CacheEntry<T>((T)dbEntry.Value, dbEntry.CachedAt, dbEntry.TimeToLive);
 			}
 
-			return Task.FromResult(cacheEntry);
+			return cacheEntry;
 		}
 
 		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			var dbEntry = EntityReader.AsQueryable().Where(e => e.CacheKey == cacheKey).FirstOrDefault();
-
-			IWriteCommand<DbCachedEntry> command;
-
-			if (dbEntry != default)
+			await TryConfigureIndexes();
+			var command = new SetCommand(new DbCachedEntry
 			{
-				dbEntry.CachedAt = cacheEntry.CachedAt;
-				dbEntry.TimeToLive = cacheEntry.TimeToLive;
-				dbEntry.Value = cacheEntry.Value;
-				command = new ReplaceEntityCommand<DbCachedEntry>(dbEntry);
-			}
-			else
-			{
-				dbEntry = new DbCachedEntry
-				{
-					CacheKey = cacheKey,
-					CachedAt = cacheEntry.CachedAt,
-					TimeToLive = cacheEntry.TimeToLive,
-					Value = cacheEntry.Value
-				};
-				command = new Commands.AddEntityCommand<DbCachedEntry>(dbEntry);
-			}
+				CacheKey = cacheKey,
+				CachedAt = cacheEntry.CachedAt,
+				TimeToLive = cacheEntry.TimeToLive,
+				Value = cacheEntry.Value
+			});
 
 			await CommandWriter.WriteAsync(new[] { command });
 		}
 
-		public Task<bool> IsAvailable(string cacheKey)
+		public async Task<bool> IsAvailable(string cacheKey)
 		{
 			if (IsDatabaseAvailable == null)
 			{
 				try
 				{
-					EntityReader.AsQueryable().Select(e => e.Id).FirstOrDefault();
+					await TryConfigureIndexes();
 					IsDatabaseAvailable = true;
 				}
 				catch
@@ -97,7 +93,7 @@ namespace CacheTower.Providers.Database.MongoDB
 				}
 			}
 
-			return Task.FromResult(IsDatabaseAvailable.Value);
+			return IsDatabaseAvailable.Value;
 		}
 	}
 }
