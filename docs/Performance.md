@@ -12,7 +12,7 @@ Intel Core i7-6700HQ CPU 2.60GHz (Skylake), 1 CPU, 8 logical and 4 physical core
 Job=Core  Runtime=Core
 ```
 
-## Comparison Benchmark
+## Cache Layer Comparison Benchmark
 
 |                 Method |         Mean |        Error |         StdDev |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 | Allocated |
 |----------------------- |-------------:|-------------:|---------------:|---------:|--------:|-----------:|------:|------:|----------:|
@@ -21,7 +21,7 @@ Job=Core  Runtime=Core
 | ProtobufFileCacheLayer | 253,858.9 us | 4,994.406 us |  6,836.3996 us | 1,367.61 |   45.98 |  1000.0000 |     - |     - |    8.8 KB |
 |      MongoDbCacheLayer | 447,764.0 us | 9,253.487 us | 16,448.0633 us | 2,407.72 |   72.36 | 10000.0000 |     - |     - |   59.9 KB |
 
-## Individual Benchmarks
+## In-Memory Benchmarks
 
 ### MemoryCacheLayer
 
@@ -34,6 +34,20 @@ Job=Core  Runtime=Core
 |             SetExisting |    668.6 ns |  13.347 ns |    12.485 ns |  0.3386 |     - |     - |        1064 B |
 | SetExistingSimultaneous |    976.5 ns |  20.851 ns |    31.209 ns |  0.3948 |     - |     - |        1240 B |
 |                 SetMany | 37,740.0 ns | 747.389 ns | 1,790.697 ns | 12.0239 |     - |     - |       37776 B |
+
+## File System Benchmarks
+
+### FileCacheLayerBase (Overhead)
+
+|                  Method |       Mean [ns] |   Error [ns] |    StdDev [ns] |     Median [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|------------------------ |----------------:|-------------:|---------------:|----------------:|------:|------:|------:|--------------:|
+|                 GetMiss |  1,281,926.0 ns |  46,841.7 ns |   194,201.4 ns |  1,237,800.0 ns |     - |     - |     - |        6680 B |
+|                  GetHit |  2,111,450.8 ns |  76,632.0 ns |   321,947.8 ns |  2,089,500.0 ns |     - |     - |     - |       10336 B |
+|      GetHitSimultaneous |  2,256,543.9 ns |  67,694.5 ns |   285,142.5 ns |  2,236,050.0 ns |     - |     - |     - |       11760 B |
+|                  SetNew |  1,700,250.3 ns |  54,588.8 ns |   222,023.5 ns |  1,670,400.0 ns |     - |     - |     - |        8992 B |
+|             SetExisting |  1,998,325.3 ns |  71,329.0 ns |   297,307.7 ns |  1,971,000.0 ns |     - |     - |     - |       10336 B |
+| SetExistingSimultaneous |  2,112,100.5 ns |  69,023.0 ns |   283,847.2 ns |  2,099,600.0 ns |     - |     - |     - |       11872 B |
+|                 SetMany | 40,403,148.6 ns | 818,490.7 ns | 1,344,803.7 ns | 40,151,400.0 ns |     - |     - |     - |      261376 B |
 
 ### JsonFileCacheLayer
 
@@ -58,6 +72,8 @@ Job=Core  Runtime=Core
 |             SetExisting |  2,959,244.4 ns |    73,356.4 ns |   301,667.9 ns |     - |     - |     - |        9168 B |
 | SetExistingSimultaneous |  3,311,651.1 ns |    79,057.1 ns |   325,997.4 ns |     - |     - |     - |        9184 B |
 |                 SetMany | 54,680,116.9 ns | 1,092,052.1 ns | 2,419,912.0 ns |     - |     - |     - |        8848 B |
+
+## Database Benchmarks
 
 ### MongoDbCacheLayer
 
