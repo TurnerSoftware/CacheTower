@@ -53,9 +53,6 @@ namespace CacheTower.Tests
 				var cacheEntry = new CacheEntry<int>(98, DateTime.UtcNow, timeToLive);
 				await cacheLayer.Set(cacheKey, cacheEntry);
 
-				var cacheEntryGetPreCleanup = await cacheLayer.Get<int>(cacheKey);
-				Assert.AreEqual(cacheEntry, cacheEntryGetPreCleanup);
-
 				await cacheLayer.Cleanup();
 
 				return await cacheLayer.Get<int>(cacheKey);

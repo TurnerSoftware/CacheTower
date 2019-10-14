@@ -9,7 +9,7 @@ using StackExchange.Redis;
 
 namespace CacheTower.Tests.Providers.Redis
 {
-	[TestClass, Ignore]
+	[TestClass]
 	public class RedisCacheLayerTests : BaseCacheLayerTests
 	{
 		private static ConnectionMultiplexer Connection { get; set; }
@@ -17,12 +17,18 @@ namespace CacheTower.Tests.Providers.Redis
 		[AssemblyInitialize]
 		public static void AssemblyInitialise(TestContext testContext)
 		{
-			Connection = ConnectionMultiplexer.Connect("localhost:6379");
+			var config = new ConfigurationOptions
+			{
+				AllowAdmin = true
+			};
+			config.EndPoints.Add("localhost:6379");
+			Connection = ConnectionMultiplexer.Connect(config);
 		}
 
 		[TestInitialize]
-		public void Setup()
+		public async Task Setup()
 		{
+			await Connection.GetServer("localhost:6379").FlushDatabaseAsync();
 		}
 
 		[TestMethod]

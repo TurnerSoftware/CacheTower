@@ -21,7 +21,8 @@ namespace CacheTower.Providers.Redis
 
 		public Task Cleanup()
 		{
-			throw new NotImplementedException();
+			//Noop as Redis handles this directly
+			return Task.CompletedTask;
 		}
 
 		public async Task Evict(string cacheKey)
@@ -64,6 +65,13 @@ namespace CacheTower.Providers.Redis
 
 		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
+			//Redis doesn't support setting a TTL in the past, let's confirm the expiry date
+			var trueTtl = (cacheEntry.CachedAt + cacheEntry.TimeToLive) - DateTime.UtcNow;
+			if (trueTtl < TimeSpan.Zero)
+			{
+				return;
+			}
+
 			var redisCacheEntry = new RedisCacheEntry<T>
 			{
 				CachedAt = cacheEntry.CachedAt,
