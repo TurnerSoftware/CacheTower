@@ -34,10 +34,10 @@ namespace CacheTower.Providers.Redis
 			var redisValue = await Database.StringGetAsync(cacheKey);
 			if (redisValue != RedisValue.Null)
 			{
-				using (var stream = new ReadOnlyMemoryStream(redisValue))
+				using (var stream = new MemoryStream(redisValue))
 				{
-					var redisCacheEntry = Serializer.Deserialize<RedisCacheEntry>(stream);
-					return new CacheEntry<T>((T)redisCacheEntry.Value, redisCacheEntry.CachedAt, redisCacheEntry.TimeToLive);
+					var redisCacheEntry = Serializer.Deserialize<RedisCacheEntry<T>>(stream);
+					return new CacheEntry<T>(redisCacheEntry.Value, redisCacheEntry.CachedAt, redisCacheEntry.TimeToLive);
 				}
 			}
 
@@ -64,7 +64,7 @@ namespace CacheTower.Providers.Redis
 
 		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			var redisCacheEntry = new RedisCacheEntry
+			var redisCacheEntry = new RedisCacheEntry<T>
 			{
 				CachedAt = cacheEntry.CachedAt,
 				TimeToLive = cacheEntry.TimeToLive,
