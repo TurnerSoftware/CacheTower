@@ -18,7 +18,9 @@ namespace CacheTower.Tests
 			var layer2 = new MemoryCacheLayer();
 			
 			var cacheStack = new CacheStack(null, new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
-			var cacheEntry = await cacheStack.SetAsync("Cleanup_CleansAllTheLayers", 42, TimeSpan.FromDays(-1));
+
+			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
+			await cacheStack.SetAsync("Cleanup_CleansAllTheLayers", cacheEntry);
 
 			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Cleanup_CleansAllTheLayers"));
 			Assert.AreEqual(cacheEntry, await layer2.GetAsync<int>("Cleanup_CleansAllTheLayers"));

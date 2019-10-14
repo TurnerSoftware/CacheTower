@@ -46,11 +46,11 @@ namespace CacheTower.Tests.Providers
 
 		protected static async Task AssertCacheCleanupAsync(ICacheLayer cacheLayer)
 		{
-			async Task<CacheEntry<int>> DoCleanupTest(TimeSpan timeToLive)
+			async Task<CacheEntry<int>> DoCleanupTest(DateTime dateTime)
 			{
-				var cacheKey = $"AssertCacheCleanup-(TTL:{timeToLive})";
+				var cacheKey = $"AssertCacheCleanup-(DateTime:{dateTime})";
 
-				var cacheEntry = new CacheEntry<int>(98, DateTime.UtcNow, timeToLive);
+				var cacheEntry = new CacheEntry<int>(98, dateTime, TimeSpan.FromDays(1));
 				await cacheLayer.SetAsync(cacheKey, cacheEntry);
 
 				await cacheLayer.CleanupAsync();
@@ -58,8 +58,8 @@ namespace CacheTower.Tests.Providers
 				return await cacheLayer.GetAsync<int>(cacheKey);
 			}
 
-			Assert.IsNotNull(await DoCleanupTest(timeToLive: TimeSpan.FromDays(1)), "Cleanup removed entry that was still live");
-			Assert.IsNull(await DoCleanupTest(timeToLive: TimeSpan.FromDays(-1)), "Cleanup kept entry past the end of life");
+			Assert.IsNotNull(await DoCleanupTest(DateTime.UtcNow), "Cleanup removed entry that was still live");
+			Assert.IsNull(await DoCleanupTest(DateTime.UtcNow.AddDays(-2)), "Cleanup kept entry past the end of life");
 		}
 
 		protected static async Task AssertComplexTypeCachingAsync(ICacheLayer cacheLayer)
