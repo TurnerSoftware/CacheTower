@@ -35,7 +35,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.FileSy
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.Database.MongoDB", "src\CacheTower.Providers.Database.MongoDB\CacheTower.Providers.Database.MongoDB.csproj", "{D878CE3B-7B20-4733-9C81-4A3291DCC115}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Providers.Redis", "src\CacheTower.Providers.Redis\CacheTower.Providers.Redis.csproj", "{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.Redis", "src\CacheTower.Providers.Redis\CacheTower.Providers.Redis.csproj", "{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Extensions.RedisRemote", "src\CacheTower.Extensions.RedisRemote\CacheTower.Extensions.RedisRemote.csproj", "{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +73,10 @@ Global
 		{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,6 +89,7 @@ Global
 		{6E506ADC-22ED-4D41-9DB3-19CC087E3CEC} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 		{D878CE3B-7B20-4733-9C81-4A3291DCC115} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 		{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
+		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F159337A-B345-49EE-8D58-A72EF1643174}
