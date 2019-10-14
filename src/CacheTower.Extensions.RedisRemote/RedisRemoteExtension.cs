@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using StackExchange.Redis;
@@ -10,6 +12,8 @@ namespace CacheTower.Extensions.RedisRemote
 		private ConnectionMultiplexer ConnectionMultiplexer { get; }
 		private ISubscriber Subscriber { get; }
 		private string ValueRefreshChannel { get; }
+
+		private Dictionary<ICacheStack, ConcurrentDictionary<string, bool>> TrackedRefreshes { get; } = new Dictionary<ICacheStack, ConcurrentDictionary<string, bool>>();
 
 		public RedisRemoteExtension(ConnectionMultiplexer connectionMultiplexer, string channelPrefix = "CacheTower")
 		{
@@ -24,17 +28,24 @@ namespace CacheTower.Extensions.RedisRemote
 			ValueRefreshChannel = $"{channelPrefix}.ValueRefresh";
 		}
 
-		public async Task OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive)
+		public async Task OnValueRefreshAsync(ICacheStack cacheStack, string cacheKey, TimeSpan timeToLive)
 		{
+			TrackedRefreshes[cacheStack].TryAdd(cacheKey, default);
 			await Subscriber.PublishAsync(ValueRefreshChannel, cacheKey, CommandFlags.FireAndForget);
 		}
 
 		public void Register(ICacheStack cacheStack)
 		{
+			var knownRefreshes = new ConcurrentDictionary<string, bool>();
+			TrackedRefreshes.Add(cacheStack, knownRefreshes);
+
 			Subscriber.Subscribe(ValueRefreshChannel, async (channel, value) =>
 			{
 				string cacheKey = value;
-				await cacheStack.EvictAsync(cacheKey);
+				if (!knownRefreshes.TryRemove(cacheKey, out var _))
+				{
+					await cacheStack.EvictAsync(cacheKey);
+				}
 			}, CommandFlags.FireAndForget);
 		}
 	}
