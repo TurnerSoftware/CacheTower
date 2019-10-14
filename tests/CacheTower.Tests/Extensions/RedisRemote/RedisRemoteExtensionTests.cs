@@ -10,7 +10,7 @@ using Moq;
 
 namespace CacheTower.Tests.Extensions.RedisRemote
 {
-	[TestClass]
+	[TestClass, Ignore]
 	public class RedisRemoteExtensionTests
 	{
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
