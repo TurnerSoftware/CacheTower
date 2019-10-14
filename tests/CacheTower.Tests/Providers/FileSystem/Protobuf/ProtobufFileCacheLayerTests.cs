@@ -21,8 +21,6 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 			{
 				Directory.Delete(DirectoryPath, true);
 			}
-
-			Directory.CreateDirectory(DirectoryPath);
 		}
 
 		[TestMethod]

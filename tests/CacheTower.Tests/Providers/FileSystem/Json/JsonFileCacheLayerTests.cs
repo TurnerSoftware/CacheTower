@@ -22,8 +22,6 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 			{
 				Directory.Delete(DirectoryPath, true);
 			}
-
-			Directory.CreateDirectory(DirectoryPath);
 		}
 
 		[TestMethod]
