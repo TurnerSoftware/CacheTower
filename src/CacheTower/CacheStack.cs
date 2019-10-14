@@ -36,6 +36,8 @@ namespace CacheTower
 			}
 		}
 
+		public IEnumerable<ICacheLayer> Layers => CacheLayers.AsEnumerable();
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void ThrowIfDisposed()
 		{
