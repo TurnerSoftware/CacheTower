@@ -12,6 +12,11 @@ namespace CacheTower
 
 		protected CacheEntry(DateTime cachedAt, TimeSpan timeToLive)
 		{
+			if (timeToLive < TimeSpan.Zero)
+			{
+				throw new ArgumentOutOfRangeException(nameof(timeToLive), "TimeSpan must be greater than or equal to zero");
+			}
+
 			CachedAt = cachedAt.TrimToSeconds();
 			TimeToLive = timeToLive;
 		}
