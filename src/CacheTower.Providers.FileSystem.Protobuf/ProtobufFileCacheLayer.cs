@@ -22,7 +22,7 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 			}
 		}
 
-		protected override async Task<T> Deserialize<T>(Stream stream)
+		protected override async Task<T> DeserializeAsync<T>(Stream stream)
 		{
 			using (var memStream = new MemoryStream((int)stream.Length))
 			{
@@ -32,7 +32,7 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 			}
 		}
 
-		protected override async Task Serialize<T>(Stream stream, T value)
+		protected override async Task SerializeAsync<T>(Stream stream, T value)
 		{
 			using (var memStream = new MemoryStream())
 			{

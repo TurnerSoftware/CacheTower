@@ -30,7 +30,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 		public async Task GetSetCache()
 		{
 			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
-			await AssertGetSetCache(cacheLayer);
+			await AssertGetSetCacheAsync(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
 
@@ -38,7 +38,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 		public async Task IsCacheAvailable()
 		{
 			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
-			await AssertCacheAvailability(cacheLayer, true);
+			await AssertCacheAvailabilityAsync(cacheLayer, true);
 			await DisposeOf(cacheLayer);
 		}
 
@@ -46,7 +46,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 		public async Task EvictFromCache()
 		{
 			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
-			await AssertCacheEviction(cacheLayer);
+			await AssertCacheEvictionAsync(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
 
@@ -54,7 +54,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 		public async Task CacheCleanup()
 		{
 			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
-			await AssertCacheCleanup(cacheLayer);
+			await AssertCacheCleanupAsync(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
 
@@ -62,7 +62,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 		public async Task CachingComplexTypes()
 		{
 			var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
-			await AssertComplexTypeCaching(cacheLayer);
+			await AssertComplexTypeCachingAsync(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
 	}

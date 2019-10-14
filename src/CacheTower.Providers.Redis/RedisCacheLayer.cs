@@ -19,18 +19,18 @@ namespace CacheTower.Providers.Redis
 			Database = connection.GetDatabase(databaseIndex);
 		}
 
-		public Task Cleanup()
+		public Task CleanupAsync()
 		{
 			//Noop as Redis handles this directly
 			return Task.CompletedTask;
 		}
 
-		public async Task Evict(string cacheKey)
+		public async Task EvictAsync(string cacheKey)
 		{
 			await Database.KeyDeleteAsync(cacheKey);
 		}
 
-		public async Task<CacheEntry<T>> Get<T>(string cacheKey)
+		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			var redisValue = await Database.StringGetAsync(cacheKey);
 			if (redisValue != RedisValue.Null)
@@ -45,7 +45,7 @@ namespace CacheTower.Providers.Redis
 			return default;
 		}
 
-		public async Task<bool> IsAvailable(string cacheKey)
+		public async Task<bool> IsAvailableAsync(string cacheKey)
 		{
 			if (IsCacheAvailable == null)
 			{
@@ -63,7 +63,7 @@ namespace CacheTower.Providers.Redis
 			return IsCacheAvailable.Value;
 		}
 
-		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			//Redis doesn't support setting a TTL in the past, let's confirm the expiry date
 			var trueTtl = (cacheEntry.CachedAt + cacheEntry.TimeToLive) - DateTime.UtcNow;

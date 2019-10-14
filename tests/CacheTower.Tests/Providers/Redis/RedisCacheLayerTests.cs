@@ -34,31 +34,31 @@ namespace CacheTower.Tests.Providers.Redis
 		[TestMethod]
 		public async Task GetSetCache()
 		{
-			await AssertGetSetCache(new RedisCacheLayer(Connection));
+			await AssertGetSetCacheAsync(new RedisCacheLayer(Connection));
 		}
 
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
-			await AssertCacheAvailability(new RedisCacheLayer(Connection), true);
+			await AssertCacheAvailabilityAsync(new RedisCacheLayer(Connection), true);
 		}
 
 		[TestMethod]
 		public async Task EvictFromCache()
 		{
-			await AssertCacheEviction(new RedisCacheLayer(Connection));
+			await AssertCacheEvictionAsync(new RedisCacheLayer(Connection));
 		}
 
 		[TestMethod]
 		public async Task CacheCleanup()
 		{
-			await AssertCacheCleanup(new RedisCacheLayer(Connection));
+			await AssertCacheCleanupAsync(new RedisCacheLayer(Connection));
 		}
 
 		[TestMethod]
 		public async Task CachingComplexTypes()
 		{
-			await AssertComplexTypeCaching(new RedisCacheLayer(Connection));
+			await AssertComplexTypeCachingAsync(new RedisCacheLayer(Connection));
 		}
 	}
 }

@@ -7,10 +7,10 @@ namespace CacheTower
 {
 	public interface ICacheLayer
 	{
-		Task Cleanup();
-		Task Evict(string cacheKey);
-		Task<CacheEntry<T>> Get<T>(string cacheKey);
-		Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry);
-		Task<bool> IsAvailable(string cacheKey);
+		Task CleanupAsync();
+		Task EvictAsync(string cacheKey);
+		Task<CacheEntry<T>> GetAsync<T>(string cacheKey);
+		Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry);
+		Task<bool> IsAvailableAsync(string cacheKey);
 	}
 }

@@ -34,11 +34,11 @@ namespace CacheTower.Providers.FileSystem
 			ManifestPath = Path.Combine(directoryPath, "manifest" + fileExtension);
 		}
 
-		protected abstract Task<T> Deserialize<T>(Stream stream);
+		protected abstract Task<T> DeserializeAsync<T>(Stream stream);
 
-		protected abstract Task Serialize<T>(Stream stream, T value);
+		protected abstract Task SerializeAsync<T>(Stream stream, T value);
 
-		private async Task TryLoadManifest()
+		private async Task TryLoadManifestAsync()
 		{
 			//Avoid unnecessary lock contention way after manifest is loaded by checking before lock
 			if (CacheManifest == null)
@@ -53,7 +53,7 @@ namespace CacheTower.Providers.FileSystem
 							using (var stream = new FileStream(ManifestPath, FileMode.Open, FileAccess.Read))
 							{
 
-								CacheManifest = await Deserialize<ConcurrentDictionary<string, IManifestEntry>>(stream);
+								CacheManifest = await DeserializeAsync<ConcurrentDictionary<string, IManifestEntry>>(stream);
 							}
 						}
 						else
@@ -66,7 +66,7 @@ namespace CacheTower.Providers.FileSystem
 							CacheManifest = new ConcurrentDictionary<string, IManifestEntry>();
 							using (var stream = new FileStream(ManifestPath, FileMode.OpenOrCreate, FileAccess.Write))
 							{
-								await Serialize(stream, CacheManifest);
+								await SerializeAsync(stream, CacheManifest);
 							}
 						}
 					}
@@ -74,13 +74,13 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
-		public async Task SaveManifest()
+		public async Task SaveManifestAsync()
 		{
 			using (await ManifestLock.LockAsync())
 			{
 				using (var stream = new FileStream(ManifestPath, FileMode.Open, FileAccess.Write))
 				{
-					await Serialize(stream, CacheManifest);
+					await SerializeAsync(stream, CacheManifest);
 				}
 			}
 		}
@@ -136,9 +136,9 @@ namespace CacheTower.Providers.FileSystem
 			return new string(charArrayPtr, 0, charArrayLength);
 		}
 
-		public async Task Cleanup()
+		public async Task CleanupAsync()
 		{
-			await TryLoadManifest();
+			await TryLoadManifestAsync();
 
 			foreach (var cachePair in CacheManifest)
 			{
@@ -161,9 +161,9 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
-		public async Task Evict(string cacheKey)
+		public async Task EvictAsync(string cacheKey)
 		{
-			await TryLoadManifest();
+			await TryLoadManifestAsync();
 
 			if (CacheManifest.TryRemove(cacheKey, out var manifestEntry))
 			{
@@ -181,9 +181,9 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
-		public async Task<CacheEntry<T>> Get<T>(string cacheKey)
+		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
-			await TryLoadManifest();
+			await TryLoadManifestAsync();
 
 			if (CacheManifest.TryGetValue(cacheKey, out var manifestEntry))
 			{
@@ -196,7 +196,7 @@ namespace CacheTower.Providers.FileSystem
 						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
 						using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read))
 						{
-							var value = await Deserialize<T>(stream);
+							var value = await DeserializeAsync<T>(stream);
 							return new CacheEntry<T>(value, manifestEntry.CachedAt, manifestEntry.TimeToLive);
 						}
 					}
@@ -206,13 +206,13 @@ namespace CacheTower.Providers.FileSystem
 			return default;
 		}
 
-		public async Task<bool> IsAvailable(string cacheKey)
+		public async Task<bool> IsAvailableAsync(string cacheKey)
 		{
 			if (IsManifestAvailable == null)
 			{
 				try
 				{
-					await TryLoadManifest();
+					await TryLoadManifestAsync();
 					IsManifestAvailable = true;
 				}
 				catch
@@ -224,9 +224,9 @@ namespace CacheTower.Providers.FileSystem
 			return IsManifestAvailable.Value;
 		}
 
-		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			await TryLoadManifest();
+			await TryLoadManifestAsync();
 
 			var manifestEntry = CacheManifest.GetOrAdd(cacheKey, (key) => new TManifest
 			{
@@ -244,7 +244,7 @@ namespace CacheTower.Providers.FileSystem
 				var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
 				using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
 				{
-					await Serialize(stream, cacheEntry.Value);
+					await SerializeAsync(stream, cacheEntry.Value);
 				}
 			}
 		}
@@ -265,8 +265,7 @@ namespace CacheTower.Providers.FileSystem
 
 			if (disposing)
 			{
-				var saveManifestWrappedTask = new Task(async () => await SaveManifest());
-				saveManifestWrappedTask.RunSynchronously();
+				SaveManifestAsync().Wait();
 				FileNameHashAlgorithm.Dispose();
 			}
 
@@ -280,7 +279,7 @@ namespace CacheTower.Providers.FileSystem
 				return;
 			}
 
-			await SaveManifest();
+			await SaveManifestAsync();
 			FileNameHashAlgorithm.Dispose();
 
 			Disposed = true;

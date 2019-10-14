@@ -35,18 +35,18 @@ namespace CacheTower.Benchmarks.Providers
 		{
 			for (var i = 0; i < 100; i++)
 			{
-				await cacheLayer.Get<int>("GetMiss_" + i);
+				await cacheLayer.GetAsync<int>("GetMiss_" + i);
 			}
 
 			//Set first 100 (simple type)
 			for (var i = 0; i < 100; i++)
 			{
-				await cacheLayer.Set("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
+				await cacheLayer.SetAsync("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
 			}
 			//Set last 100 (complex type)
 			for (var i = 100; i < 200; i++)
 			{
-				await cacheLayer.Set("SetMany_" + i, new CacheEntry<ComplexType>(new ComplexType
+				await cacheLayer.SetAsync("SetMany_" + i, new CacheEntry<ComplexType>(new ComplexType
 				{
 					ExampleString = "Hello World",
 					ExampleNumber = 42,
@@ -58,22 +58,22 @@ namespace CacheTower.Benchmarks.Providers
 			//Get first 50 (simple type)
 			for (var i = 0; i < 50; i++)
 			{
-				await cacheLayer.Get<int>("SetMany_" + i);
+				await cacheLayer.GetAsync<int>("SetMany_" + i);
 			}
 			//Get last 50 (complex type)
 			for (var i = 150; i < 200; i++)
 			{
-				await cacheLayer.Get<ComplexType>("SetMany_" + i);
+				await cacheLayer.GetAsync<ComplexType>("SetMany_" + i);
 			}
 
 			//Evict 100
 			for (var i = 100; i < 200; i++)
 			{
-				await cacheLayer.Evict("SetMany_" + i);
+				await cacheLayer.EvictAsync("SetMany_" + i);
 			}
 
 			//Cleanup 100
-			await cacheLayer.Cleanup();
+			await cacheLayer.CleanupAsync();
 		}
 
 		[GlobalSetup]

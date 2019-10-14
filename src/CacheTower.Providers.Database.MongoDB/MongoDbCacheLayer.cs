@@ -37,19 +37,19 @@ namespace CacheTower.Providers.Database.MongoDB
 			}
 		}
 
-		public async Task Cleanup()
+		public async Task CleanupAsync()
 		{
 			await TryConfigureIndexes();
 			await CommandWriter.WriteAsync(new[] { new CleanupCommand() });
 		}
 
-		public async Task Evict(string cacheKey)
+		public async Task EvictAsync(string cacheKey)
 		{
 			await TryConfigureIndexes();
 			await CommandWriter.WriteAsync(new[] { new EvictCommand(cacheKey) });
 		}
 
-		public async Task<CacheEntry<T>> Get<T>(string cacheKey)
+		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			await TryConfigureIndexes();
 
@@ -64,7 +64,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			return cacheEntry;
 		}
 
-		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			await TryConfigureIndexes();
 			var command = new SetCommand(new DbCachedEntry
@@ -78,7 +78,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			await CommandWriter.WriteAsync(new[] { command });
 		}
 
-		public async Task<bool> IsAvailable(string cacheKey)
+		public async Task<bool> IsAvailableAsync(string cacheKey)
 		{
 			if (IsDatabaseAvailable == null)
 			{

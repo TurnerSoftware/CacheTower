@@ -12,7 +12,7 @@ namespace CacheTower.Providers.Memory
 
 		private static readonly Task<bool> CompletedTaskTrue = Task.FromResult(true);
 
-		public Task Cleanup()
+		public Task CleanupAsync()
 		{
 			foreach (var cachePair in Cache)
 			{
@@ -26,13 +26,13 @@ namespace CacheTower.Providers.Memory
 			return Task.CompletedTask;
 		}
 
-		public Task Evict(string cacheKey)
+		public Task EvictAsync(string cacheKey)
 		{
 			Cache.TryRemove(cacheKey, out var _);
 			return Task.CompletedTask;
 		}
 
-		public Task<CacheEntry<T>> Get<T>(string cacheKey)
+		public Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			if (Cache.TryGetValue(cacheKey, out var cacheEntry))
 			{
@@ -42,12 +42,12 @@ namespace CacheTower.Providers.Memory
 			return Task.FromResult(default(CacheEntry<T>));
 		}
 
-		public Task<bool> IsAvailable(string cacheKey)
+		public Task<bool> IsAvailableAsync(string cacheKey)
 		{
 			return CompletedTaskTrue;
 		}
 
-		public Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			Cache.AddOrUpdate(cacheKey, cacheEntry, (key, old) =>
 			{

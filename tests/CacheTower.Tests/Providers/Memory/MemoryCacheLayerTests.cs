@@ -10,31 +10,31 @@ namespace CacheTower.Tests.Providers.Memory
 		[TestMethod]
 		public async Task GetSetCache()
 		{
-			await AssertGetSetCache(new MemoryCacheLayer());
+			await AssertGetSetCacheAsync(new MemoryCacheLayer());
 		}
 
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
-			await AssertCacheAvailability(new MemoryCacheLayer(), true);
+			await AssertCacheAvailabilityAsync(new MemoryCacheLayer(), true);
 		}
 
 		[TestMethod]
 		public async Task EvictFromCache()
 		{
-			await AssertCacheEviction(new MemoryCacheLayer());
+			await AssertCacheEvictionAsync(new MemoryCacheLayer());
 		}
 
 		[TestMethod]
 		public async Task CacheCleanup()
 		{
-			await AssertCacheCleanup(new MemoryCacheLayer());
+			await AssertCacheCleanupAsync(new MemoryCacheLayer());
 		}
 
 		[TestMethod]
 		public async Task CachingComplexTypes()
 		{
-			await AssertComplexTypeCaching(new MemoryCacheLayer());
+			await AssertComplexTypeCachingAsync(new MemoryCacheLayer());
 		}
 	}
 }

@@ -27,7 +27,7 @@ namespace CacheTower.Tests
 				for (var i = 0; i < iterations; i++)
 				{
 					var index = i;
-					lastTask = cacheStack.GetOrSet<int>("SimulatenousGetOrSet", async (oldValue, context) => {
+					lastTask = cacheStack.GetOrSetAsync<int>("SimulatenousGetOrSet", async (oldValue, context) => {
 						await Task.Delay(100);
 						return index;
 					}, new CacheSettings(TimeSpan.FromDays(1)));
@@ -56,7 +56,7 @@ namespace CacheTower.Tests
 				for (var i = 0; i < iterations; i++)
 				{
 					var index = i;
-					lastTask = cacheStack.GetOrSet<int>($"SimulatenousGetOrSet_{index}", async (oldValue, context) => {
+					lastTask = cacheStack.GetOrSetAsync<int>($"SimulatenousGetOrSet_{index}", async (oldValue, context) => {
 						await Task.Delay(100);
 						return index + 1;
 					}, new CacheSettings(TimeSpan.FromDays(1)));

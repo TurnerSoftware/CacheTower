@@ -49,31 +49,31 @@ namespace CacheTower.Tests.Providers.Database.MongoDB
 		[TestMethod]
 		public async Task GetSetCache()
 		{
-			await AssertGetSetCache(new MongoDbCacheLayer(GetConnection()));
+			await AssertGetSetCacheAsync(new MongoDbCacheLayer(GetConnection()));
 		}
 
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
-			await AssertCacheAvailability(new MongoDbCacheLayer(GetConnection()), true);
+			await AssertCacheAvailabilityAsync(new MongoDbCacheLayer(GetConnection()), true);
 		}
 
 		[TestMethod]
 		public async Task EvictFromCache()
 		{
-			await AssertCacheEviction(new MongoDbCacheLayer(GetConnection()));
+			await AssertCacheEvictionAsync(new MongoDbCacheLayer(GetConnection()));
 		}
 
 		[TestMethod]
 		public async Task CacheCleanup()
 		{
-			await AssertCacheCleanup(new MongoDbCacheLayer(GetConnection()));
+			await AssertCacheCleanupAsync(new MongoDbCacheLayer(GetConnection()));
 		}
 
 		[TestMethod]
 		public async Task CachingComplexTypes()
 		{
-			await AssertComplexTypeCaching(new MongoDbCacheLayer(GetConnection()));
+			await AssertComplexTypeCachingAsync(new MongoDbCacheLayer(GetConnection()));
 		}
 	}
 }

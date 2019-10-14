@@ -29,7 +29,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 		public async Task GetSetCache()
 		{
 			var cacheLayer = new ProtobufFileCacheLayer(DirectoryPath);
-			await AssertGetSetCache(cacheLayer);
+			await AssertGetSetCacheAsync(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
 
@@ -37,7 +37,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 		public async Task IsCacheAvailable()
 		{
 			var cacheLayer = new ProtobufFileCacheLayer(DirectoryPath);
-			await AssertCacheAvailability(cacheLayer, true);
+			await AssertCacheAvailabilityAsync(cacheLayer, true);
 			await DisposeOf(cacheLayer);
 		}
 
@@ -45,7 +45,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 		public async Task EvictFromCache()
 		{
 			var cacheLayer = new ProtobufFileCacheLayer(DirectoryPath);
-			await AssertCacheEviction(cacheLayer);
+			await AssertCacheEvictionAsync(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
 
@@ -53,7 +53,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 		public async Task CacheCleanup()
 		{
 			var cacheLayer = new ProtobufFileCacheLayer(DirectoryPath);
-			await AssertCacheCleanup(cacheLayer);
+			await AssertCacheCleanupAsync(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
 
@@ -61,7 +61,7 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 		public async Task CachingComplexTypes()
 		{
 			var cacheLayer = new ProtobufFileCacheLayer(DirectoryPath);
-			await AssertComplexTypeCaching(cacheLayer);
+			await AssertComplexTypeCachingAsync(cacheLayer);
 			await DisposeOf(cacheLayer);
 		}
 	}

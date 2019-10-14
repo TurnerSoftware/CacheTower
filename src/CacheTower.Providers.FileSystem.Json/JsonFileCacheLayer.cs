@@ -19,7 +19,7 @@ namespace CacheTower.Providers.FileSystem.Json
 			public T Value { get; set; }
 		}
 
-		protected override async Task<T> Deserialize<T>(Stream stream)
+		protected override async Task<T> DeserializeAsync<T>(Stream stream)
 		{
 			using (var streamReader = new StreamReader(stream))
 			using (var jsonReader = new JsonTextReader(streamReader))
@@ -36,7 +36,7 @@ namespace CacheTower.Providers.FileSystem.Json
 			}
 		}
 
-		protected override async Task Serialize<T>(Stream stream, T value)
+		protected override async Task SerializeAsync<T>(Stream stream, T value)
 		{
 			using (var streamWriter = new StreamWriter(stream))
 			using (var jsonWriter = new JsonTextWriter(streamWriter))

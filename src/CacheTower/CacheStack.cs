@@ -38,62 +38,62 @@ namespace CacheTower
 			}
 		}
 
-		public async Task Cleanup()
+		public async Task CleanupAsync()
 		{
 			ThrowIfDisposed();
 			
 			foreach (var layer in CacheLayers)
 			{
-				await layer.Cleanup();
+				await layer.CleanupAsync();
 			}
 		}
 
-		public async Task Evict(string cacheKey)
+		public async Task EvictAsync(string cacheKey)
 		{
 			ThrowIfDisposed();
 
 			foreach (var layer in CacheLayers)
 			{
-				await layer.Evict(cacheKey);
+				await layer.EvictAsync(cacheKey);
 			}
 		}
 
-		public async Task<CacheEntry<T>> Set<T>(string cacheKey, T value, TimeSpan timeToLive)
+		public async Task<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive)
 		{
 			ThrowIfDisposed();
 
 			var cacheEntry = new CacheEntry<T>(value, DateTime.UtcNow, timeToLive);
-			await Set(cacheKey, cacheEntry);
+			await SetAsync(cacheKey, cacheEntry);
 			return cacheEntry;
 		}
 
-		public async Task Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			ThrowIfDisposed();
 
 			foreach (var layer in CacheLayers)
 			{
-				await layer.Set(cacheKey, cacheEntry);
+				await layer.SetAsync(cacheKey, cacheEntry);
 			}
 		}
 
-		public async Task<CacheEntry<T>> Get<T>(string cacheKey)
+		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			ThrowIfDisposed();
 
 			for (var i = 0; i < CacheLayers.Length; i++)
 			{
 				var cacheLayer = CacheLayers[i];
-				if (await cacheLayer.IsAvailable(cacheKey))
+				if (await cacheLayer.IsAvailableAsync(cacheKey))
 				{
-					var cacheEntry = await cacheLayer.Get<T>(cacheKey);
+					var cacheEntry = await cacheLayer.GetAsync<T>(cacheKey);
 					if (cacheEntry != default)
 					{
 						//Populate previous cache layers
 						for (; --i >= 0;)
 						{
 							cacheLayer = CacheLayers[i];
-							await cacheLayer.Set(cacheKey, cacheEntry);
+							await cacheLayer.SetAsync(cacheKey, cacheEntry);
 						}
 						
 						return cacheEntry;
@@ -104,11 +104,11 @@ namespace CacheTower
 			return default;
 		}
 
-		public async Task<T> GetOrSet<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
+		public async Task<T> GetOrSetAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
 		{
 			ThrowIfDisposed();
 
-			var cacheEntry = await Get<T>(cacheKey);
+			var cacheEntry = await GetAsync<T>(cacheKey);
 			if (cacheEntry != default)
 			{
 				if (cacheEntry.HasElapsed(settings.StaleAfter))
@@ -117,7 +117,7 @@ namespace CacheTower
 					{
 						//Refresh the value in the current thread though short circuit if we're unable to establish a lock
 						//If the lock isn't established, it will instead use the stale cache entry (even if past the allowed stale period)
-						var refreshedCacheEntry = await RefreshValue(cacheKey, getter, settings, exitIfLocked: true);
+						var refreshedCacheEntry = await RefreshValueAsync(cacheKey, getter, settings, exitIfLocked: true);
 						if (refreshedCacheEntry != default)
 						{
 							cacheEntry = refreshedCacheEntry;
@@ -126,7 +126,7 @@ namespace CacheTower
 					else
 					{
 						//Refresh the value in the background
-						_ = Task.Run(() => RefreshValue(cacheKey, getter, settings, exitIfLocked: true));
+						_ = Task.Run(() => RefreshValueAsync(cacheKey, getter, settings, exitIfLocked: true));
 					}
 				}
 
@@ -135,13 +135,13 @@ namespace CacheTower
 			else
 			{
 				//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
-				cacheEntry = await RefreshValue(cacheKey, getter, settings, exitIfLocked: false);
+				cacheEntry = await RefreshValueAsync(cacheKey, getter, settings, exitIfLocked: false);
 			}
 
 			return cacheEntry.Value;
 		}
 
-		private async Task<CacheEntry<T>> RefreshValue<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool exitIfLocked)
+		private async Task<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool exitIfLocked)
 		{
 			ThrowIfDisposed();
 
@@ -161,7 +161,7 @@ namespace CacheTower
 
 				try
 				{
-					cacheEntry = await Get<T>(cacheKey);
+					cacheEntry = await GetAsync<T>(cacheKey);
 
 					//Confirm that once we have the lock, the latest cache entry still needs updating
 					if (cacheEntry == null || cacheEntry.HasElapsed(settings.StaleAfter))
@@ -173,7 +173,7 @@ namespace CacheTower
 						}
 
 						var value = await getter(oldValue, Context);
-						cacheEntry = await Set(cacheKey, value, settings.TimeToLive);
+						cacheEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
 					}
 				}
 				finally
