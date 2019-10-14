@@ -17,7 +17,9 @@ namespace CacheTower
 				throw new ArgumentOutOfRangeException(nameof(timeToLive), "TimeSpan must be greater than or equal to zero");
 			}
 
-			CachedAt = cachedAt.TrimToSeconds();
+			CachedAt = new DateTime(
+				cachedAt.Year, cachedAt.Month, cachedAt.Day, cachedAt.Hour, cachedAt.Minute, cachedAt.Second, DateTimeKind.Utc
+			);
 			TimeToLive = timeToLive;
 		}
 
