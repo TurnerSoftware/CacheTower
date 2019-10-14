@@ -27,8 +27,15 @@ namespace CacheTower
 		public CacheStack(ICacheContext context, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
 			Context = context;
+
+			if (cacheLayers == null || cacheLayers.Length == 0)
+			{
+				throw new ArgumentException("There must be at least one cache layer", nameof(cacheLayers));
+			}
+
 			CacheLayers = cacheLayers;
-			Extensions = extensions;
+
+			Extensions = extensions ?? throw new ArgumentNullException(nameof(extensions));
 			
 			foreach (var extension in extensions)
 			{
@@ -61,6 +68,11 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
+			if (cacheKey == null)
+			{
+				throw new ArgumentNullException(nameof(cacheKey));
+			}
+
 			foreach (var layer in CacheLayers)
 			{
 				await layer.EvictAsync(cacheKey);
@@ -80,6 +92,11 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
+			if (cacheKey == null)
+			{
+				throw new ArgumentNullException(nameof(cacheKey));
+			}
+
 			foreach (var layer in CacheLayers)
 			{
 				await layer.SetAsync(cacheKey, cacheEntry);
@@ -89,6 +106,11 @@ namespace CacheTower
 		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			ThrowIfDisposed();
+
+			if (cacheKey == null)
+			{
+				throw new ArgumentNullException(nameof(cacheKey));
+			}
 
 			for (var i = 0; i < CacheLayers.Length; i++)
 			{
@@ -116,6 +138,16 @@ namespace CacheTower
 		public async Task<T> GetOrSetAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
 		{
 			ThrowIfDisposed();
+
+			if (cacheKey == null)
+			{
+				throw new ArgumentNullException(nameof(cacheKey));
+			}
+
+			if (getter == null)
+			{
+				throw new ArgumentNullException(nameof(getter));
+			}
 
 			var cacheEntry = await GetAsync<T>(cacheKey);
 			if (cacheEntry != default)
