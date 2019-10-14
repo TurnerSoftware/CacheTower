@@ -5,10 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using CacheTower.Benchmarks.Providers.Database.MongoDB;
+using CacheTower.Benchmarks.Providers.Redis;
 using CacheTower.Providers.Database.MongoDB;
 using CacheTower.Providers.FileSystem.Json;
 using CacheTower.Providers.FileSystem.Protobuf;
 using CacheTower.Providers.Memory;
+using CacheTower.Providers.Redis;
 using ProtoBuf;
 
 namespace CacheTower.Benchmarks.Providers
@@ -115,6 +117,14 @@ namespace CacheTower.Benchmarks.Providers
 			var cacheLayer = new MongoDbCacheLayer(MongoDbHelper.GetConnection());
 			await BenchmarkWork(cacheLayer);
 			await MongoDbHelper.DropDatabaseAsync();
+		}
+
+		[Benchmark]
+		public async Task RedisCacheLayer()
+		{
+			var cacheLayer = new RedisCacheLayer(RedisHelper.GetConnection());
+			await BenchmarkWork(cacheLayer);
+			RedisHelper.FlushDatabase();
 		}
 	}
 }

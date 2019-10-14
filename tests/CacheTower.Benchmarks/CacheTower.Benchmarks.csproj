@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\src\CacheTower.Providers.Database.MongoDB\CacheTower.Providers.Database.MongoDB.csproj" />
     <ProjectReference Include="..\..\src\CacheTower.Providers.FileSystem.Json\CacheTower.Providers.FileSystem.Json.csproj" />
     <ProjectReference Include="..\..\src\CacheTower.Providers.FileSystem.Protobuf\CacheTower.Providers.FileSystem.Protobuf.csproj" />
+    <ProjectReference Include="..\..\src\CacheTower.Providers.Redis\CacheTower.Providers.Redis.csproj" />
     <ProjectReference Include="..\..\src\CacheTower\CacheTower.csproj" />
   </ItemGroup>
 

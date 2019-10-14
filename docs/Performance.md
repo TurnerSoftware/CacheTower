@@ -14,12 +14,13 @@ Job=Core  Runtime=Core
 
 ## Cache Layer Comparison Benchmark
 
-|                 Method |         Mean |        Error |        StdDev |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 |  Allocated |
-|----------------------- |-------------:|-------------:|--------------:|---------:|--------:|-----------:|------:|------:|-----------:|
-|       MemoryCacheLayer |     176.0 us |     1.833 us |      1.714 us |     1.00 |    0.00 |    51.2695 |     - |     - |  157.27 KB |
-|     JsonFileCacheLayer | 257,477.5 us | 5,121.435 us |  7,665.522 us | 1,463.82 |   47.62 |  1000.0000 |     - |     - | 2927.54 KB |
-| ProtobufFileCacheLayer | 214,796.5 us | 4,170.317 us |  3,900.917 us | 1,220.33 |   23.33 |          - |     - |     - |    16.4 KB |
-|      MongoDbCacheLayer | 461,360.9 us | 9,165.695 us | 24,306.124 us | 2,789.01 |   94.94 | 11000.0000 |     - |     - |   59.93 KB |
+|                 Method |         Mean |        Error |        StdDev |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 | Allocated |
+|----------------------- |-------------:|-------------:|--------------:|---------:|--------:|-----------:|------:|------:|----------:|
+|       MemoryCacheLayer |     161.6 us |     1.536 us |      1.361 us |     1.00 |    0.00 |    40.0391 |     - |     - |  125824 B |
+|     JsonFileCacheLayer | 256,915.5 us | 5,009.590 us |  6,857.183 us | 1,596.20 |   52.30 |  1000.0000 |     - |     - | 3010048 B |
+| ProtobufFileCacheLayer | 210,469.8 us | 4,120.209 us |  5,210.745 us | 1,299.44 |   36.55 |          - |     - |     - |   16792 B |
+|      MongoDbCacheLayer | 494,458.2 us | 9,661.823 us | 15,042.295 us | 3,073.67 |   97.07 | 11000.0000 |     - |     - |   61368 B |
+|        RedisCacheLayer |  34,486.3 us |   284.997 us |    266.587 us |   213.32 |    2.14 |          - |     - |     - |     832 B |
 
 ## In-Memory Benchmarks
 
@@ -86,3 +87,17 @@ Job=Core  Runtime=Core
 |             SetExisting |  67,184,433.5 ns | 1,690,627.5 ns | 7,102,697.2 ns |  65,954,100.0 ns |         - |     - |     - |       46120 B |
 | SetExistingSimultaneous |  68,841,099.5 ns | 1,744,541.0 ns | 7,252,101.9 ns |  68,265,100.0 ns |         - |     - |     - |       46128 B |
 |                 SetMany | 127,680,529.0 ns | 2,553,497.0 ns | 7,803,844.4 ns | 125,743,400.0 ns | 2000.0000 |     - |     - |       46160 B |
+
+## Other
+
+### Redis
+
+|                  Method |       Mean [ns] |   Error [ns] |  StdDev [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|------------------------ |----------------:|-------------:|-------------:|------:|------:|------:|--------------:|
+|                 GetMiss |    368,718.9 ns |  20,506.3 ns |  84,559.2 ns |     - |     - |     - |         792 B |
+|                  GetHit |    691,710.2 ns |  33,297.8 ns | 136,182.6 ns |     - |     - |     - |        1272 B |
+|      GetHitSimultaneous |    667,190.5 ns |  24,929.6 ns |  99,681.2 ns |     - |     - |     - |        1288 B |
+|                  SetNew |    381,051.4 ns |  23,601.8 ns |  95,993.0 ns |     - |     - |     - |        1256 B |
+|             SetExisting |    652,072.9 ns |  31,031.1 ns | 127,262.1 ns |     - |     - |     - |        1256 B |
+| SetExistingSimultaneous |    590,158.2 ns |  23,902.7 ns |  96,945.1 ns |     - |     - |     - |        1272 B |
+|                 SetMany | 13,554,958.9 ns | 272,118.6 ns | 780,759.4 ns |     - |     - |     - |        1224 B |
