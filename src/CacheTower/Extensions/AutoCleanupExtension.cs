@@ -18,6 +18,11 @@ namespace CacheTower.Extensions
 
 		public AutoCleanupExtension(TimeSpan frequency, CancellationToken cancellationToken = default)
 		{
+			if (frequency <= TimeSpan.Zero)
+			{
+				throw new ArgumentOutOfRangeException(nameof(frequency), "Frequency must be greater than zero");
+			}
+
 			Frequency = frequency;
 			TokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		}
@@ -26,7 +31,7 @@ namespace CacheTower.Extensions
 		{
 			if (BackgroundTask != null)
 			{
-				throw new ArgumentException($"{nameof(AutoCleanupExtension)} can only be registered to one {nameof(ICacheStack)}");
+				throw new InvalidOperationException($"{nameof(AutoCleanupExtension)} can only be registered to one {nameof(ICacheStack)}");
 			}
 
 			BackgroundTask = BackgroundCleanup(cacheStack);
@@ -59,7 +64,14 @@ namespace CacheTower.Extensions
 			if (disposing)
 			{
 				TokenSource.Cancel();
-				BackgroundTask.Wait();
+				try
+				{
+					BackgroundTask.Wait();
+				}
+				catch (AggregateException ex) when (ex.InnerException is TaskCanceledException)
+				{
+					//Ignores
+				}
 			}
 
 			Disposed = true;
