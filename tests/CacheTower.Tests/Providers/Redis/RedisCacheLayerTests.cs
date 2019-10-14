@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CacheTower.Providers.Redis;
+using CacheTower.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StackExchange.Redis;
 
@@ -12,52 +13,40 @@ namespace CacheTower.Tests.Providers.Redis
 	[TestClass, Ignore]
 	public class RedisCacheLayerTests : BaseCacheLayerTests
 	{
-		private ConnectionMultiplexer Connection { get; set; }
-
 		[TestInitialize]
-		public async Task Setup()
+		public void Setup()
 		{
-			if (Connection == null)
-			{
-				var config = new ConfigurationOptions
-				{
-					AllowAdmin = true
-				};
-				config.EndPoints.Add("localhost:6379");
-				Connection = ConnectionMultiplexer.Connect(config);
-			}
-
-			await Connection.GetServer("localhost:6379").FlushDatabaseAsync();
+			RedisHelper.FlushDatabase();
 		}
 
 		[TestMethod]
 		public async Task GetSetCache()
 		{
-			await AssertGetSetCacheAsync(new RedisCacheLayer(Connection));
+			await AssertGetSetCacheAsync(new RedisCacheLayer(RedisHelper.GetConnection()));
 		}
 
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
-			await AssertCacheAvailabilityAsync(new RedisCacheLayer(Connection), true);
+			await AssertCacheAvailabilityAsync(new RedisCacheLayer(RedisHelper.GetConnection()), true);
 		}
 
 		[TestMethod]
 		public async Task EvictFromCache()
 		{
-			await AssertCacheEvictionAsync(new RedisCacheLayer(Connection));
+			await AssertCacheEvictionAsync(new RedisCacheLayer(RedisHelper.GetConnection()));
 		}
 
 		[TestMethod]
 		public async Task CacheCleanup()
 		{
-			await AssertCacheCleanupAsync(new RedisCacheLayer(Connection));
+			await AssertCacheCleanupAsync(new RedisCacheLayer(RedisHelper.GetConnection()));
 		}
 
 		[TestMethod]
 		public async Task CachingComplexTypes()
 		{
-			await AssertComplexTypeCachingAsync(new RedisCacheLayer(Connection));
+			await AssertComplexTypeCachingAsync(new RedisCacheLayer(RedisHelper.GetConnection()));
 		}
 	}
 }
