@@ -17,7 +17,7 @@ namespace CacheTower.Tests
 			var layer1 = new MemoryCacheLayer();
 			var layer2 = new MemoryCacheLayer();
 			
-			var cacheStack = new CacheStack(null, new[] { layer1, layer2 });
+			var cacheStack = new CacheStack(null, new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = await cacheStack.SetAsync("Cleanup_CleansAllTheLayers", 42, TimeSpan.FromDays(-1));
 
 			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Cleanup_CleansAllTheLayers"));
@@ -37,7 +37,7 @@ namespace CacheTower.Tests
 			var layer1 = new MemoryCacheLayer();
 			var layer2 = new MemoryCacheLayer();
 
-			var cacheStack = new CacheStack(null, new[] { layer1, layer2 });
+			var cacheStack = new CacheStack(null, new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = await cacheStack.SetAsync("Evict_EvictsAllTheLayers", 42, TimeSpan.FromDays(1));
 
 			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Evict_EvictsAllTheLayers"));
@@ -57,7 +57,7 @@ namespace CacheTower.Tests
 			var layer1 = new MemoryCacheLayer();
 			var layer2 = new MemoryCacheLayer();
 
-			var cacheStack = new CacheStack(null, new[] { layer1, layer2 });
+			var cacheStack = new CacheStack(null, new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = await cacheStack.SetAsync("Set_SetsAllTheLayers", 42, TimeSpan.FromDays(1));
 
 			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Set_SetsAllTheLayers"));
@@ -73,7 +73,7 @@ namespace CacheTower.Tests
 			var layer2 = new MemoryCacheLayer();
 			var layer3 = new MemoryCacheLayer();
 
-			var cacheStack = new CacheStack(null, new[] { layer1, layer2, layer3 });
+			var cacheStack = new CacheStack(null, new[] { layer1, layer2, layer3 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow, TimeSpan.FromDays(1));
 			await layer2.SetAsync("Get_BackPropagatesToEarlierCacheLayers", cacheEntry);
 
@@ -88,7 +88,7 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task GetOrSet_CacheMiss()
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
    			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheMiss", (oldValue, context) =>
 			{
 				return Task.FromResult(5);
@@ -102,7 +102,7 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task GetOrSet_CacheHit()
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.SetAsync("GetOrSet_CacheHit", 17, TimeSpan.FromDays(2));
 
 			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheHit", (oldValue, context) =>
@@ -118,7 +118,7 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task GetOrSet_CacheHitBackgroundRefresh()
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-1), TimeSpan.FromDays(2));
 			await cacheStack.SetAsync("GetOrSet_CacheHitBackgroundRefresh", cacheEntry);
 
@@ -140,7 +140,7 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task GetOrSet_CacheHitButAllowedStalePoint()
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
 			await cacheStack.SetAsync("GetOrSet_CacheHitButAllowedStalePoint", cacheEntry);
 
@@ -156,7 +156,7 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task GetOrSet_ConcurrentStaleCacheHits()
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() });
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-3), TimeSpan.FromDays(1));
 			await cacheStack.SetAsync("GetOrSet_ConcurrentStaleCacheHits", cacheEntry);
 
