@@ -9,7 +9,7 @@ using StackExchange.Redis;
 
 namespace CacheTower.Tests.Providers.Redis
 {
-	[TestClass]
+	[TestClass, Ignore]
 	public class RedisCacheLayerTests : BaseCacheLayerTests
 	{
 		private static ConnectionMultiplexer Connection { get; set; }
