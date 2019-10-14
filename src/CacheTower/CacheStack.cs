@@ -220,7 +220,7 @@ namespace CacheTower
 						{
 							if (extension is IValueRefreshExtension valueRefreshExtension)
 							{
-								await valueRefreshExtension.OnValueRefreshAsync(cacheKey, settings.TimeToLive);
+								await valueRefreshExtension.OnValueRefreshAsync(this, cacheKey, settings.TimeToLive);
 							}
 						}
 					}
