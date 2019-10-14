@@ -12,22 +12,21 @@ namespace CacheTower.Tests.Providers.Redis
 	[TestClass, Ignore]
 	public class RedisCacheLayerTests : BaseCacheLayerTests
 	{
-		private static ConnectionMultiplexer Connection { get; set; }
-
-		[AssemblyInitialize]
-		public static void AssemblyInitialise(TestContext testContext)
-		{
-			var config = new ConfigurationOptions
-			{
-				AllowAdmin = true
-			};
-			config.EndPoints.Add("localhost:6379");
-			Connection = ConnectionMultiplexer.Connect(config);
-		}
+		private ConnectionMultiplexer Connection { get; set; }
 
 		[TestInitialize]
 		public async Task Setup()
 		{
+			if (Connection == null)
+			{
+				var config = new ConfigurationOptions
+				{
+					AllowAdmin = true
+				};
+				config.EndPoints.Add("localhost:6379");
+				Connection = ConnectionMultiplexer.Connect(config);
+			}
+
 			await Connection.GetServer("localhost:6379").FlushDatabaseAsync();
 		}
 
