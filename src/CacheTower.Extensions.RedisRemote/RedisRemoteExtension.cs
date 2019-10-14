@@ -13,7 +13,13 @@ namespace CacheTower.Extensions.RedisRemote
 
 		public RedisRemoteExtension(ConnectionMultiplexer connectionMultiplexer, string channelPrefix = "CacheTower")
 		{
-			ConnectionMultiplexer = connectionMultiplexer;
+			ConnectionMultiplexer = connectionMultiplexer ?? throw new ArgumentNullException(nameof(connectionMultiplexer));
+
+			if (channelPrefix == null)
+			{
+				throw new ArgumentNullException(nameof(channelPrefix));
+			}
+
 			Subscriber = ConnectionMultiplexer.GetSubscriber();
 			ValueRefreshChannel = $"{channelPrefix}.ValueRefresh";
 		}
