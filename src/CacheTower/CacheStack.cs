@@ -10,23 +10,30 @@ using Nito.AsyncEx;
 namespace CacheTower
 {
 #if NETSTANDARD2_0
-	public class CacheStack : IDisposable
+	public class CacheStack : ICacheStack, IDisposable
 #elif NETSTANDARD2_1
-	public class CacheStack : IAsyncDisposable
+	public class CacheStack : ICacheStack, IAsyncDisposable
 #endif
 	{
-		private bool Disposed = false;
+		private bool Disposed;
 
 		private ConcurrentDictionary<string, AsyncLock> CacheKeyLock { get; } = new ConcurrentDictionary<string, AsyncLock>();
 
 		private ICacheLayer[] CacheLayers { get; }
+		private ICacheExtension[] Extensions { get; }
 
 		private ICacheContext Context { get; }
 
-		public CacheStack(ICacheContext context, ICacheLayer[] cacheLayers)
+		public CacheStack(ICacheContext context, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
 			Context = context;
 			CacheLayers = cacheLayers;
+			Extensions = extensions;
+			
+			foreach (var extension in extensions)
+			{
+				extension.Register(this);
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -174,6 +181,14 @@ namespace CacheTower
 
 						var value = await getter(oldValue, Context);
 						cacheEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
+
+						foreach (var extension in Extensions)
+						{
+							if (extension is IValueRefreshExtension valueRefreshExtension)
+							{
+								await valueRefreshExtension.OnValueRefreshAsync(cacheKey, settings.TimeToLive);
+							}
+						}
 					}
 				}
 				finally
@@ -203,9 +218,17 @@ namespace CacheTower
 			{
 				foreach (var layer in CacheLayers)
 				{
-					if (layer is IDisposable disposableLayer)
+					if (layer is IDisposable disposable)
 					{
-						disposableLayer.Dispose();
+						disposable.Dispose();
+					}
+				}
+
+				foreach (var extension in Extensions)
+				{
+					if (extension is IDisposable disposable)
+					{
+						disposable.Dispose();
 					}
 				}
 			}
@@ -229,6 +252,18 @@ namespace CacheTower
 				else if (layer is IAsyncDisposable asyncDisposableLayer)
 				{
 					await asyncDisposableLayer.DisposeAsync();
+				}
+			}
+
+			foreach (var extension in Extensions)
+			{
+				if (extension is IDisposable disposable)
+				{
+					disposable.Dispose();
+				}
+				else if (extension is IAsyncDisposable asyncDisposable)
+				{
+					await asyncDisposable.DisposeAsync();
 				}
 			}
 
