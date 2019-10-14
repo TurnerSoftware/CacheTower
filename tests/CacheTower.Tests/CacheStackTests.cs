@@ -11,6 +11,22 @@ namespace CacheTower.Tests
 	[TestClass]
 	public class CacheStackTests : TestBase
 	{
+		[TestMethod, ExpectedException(typeof(ArgumentException))]
+		public void ConstructorThrowsOnNullCacheLayer()
+		{
+			new CacheStack(null, null, Array.Empty<ICacheExtension>());
+		}
+		[TestMethod, ExpectedException(typeof(ArgumentException))]
+		public void ConstructorThrowsOnEmptyCacheLayer()
+		{
+			new CacheStack(null, Array.Empty<ICacheLayer>(), Array.Empty<ICacheExtension>());
+		}
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
+		public void ConstructorThrowsOnNullExtensions()
+		{
+			new CacheStack(null, Array.Empty<ICacheLayer>(), null);
+		}
+
 		[TestMethod]
 		public async Task Cleanup_CleansAllTheLayers()
 		{

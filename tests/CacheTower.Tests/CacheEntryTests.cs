@@ -10,6 +10,12 @@ namespace CacheTower.Tests
 	[TestClass]
 	public class CacheEntryTests
 	{
+		[TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
+		public void ThrowsExceptionOnNegativeTimeSpan()
+		{
+			new CacheEntry<int>(0, DateTime.UtcNow, TimeSpan.FromSeconds(-1));
+		}
+
 		[TestMethod]
 		public void HasElapsed_NoOffset()
 		{
