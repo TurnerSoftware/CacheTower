@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CacheTower.Tests
+namespace CacheTower.Tests.Providers
 {
 	public abstract class BaseCacheLayerTests : TestBase
 	{

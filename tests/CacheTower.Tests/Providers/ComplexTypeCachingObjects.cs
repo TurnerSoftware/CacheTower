@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using ProtoBuf;
 
-namespace CacheTower.Tests
+namespace CacheTower.Tests.Providers
 {
 	[ProtoContract]
 	public class ComplexTypeCaching_TypeOne : IEquatable<ComplexTypeCaching_TypeOne>
