@@ -45,6 +45,20 @@ namespace CacheTower.Tests
 			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero), new CacheEntry<int>(0, utcNow, TimeSpan.FromSeconds(1)));
 			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero), new CacheEntry<int>(0, utcNow.AddDays(1), TimeSpan.Zero));
 			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero), new CacheEntry<int>(1, utcNow, TimeSpan.Zero));
+
+			Assert.IsFalse(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).Equals(null));
+			Assert.IsFalse(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).Equals(string.Empty));
+		}
+
+		[TestMethod]
+		public void EqualityTests_HashCode()
+		{
+			var utcNow = DateTime.UtcNow;
+			Assert.AreEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode());
+			Assert.AreEqual(new CacheEntry<string>(string.Empty, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<string>(string.Empty, utcNow, TimeSpan.Zero).GetHashCode());
+			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<int>(0, utcNow, TimeSpan.FromSeconds(1)).GetHashCode());
+			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<int>(0, utcNow.AddDays(1), TimeSpan.Zero).GetHashCode());
+			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<int>(1, utcNow, TimeSpan.Zero).GetHashCode());
 		}
 	}
 }
