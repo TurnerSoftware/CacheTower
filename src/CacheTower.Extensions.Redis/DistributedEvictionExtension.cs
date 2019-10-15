@@ -11,9 +11,9 @@ namespace CacheTower.Extensions.Redis
 	{
 		private ConnectionMultiplexer ConnectionMultiplexer { get; }
 		private ISubscriber Subscriber { get; }
-		private string ValueRefreshChannel { get; }
+		private string RedisChannel { get; }
 
-		private Dictionary<ICacheStack, ConcurrentDictionary<string, bool>> TrackedRefreshes { get; } = new Dictionary<ICacheStack, ConcurrentDictionary<string, bool>>();
+		private ConcurrentDictionary<Guid, ConcurrentDictionary<string, bool>> TrackedRefreshes { get; } = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, bool>>();
 
 		public DistributedEvictionExtension(ConnectionMultiplexer connectionMultiplexer, string channelPrefix = "CacheTower")
 		{
@@ -25,21 +25,21 @@ namespace CacheTower.Extensions.Redis
 			}
 
 			Subscriber = ConnectionMultiplexer.GetSubscriber();
-			ValueRefreshChannel = $"{channelPrefix}.ValueRefresh";
+			RedisChannel = $"{channelPrefix}.ValueRefresh";
 		}
 
-		public async Task OnValueRefreshAsync(ICacheStack cacheStack, string cacheKey, TimeSpan timeToLive)
+		public async Task OnValueRefreshAsync(Guid stackId, string cacheKey, TimeSpan timeToLive)
 		{
-			TrackedRefreshes[cacheStack].TryAdd(cacheKey, default);
-			await Subscriber.PublishAsync(ValueRefreshChannel, cacheKey, CommandFlags.FireAndForget);
+			TrackedRefreshes[stackId].TryAdd(cacheKey, default);
+			await Subscriber.PublishAsync(RedisChannel, cacheKey, CommandFlags.FireAndForget);
 		}
 
 		public void Register(ICacheStack cacheStack)
 		{
 			var knownRefreshes = new ConcurrentDictionary<string, bool>();
-			TrackedRefreshes.Add(cacheStack, knownRefreshes);
+			TrackedRefreshes.TryAdd(cacheStack.StackId, knownRefreshes);
 
-			Subscriber.Subscribe(ValueRefreshChannel, async (channel, value) =>
+			Subscriber.Subscribe(RedisChannel, async (channel, value) =>
 			{
 				string cacheKey = value;
 				if (!knownRefreshes.TryRemove(cacheKey, out var _))

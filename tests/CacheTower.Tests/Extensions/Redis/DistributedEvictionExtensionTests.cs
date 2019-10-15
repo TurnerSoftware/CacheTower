@@ -44,7 +44,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var extension = new DistributedEvictionExtension(connection);
 			extension.Register(cacheStackMock.Object);
 
-			await extension.OnValueRefreshAsync(cacheStackMock.Object, "TestKey", TimeSpan.FromDays(1));
+			await extension.OnValueRefreshAsync(cacheStackMock.Object.StackId, "TestKey", TimeSpan.FromDays(1));
 			await Task.Delay(1000);
 
 			Assert.IsTrue(hasMessagedSubscribers, "Subscribers were not notified about the refreshed value");

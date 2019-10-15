@@ -26,6 +26,8 @@ namespace CacheTower
 
 		public CacheStack(ICacheContext context, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
+			StackId = Guid.NewGuid();
+
 			Context = context;
 
 			if (cacheLayers == null || cacheLayers.Length == 0)
@@ -42,6 +44,8 @@ namespace CacheTower
 				extension.Register(this);
 			}
 		}
+
+		public Guid StackId { get; }
 
 		public IEnumerable<ICacheLayer> Layers => CacheLayers.AsEnumerable();
 
@@ -220,7 +224,7 @@ namespace CacheTower
 						{
 							if (extension is IValueRefreshExtension valueRefreshExtension)
 							{
-								await valueRefreshExtension.OnValueRefreshAsync(this, cacheKey, settings.TimeToLive);
+								await valueRefreshExtension.OnValueRefreshAsync(StackId, cacheKey, settings.TimeToLive);
 							}
 						}
 					}

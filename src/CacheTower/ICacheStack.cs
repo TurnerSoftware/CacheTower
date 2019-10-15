@@ -7,6 +7,7 @@ namespace CacheTower
 {
 	public interface ICacheStack
 	{
+		Guid StackId { get; }
 		IEnumerable<ICacheLayer> Layers { get; }
 		Task CleanupAsync();
 		Task EvictAsync(string cacheKey);

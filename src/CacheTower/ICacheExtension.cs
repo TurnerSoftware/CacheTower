@@ -12,6 +12,6 @@ namespace CacheTower
 
 	public interface IValueRefreshExtension : ICacheExtension
 	{
-		Task OnValueRefreshAsync(ICacheStack cacheStack, string cacheKey, TimeSpan timeToLive);
+		Task OnValueRefreshAsync(Guid stackId, string cacheKey, TimeSpan timeToLive);
 	}
 }
