@@ -33,46 +33,49 @@ namespace CacheTower.Benchmarks.Providers
 
 		private async Task BenchmarkWork(ICacheLayer cacheLayer)
 		{
+			//Get 100 misses
 			for (var i = 0; i < 100; i++)
 			{
 				await cacheLayer.GetAsync<int>("GetMiss_" + i);
 			}
 
+			var startDate = DateTime.UtcNow.AddDays(-50);
+
 			//Set first 100 (simple type)
 			for (var i = 0; i < 100; i++)
 			{
-				await cacheLayer.SetAsync("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
+				await cacheLayer.SetAsync("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i), TimeSpan.FromDays(1)));
 			}
 			//Set last 100 (complex type)
 			for (var i = 100; i < 200; i++)
 			{
-				await cacheLayer.SetAsync("SetMany_" + i, new CacheEntry<ComplexType>(new ComplexType
+				await cacheLayer.SetAsync("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
 				{
 					ExampleString = "Hello World",
 					ExampleNumber = 42,
 					ExampleDate = new DateTime(2000, 1, 1),
 					DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-				}, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
+				}, startDate.AddDays(i - 100), TimeSpan.FromDays(1)));
 			}
 
 			//Get first 50 (simple type)
 			for (var i = 0; i < 50; i++)
 			{
-				await cacheLayer.GetAsync<int>("SetMany_" + i);
+				await cacheLayer.GetAsync<int>("Comparison_" + i);
 			}
 			//Get last 50 (complex type)
 			for (var i = 150; i < 200; i++)
 			{
-				await cacheLayer.GetAsync<ComplexType>("SetMany_" + i);
+				await cacheLayer.GetAsync<ComplexType>("Comparison_" + i);
 			}
 
-			//Evict 100
-			for (var i = 100; i < 200; i++)
+			//Evict middle 100
+			for (var i = 50; i < 150; i++)
 			{
-				await cacheLayer.EvictAsync("SetMany_" + i);
+				await cacheLayer.EvictAsync("Comparison_" + i);
 			}
 
-			//Cleanup 100
+			//Cleanup outer 100
 			await cacheLayer.CleanupAsync();
 		}
 

@@ -16,11 +16,11 @@ Job=Core  Runtime=Core
 
 |                 Method |         Mean |        Error |        StdDev |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 | Allocated |
 |----------------------- |-------------:|-------------:|--------------:|---------:|--------:|-----------:|------:|------:|----------:|
-|       MemoryCacheLayer |     161.6 us |     1.536 us |      1.361 us |     1.00 |    0.00 |    40.0391 |     - |     - |  125824 B |
-|     JsonFileCacheLayer | 256,915.5 us | 5,009.590 us |  6,857.183 us | 1,596.20 |   52.30 |  1000.0000 |     - |     - | 3010048 B |
-| ProtobufFileCacheLayer | 210,469.8 us | 4,120.209 us |  5,210.745 us | 1,299.44 |   36.55 |          - |     - |     - |   16792 B |
-|      MongoDbCacheLayer | 494,458.2 us | 9,661.823 us | 15,042.295 us | 3,073.67 |   97.07 | 11000.0000 |     - |     - |   61368 B |
-|        RedisCacheLayer |  34,486.3 us |   284.997 us |    266.587 us |   213.32 |    2.14 |          - |     - |     - |     832 B |
+|       MemoryCacheLayer |     140.8 us |     1.852 us |      1.547 us |     1.00 |    0.00 |    40.5273 |     - |     - |  127824 B |
+|     JsonFileCacheLayer | 253,753.1 us | 4,975.501 us |  4,886.607 us | 1,812.08 |   34.96 |  1000.0000 |     - |     - | 3023960 B |
+| ProtobufFileCacheLayer | 212,156.8 us | 4,109.410 us |  4,220.062 us | 1,512.10 |   34.40 |          - |     - |     - |   16816 B |
+|      MongoDbCacheLayer | 473,695.2 us | 9,319.737 us | 20,457.049 us | 3,364.34 |  184.57 | 11000.0000 |     - |     - |   61376 B |
+|        RedisCacheLayer |  49,289.5 us | 1,341.795 us |  2,089.014 us |   358.04 |   19.13 |          - |     - |     - |     960 B |
 
 ## In-Memory Benchmarks
 
