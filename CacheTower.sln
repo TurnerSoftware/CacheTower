@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.Databa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.Redis", "src\CacheTower.Providers.Redis\CacheTower.Providers.Redis.csproj", "{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Extensions.RedisRemote", "src\CacheTower.Extensions.RedisRemote\CacheTower.Extensions.RedisRemote.csproj", "{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Extensions.Redis", "src\CacheTower.Extensions.Redis\CacheTower.Extensions.Redis.csproj", "{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -3,26 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CacheTower.Extensions.RedisRemote;
+using CacheTower.Extensions.Redis;
 using CacheTower.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace CacheTower.Tests.Extensions.RedisRemote
+namespace CacheTower.Tests.Extensions.Redis
 {
 	[TestClass, Ignore]
-	public class RedisRemoteExtensionTests
+	public class DistributedEvictionExtensionTests
 	{
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullConnection()
 		{
-			new RedisRemoteExtension(null);
+			new DistributedEvictionExtension(null);
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullChannel()
 		{
-			new RedisRemoteExtension(RedisHelper.GetConnection(), null);
+			new DistributedEvictionExtension(RedisHelper.GetConnection(), null);
 		}
 
 
@@ -41,7 +41,7 @@ namespace CacheTower.Tests.Extensions.RedisRemote
 			});
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisRemoteExtension(connection);
+			var extension = new DistributedEvictionExtension(connection);
 			extension.Register(cacheStackMock.Object);
 
 			await extension.OnValueRefreshAsync(cacheStackMock.Object, "TestKey", TimeSpan.FromDays(1));

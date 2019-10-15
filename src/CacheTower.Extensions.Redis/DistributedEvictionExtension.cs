@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace CacheTower.Extensions.RedisRemote
+namespace CacheTower.Extensions.Redis
 {
-	public class RedisRemoteExtension : IValueRefreshExtension
+	public class DistributedEvictionExtension : IValueRefreshExtension
 	{
 		private ConnectionMultiplexer ConnectionMultiplexer { get; }
 		private ISubscriber Subscriber { get; }
@@ -15,7 +15,7 @@ namespace CacheTower.Extensions.RedisRemote
 
 		private Dictionary<ICacheStack, ConcurrentDictionary<string, bool>> TrackedRefreshes { get; } = new Dictionary<ICacheStack, ConcurrentDictionary<string, bool>>();
 
-		public RedisRemoteExtension(ConnectionMultiplexer connectionMultiplexer, string channelPrefix = "CacheTower")
+		public DistributedEvictionExtension(ConnectionMultiplexer connectionMultiplexer, string channelPrefix = "CacheTower")
 		{
 			ConnectionMultiplexer = connectionMultiplexer ?? throw new ArgumentNullException(nameof(connectionMultiplexer));
 
