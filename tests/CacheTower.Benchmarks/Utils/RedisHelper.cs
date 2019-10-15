@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace CacheTower.Benchmarks.Providers.Redis
+namespace CacheTower.Benchmarks.Utils
 {
 	public static class RedisHelper
 	{

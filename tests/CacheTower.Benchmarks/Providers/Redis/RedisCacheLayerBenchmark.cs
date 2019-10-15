@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using BenchmarkDotNet.Attributes;
+using CacheTower.Benchmarks.Utils;
 using CacheTower.Providers.Redis;
 using StackExchange.Redis;
 

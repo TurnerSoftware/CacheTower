@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoFramework;
 
-namespace CacheTower.Benchmarks.Providers.Database.MongoDB
+namespace CacheTower.Benchmarks.Utils
 {
 	public static class MongoDbHelper
 	{
