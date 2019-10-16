@@ -28,7 +28,7 @@ namespace CacheTower
 
 		public CacheStack(ICacheContext context, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
-			StackId = Guid.NewGuid();
+			StackId = Guid.NewGuid().ToString();
 
 			Context = context;
 
@@ -48,7 +48,7 @@ namespace CacheTower
 			Extensions.Register(this);
 		}
 
-		public Guid StackId { get; }
+		public string StackId { get; }
 
 		public IEnumerable<ICacheLayer> Layers => CacheLayers.AsEnumerable();
 
@@ -201,6 +201,8 @@ namespace CacheTower
 				return default;
 			}
 
+			var requestId = Guid.NewGuid().ToString();
+
 			var lockObj = CacheKeyLock.GetOrAdd(cacheKey, (key) => new AsyncLock());
 			
 			using (await lockObj.LockAsync())
@@ -214,7 +216,7 @@ namespace CacheTower
 					//Confirm that once we have the lock, the latest cache entry still needs updating
 					if (cacheEntry == null || cacheEntry.HasElapsed(settings.StaleAfter))
 					{
-						using (await Extensions.LockAsync(StackId, cacheKey))
+						return await Extensions.RefreshValueAsync(StackId, requestId, cacheKey, async () =>
 						{
 							var oldValue = default(T);
 							if (cacheEntry != null)
@@ -225,16 +227,20 @@ namespace CacheTower
 							var value = await getter(oldValue, Context);
 							cacheEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
 
-							await Extensions.OnValueRefreshAsync(StackId, cacheKey, settings.TimeToLive);
-						}
+							await Extensions.OnValueRefreshAsync(StackId, requestId, cacheKey, settings.TimeToLive);
+
+							return cacheEntry;
+						}, settings);
+					}
+					else
+					{
+						return cacheEntry;
 					}
 				}
 				finally
 				{
 					CacheKeyLock.TryRemove(cacheKey, out var _);
 				}
-
-				return cacheEntry;
 			}
 		}
 

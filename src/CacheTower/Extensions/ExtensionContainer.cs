@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using CacheTower.Internal;
 
 namespace CacheTower.Extensions
 {
-	public class ExtensionContainer : ICacheExtension, IValueRefreshExtension, IExternalLockExtension,
+	public class ExtensionContainer : ICacheExtension, IValueRefreshExtension, IRefreshWrapperExtension,
 #if NETSTANDARD2_0
 		IDisposable
 #elif NETSTANDARD2_1
@@ -14,7 +14,7 @@ namespace CacheTower.Extensions
 #endif
 	{
 		private bool Disposed;
-		private IExternalLockExtension ExternalLockExtension { get; }
+		private IRefreshWrapperExtension RefreshWrapperExtension { get; }
 		private IValueRefreshExtension[] ValueRefreshExtensions { get; }
 		private ICacheExtension[] AllExtensions { get; }
 
@@ -24,9 +24,9 @@ namespace CacheTower.Extensions
 			
 			foreach (var extension in extensions)
 			{
-				if (ExternalLockExtension == null && extension is IExternalLockExtension externalLockExtension)
+				if (RefreshWrapperExtension == null && extension is IRefreshWrapperExtension refreshWrapperExtension)
 				{
-					ExternalLockExtension = externalLockExtension;
+					RefreshWrapperExtension = refreshWrapperExtension;
 				}
 
 				if (extension is IValueRefreshExtension valueRefreshExtension)
@@ -39,9 +39,10 @@ namespace CacheTower.Extensions
 			AllExtensions = extensions;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Register(ICacheStack cacheStack)
 		{
-			ExternalLockExtension?.Register(cacheStack);
+			RefreshWrapperExtension?.Register(cacheStack);
 
 			foreach (var extension in ValueRefreshExtensions)
 			{
@@ -54,23 +55,26 @@ namespace CacheTower.Extensions
 			}
 
 		}
-		public async Task<IDisposable> LockAsync(Guid stackId, string cacheKey)
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public async Task<CacheEntry<T>> RefreshValueAsync<T>(string stackId, string requestId, string cacheKey, Func<Task<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
-			if (ExternalLockExtension == null)
+			if (RefreshWrapperExtension == null)
 			{
-				return new NoopDisposable();
+				return await valueProvider();
 			}
 			else
 			{
-				return await ExternalLockExtension.LockAsync(stackId, cacheKey);
+				return await RefreshWrapperExtension.RefreshValueAsync(stackId, requestId, cacheKey, valueProvider, settings);
 			}
 		}
 
-		public async Task OnValueRefreshAsync(Guid stackId, string cacheKey, TimeSpan timeToLive)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public async Task OnValueRefreshAsync(string stackId, string requestId, string cacheKey, TimeSpan timeToLive)
 		{
 			foreach (var extension in ValueRefreshExtensions)
 			{
-				await extension.OnValueRefreshAsync(stackId, cacheKey, timeToLive);
+				await extension.OnValueRefreshAsync(stackId, requestId, cacheKey, timeToLive);
 			}
 		}
 

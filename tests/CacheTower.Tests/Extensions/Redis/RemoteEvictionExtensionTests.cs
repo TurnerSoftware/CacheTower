@@ -11,18 +11,18 @@ using Moq;
 namespace CacheTower.Tests.Extensions.Redis
 {
 	[TestClass, Ignore]
-	public class DistributedEvictionExtensionTests
+	public class RemoteEvictionExtensionTests
 	{
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullConnection()
 		{
-			new DistributedEvictionExtension(null);
+			new RemoteEvictionExtension(null);
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullChannel()
 		{
-			new DistributedEvictionExtension(RedisHelper.GetConnection(), null);
+			new RemoteEvictionExtension(RedisHelper.GetConnection(), null);
 		}
 
 
@@ -41,10 +41,10 @@ namespace CacheTower.Tests.Extensions.Redis
 			});
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new DistributedEvictionExtension(connection);
+			var extension = new RemoteEvictionExtension(connection);
 			extension.Register(cacheStackMock.Object);
 
-			await extension.OnValueRefreshAsync(cacheStackMock.Object.StackId, "TestKey", TimeSpan.FromDays(1));
+			await extension.OnValueRefreshAsync(cacheStackMock.Object.StackId, string.Empty, "TestKey", TimeSpan.FromDays(1));
 			await Task.Delay(1000);
 
 			Assert.IsTrue(hasMessagedSubscribers, "Subscribers were not notified about the refreshed value");

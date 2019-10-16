@@ -7,28 +7,28 @@ using StackExchange.Redis;
 
 namespace CacheTower.Extensions.Redis
 {
-	public class DistributedEvictionExtension : IValueRefreshExtension
+	public class RemoteEvictionExtension : IValueRefreshExtension
 	{
-		private ConnectionMultiplexer ConnectionMultiplexer { get; }
+		private ConnectionMultiplexer Connection { get; }
 		private ISubscriber Subscriber { get; }
 		private string RedisChannel { get; }
 
-		private ConcurrentDictionary<Guid, ConcurrentDictionary<string, bool>> TrackedRefreshes { get; } = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, bool>>();
+		private ConcurrentDictionary<string, ConcurrentDictionary<string, bool>> TrackedRefreshes { get; } = new ConcurrentDictionary<string, ConcurrentDictionary<string, bool>>();
 
-		public DistributedEvictionExtension(ConnectionMultiplexer connectionMultiplexer, string channelPrefix = "CacheTower")
+		public RemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
 		{
-			ConnectionMultiplexer = connectionMultiplexer ?? throw new ArgumentNullException(nameof(connectionMultiplexer));
+			Connection = connection ?? throw new ArgumentNullException(nameof(connection));
 
 			if (channelPrefix == null)
 			{
 				throw new ArgumentNullException(nameof(channelPrefix));
 			}
 
-			Subscriber = ConnectionMultiplexer.GetSubscriber();
-			RedisChannel = $"{channelPrefix}.ValueRefresh";
+			Subscriber = Connection.GetSubscriber();
+			RedisChannel = $"{channelPrefix}.RemoteEviction";
 		}
 
-		public async Task OnValueRefreshAsync(Guid stackId, string cacheKey, TimeSpan timeToLive)
+		public async Task OnValueRefreshAsync(string stackId, string requestId, string cacheKey, TimeSpan timeToLive)
 		{
 			TrackedRefreshes[stackId].TryAdd(cacheKey, default);
 			await Subscriber.PublishAsync(RedisChannel, cacheKey, CommandFlags.FireAndForget);
