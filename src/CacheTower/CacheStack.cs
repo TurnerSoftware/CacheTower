@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CacheTower.Extensions;
 using Nito.AsyncEx;
 
 namespace CacheTower
@@ -20,7 +21,8 @@ namespace CacheTower
 		private ConcurrentDictionary<string, AsyncLock> CacheKeyLock { get; } = new ConcurrentDictionary<string, AsyncLock>();
 
 		private ICacheLayer[] CacheLayers { get; }
-		private ICacheExtension[] Extensions { get; }
+
+		private ExtensionContainer Extensions { get; }
 
 		private ICacheContext Context { get; }
 
@@ -37,12 +39,13 @@ namespace CacheTower
 
 			CacheLayers = cacheLayers;
 
-			Extensions = extensions ?? throw new ArgumentNullException(nameof(extensions));
-			
-			foreach (var extension in extensions)
+			if (extensions == null)
 			{
-				extension.Register(this);
+				throw new ArgumentNullException(nameof(extensions));
 			}
+
+			Extensions = new ExtensionContainer(extensions);
+			Extensions.Register(this);
 		}
 
 		public Guid StackId { get; }
@@ -211,21 +214,18 @@ namespace CacheTower
 					//Confirm that once we have the lock, the latest cache entry still needs updating
 					if (cacheEntry == null || cacheEntry.HasElapsed(settings.StaleAfter))
 					{
-						var oldValue = default(T);
-						if (cacheEntry != null)
+						using (await Extensions.LockAsync(StackId, cacheKey))
 						{
-							oldValue = cacheEntry.Value;
-						}
-
-						var value = await getter(oldValue, Context);
-						cacheEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
-
-						foreach (var extension in Extensions)
-						{
-							if (extension is IValueRefreshExtension valueRefreshExtension)
+							var oldValue = default(T);
+							if (cacheEntry != null)
 							{
-								await valueRefreshExtension.OnValueRefreshAsync(StackId, cacheKey, settings.TimeToLive);
+								oldValue = cacheEntry.Value;
 							}
+
+							var value = await getter(oldValue, Context);
+							cacheEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
+
+							await Extensions.OnValueRefreshAsync(StackId, cacheKey, settings.TimeToLive);
 						}
 					}
 				}
@@ -262,13 +262,7 @@ namespace CacheTower
 					}
 				}
 
-				foreach (var extension in Extensions)
-				{
-					if (extension is IDisposable disposable)
-					{
-						disposable.Dispose();
-					}
-				}
+				Extensions.Dispose();
 			}
 
 			Disposed = true;
@@ -293,17 +287,7 @@ namespace CacheTower
 				}
 			}
 
-			foreach (var extension in Extensions)
-			{
-				if (extension is IDisposable disposable)
-				{
-					disposable.Dispose();
-				}
-				else if (extension is IAsyncDisposable asyncDisposable)
-				{
-					await asyncDisposable.DisposeAsync();
-				}
-			}
+			await Extensions.DisposeAsync();
 
 			Disposed = true;
 		}

@@ -14,4 +14,9 @@ namespace CacheTower
 	{
 		Task OnValueRefreshAsync(Guid stackId, string cacheKey, TimeSpan timeToLive);
 	}
+
+	public interface IExternalLockExtension : ICacheExtension
+	{
+		Task<IDisposable> LockAsync(Guid stackId, string cacheKey);
+	}
 }
