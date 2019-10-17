@@ -10,11 +10,11 @@ A multi-layered caching system for .NET
 Cache Tower isn't a single type of cache, it allows control of various layers of caching on top of each other.
 
 Officially supported cache layers include:
-- MemoryCacheLayer (Basic In-Memory Cache - built-in)
-- JsonFileCacheLayer (JSON-serialized File System Cache - via `CacheTower.Providers.FileSystem.Json`)
-- ProtobufFileCacheLayer (Protobuf-serialized File System Cache - via `CacheTower.Providers.FileSystem.Protobuf`)
-- MongoDbCacheLayer (MongoDB Database Cache - via `CacheTower.Providers.Database.MongoDB`)
-- RedisCacheLayer (Redis Cache - via `CacheTower.Providers.Redis`)
+- MemoryCacheLayer (built-in)
+- JsonFileCacheLayer (via `CacheTower.Providers.FileSystem.Json`)
+- ProtobufFileCacheLayer (via `CacheTower.Providers.FileSystem.Protobuf`)
+- MongoDbCacheLayer (via `CacheTower.Providers.Database.MongoDB`)
+- RedisCacheLayer (via `CacheTower.Providers.Redis`)
 
 These various cache layers, configurable by you, are controlled through the `CacheStack` which allows a few other goodies.
 
@@ -37,11 +37,14 @@ These various cache layers, configurable by you, are controlled through the `Cac
 ## Choosing Cache Layers
 
 There are pros-and-cons to each of the types of cache layers though the idea is to use each layer to your advantage.
-In-memory caching provides the best performance though would use the most memory.
-File system caching can cache a lot of data but is extremely slow relative to in-memory caching.
-Protobuf file caching is faster than JSON file caching but [requires defining various attributes across the model](https://github.com/protobuf-net/protobuf-net#basic-usage).
-MongoDB caching can be fast and convenient under certain workloads (eg. when you don't have Redis).
-Redis caching is about as fast as possible while not being in-memory in the same process (or potentially server).
+
+- In-memory caching provides the best performance though would use the most memory.
+- File system caching can cache a lot of data but is extremely slow relative to in-memory caching.
+- Protobuf file caching is faster than JSON file caching but [requires defining various attributes across the model](https://github.com/protobuf-net/protobuf-net#basic-usage).
+- MongoDB caching can be fast and convenient under certain workloads (eg. when you don't have Redis).
+- Redis caching is about as fast as possible while not being in-memory in the same process (or potentially server).
+
+See also: [Performance Figures & Comparisons](/docs/Performance.md)
 
 ## Extension System
 
