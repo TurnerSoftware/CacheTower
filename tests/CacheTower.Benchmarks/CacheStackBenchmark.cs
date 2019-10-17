@@ -64,5 +64,40 @@ namespace CacheTower.Benchmarks
 				}, new CacheSettings(TimeSpan.FromDays(1)));
 			}
 		}
+		[Benchmark]
+		public async Task GetOrSetSimultaneous()
+		{
+			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			{
+				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
+				var task1 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>
+				{
+					await Task.Delay(50);
+					return 12;
+				}, new CacheSettings(TimeSpan.FromDays(1)));
+				var task2 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>
+				{
+					await Task.Delay(50);
+					return 12;
+				}, new CacheSettings(TimeSpan.FromDays(1)));
+				var task3 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>
+				{
+					await Task.Delay(50);
+					return 12;
+				}, new CacheSettings(TimeSpan.FromDays(1)));
+				var task4 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>
+				{
+					await Task.Delay(50);
+					return 12;
+				}, new CacheSettings(TimeSpan.FromDays(1)));
+				var task5 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>
+				{
+					await Task.Delay(50);
+					return 12;
+				}, new CacheSettings(TimeSpan.FromDays(1)));
+
+				await Task.WhenAll(task1, task2, task3, task4, task5);
+			}
+		}
 	}
 }
