@@ -140,13 +140,18 @@ namespace CacheTower.Tests
 			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-1), TimeSpan.FromDays(2));
 			await cacheStack.SetAsync("GetOrSet_CacheHitBackgroundRefresh", cacheEntry);
 
+			var waitingOnBackgroundTask = new TaskCompletionSource<int>();
+
 			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheHitBackgroundRefresh", (oldValue, context) =>
 			{
+				waitingOnBackgroundTask.TrySetResult(27);
 				return Task.FromResult(27);
 			}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
 			Assert.AreEqual(17, result);
 
-			await Task.Delay(1000);
+			await waitingOnBackgroundTask.Task;
+			//Give 400ms to return the value and set it to the MemoryCacheLayer
+			await Task.Delay(400);
 
 			var refetchedResult = await cacheStack.GetAsync<int>("GetOrSet_CacheHitBackgroundRefresh");
 			Assert.AreEqual(27, refetchedResult.Value);
