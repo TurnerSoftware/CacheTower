@@ -13,7 +13,8 @@ namespace CacheTower.Extensions.Redis
 		private ISubscriber Subscriber { get; }
 		private string RedisChannel { get; }
 
-		private ConcurrentDictionary<string, ConcurrentDictionary<string, bool>> TrackedRefreshes { get; } = new ConcurrentDictionary<string, ConcurrentDictionary<string, bool>>();
+		private bool IsRegistered { get; set;  }
+		private ConcurrentDictionary<string, string> FlaggedRefreshes { get; } = new ConcurrentDictionary<string, string>();
 
 		public RemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
 		{
@@ -28,21 +29,24 @@ namespace CacheTower.Extensions.Redis
 			RedisChannel = $"{channelPrefix}.RemoteEviction";
 		}
 
-		public async Task OnValueRefreshAsync(string stackId, string requestId, string cacheKey, TimeSpan timeToLive)
+		public async Task OnValueRefreshAsync(string requestId, string cacheKey, TimeSpan timeToLive)
 		{
-			TrackedRefreshes[stackId].TryAdd(cacheKey, default);
+			FlaggedRefreshes.TryAdd(cacheKey, requestId);
 			await Subscriber.PublishAsync(RedisChannel, cacheKey, CommandFlags.FireAndForget);
 		}
 
 		public void Register(ICacheStack cacheStack)
 		{
-			var knownRefreshes = new ConcurrentDictionary<string, bool>();
-			TrackedRefreshes.TryAdd(cacheStack.StackId, knownRefreshes);
+			if (IsRegistered)
+			{
+				throw new InvalidOperationException($"{nameof(RemoteEvictionExtension)} can only be registered to one {nameof(ICacheStack)}");
+			}
+			IsRegistered = true;
 
 			Subscriber.Subscribe(RedisChannel, async (channel, value) =>
 			{
 				string cacheKey = value;
-				if (!knownRefreshes.TryRemove(cacheKey, out var _))
+				if (!FlaggedRefreshes.TryRemove(cacheKey, out var _))
 				{
 					await cacheStack.EvictAsync(cacheKey);
 				}

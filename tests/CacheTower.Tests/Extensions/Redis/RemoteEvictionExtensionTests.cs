@@ -32,7 +32,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 			var hasMessagedSubscribers = false;
 
-			await connection.GetSubscriber().SubscribeAsync("CacheTower.ValueRefresh", (channel, value) =>
+			await connection.GetSubscriber().SubscribeAsync("CacheTower.RemoteEviction", (channel, value) =>
 			{
 				if (value == "TestKey")
 				{
@@ -44,7 +44,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var extension = new RemoteEvictionExtension(connection);
 			extension.Register(cacheStackMock.Object);
 
-			await extension.OnValueRefreshAsync(cacheStackMock.Object.StackId, string.Empty, "TestKey", TimeSpan.FromDays(1));
+			await extension.OnValueRefreshAsync(string.Empty, "TestKey", TimeSpan.FromDays(1));
 			await Task.Delay(1000);
 
 			Assert.IsTrue(hasMessagedSubscribers, "Subscribers were not notified about the refreshed value");

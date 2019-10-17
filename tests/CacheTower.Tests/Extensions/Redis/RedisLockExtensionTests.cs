@@ -60,7 +60,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
 
-			await extension.RefreshValueAsync(cacheStackMock.Object.StackId, string.Empty, "TestKey", 
+			await extension.RefreshValueAsync(string.Empty, "TestKey", 
 				() => Task.FromResult(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
 			await Task.Delay(1000);
 
@@ -81,7 +81,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			async Task<CacheEntry<int>> DoWorkAsync()
 			{
-				return await extension.RefreshValueAsync(cacheStackMock.Object.StackId, string.Empty, "TestKey",
+				return await extension.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
 						await Task.Delay(1000);
@@ -116,7 +116,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
 
-			var primaryTask = extensionOne.RefreshValueAsync(cacheStackMockOne.Object.StackId, string.Empty, "TestKey",
+			var primaryTask = extensionOne.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
 						await Task.Delay(1000);
@@ -124,7 +124,7 @@ namespace CacheTower.Tests.Extensions.Redis
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
-			var secondaryTask = extensionTwo.RefreshValueAsync(cacheStackMockTwo.Object.StackId, string.Empty, "TestKey",
+			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
 						await Task.Delay(1000);

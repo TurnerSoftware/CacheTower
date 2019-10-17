@@ -57,7 +57,7 @@ namespace CacheTower.Extensions
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public async Task<CacheEntry<T>> RefreshValueAsync<T>(string stackId, string requestId, string cacheKey, Func<Task<CacheEntry<T>>> valueProvider, CacheSettings settings)
+		public async Task<CacheEntry<T>> RefreshValueAsync<T>(string requestId, string cacheKey, Func<Task<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
 			if (RefreshWrapperExtension == null)
 			{
@@ -65,16 +65,16 @@ namespace CacheTower.Extensions
 			}
 			else
 			{
-				return await RefreshWrapperExtension.RefreshValueAsync(stackId, requestId, cacheKey, valueProvider, settings);
+				return await RefreshWrapperExtension.RefreshValueAsync(requestId, cacheKey, valueProvider, settings);
 			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public async Task OnValueRefreshAsync(string stackId, string requestId, string cacheKey, TimeSpan timeToLive)
+		public async Task OnValueRefreshAsync(string requestId, string cacheKey, TimeSpan timeToLive)
 		{
 			foreach (var extension in ValueRefreshExtensions)
 			{
-				await extension.OnValueRefreshAsync(stackId, requestId, cacheKey, timeToLive);
+				await extension.OnValueRefreshAsync(requestId, cacheKey, timeToLive);
 			}
 		}
 
