@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Order;
 using CacheTower.Benchmarks.Utils;
 using CacheTower.Providers.Database.MongoDB;
 using CacheTower.Providers.FileSystem.Json;
@@ -14,7 +15,7 @@ using ProtoBuf;
 
 namespace CacheTower.Benchmarks.Providers
 {
-	[CoreJob, MemoryDiagnoser]
+	[CoreJob, MemoryDiagnoser, Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	public class CacheLayerComparisonBenchmark
 	{
 		[ProtoContract]
