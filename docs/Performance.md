@@ -12,6 +12,15 @@ Intel Core i7-6700HQ CPU 2.60GHz (Skylake), 1 CPU, 8 logical and 4 physical core
 Job=Core  Runtime=Core
 ```
 
+## Cache Stack Benchmark
+
+|           Method |  Mean [ns] | Error [ns] | StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|----------------- |-----------:|-----------:|------------:|-------:|------:|------:|--------------:|
+| SetupAndTeardown |   799.8 ns |   7.078 ns |    6.621 ns | 0.5322 |     - |     - |        1672 B |
+|          GetMiss |   901.2 ns |   5.846 ns |    5.469 ns | 0.5560 |     - |     - |        1744 B |
+|           GetHit | 1,370.9 ns |   7.944 ns |    7.431 ns | 0.6580 |     - |     - |        2064 B |
+|         GetOrSet | 3,285.0 ns |  27.313 ns |   25.548 ns | 1.1292 |     - |     - |        3552 B |
+
 ## Cache Layer Comparison Benchmark
 
 |                 Method |         Mean |        Error |        StdDev |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 | Allocated |
