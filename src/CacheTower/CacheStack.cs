@@ -18,7 +18,7 @@ namespace CacheTower
 	{
 		private bool Disposed;
 
-		private ConcurrentDictionary<string, AsyncLock> CacheKeyLock { get; } = new ConcurrentDictionary<string, AsyncLock>();
+		private ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> WaitingKeyRefresh { get; } = new ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>>();
 
 		private ICacheLayer[] CacheLayers { get; }
 
@@ -193,53 +193,66 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			//Technically this doesn't confirm it is locked, just the presence of a key
-			//This does mean there is a race condition where multiple threads still get locked
-			//Ultimately though, once each releases and they find the key in the cache, they will still exit without reprocessing
-			if (exitIfLocked && CacheKeyLock.ContainsKey(cacheKey))
-			{
-				return default;
-			}
-
+			CacheEntry<T> cacheEntry = default;
 			var requestId = Guid.NewGuid().ToString();
 
-			var lockObj = CacheKeyLock.GetOrAdd(cacheKey, (key) => new AsyncLock());
-			
-			using (await lockObj.LockAsync())
+			if (WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<bool>>()))
 			{
-				CacheEntry<T> cacheEntry = default;
-
 				try
 				{
-					cacheEntry = await GetAsync<T>(cacheKey);
-
-					//Confirm that once we have the lock, the latest cache entry still needs updating
-					if (cacheEntry == null || cacheEntry.HasElapsed(settings.StaleAfter))
+					return await Extensions.RefreshValueAsync(StackId, requestId, cacheKey, async () =>
 					{
-						return await Extensions.RefreshValueAsync(StackId, requestId, cacheKey, async () =>
+						var previousEntry = await GetAsync<T>(cacheKey);
+
+						var oldValue = default(T);
+						if (previousEntry != null)
 						{
-							var oldValue = default(T);
-							if (cacheEntry != null)
-							{
-								oldValue = cacheEntry.Value;
-							}
+							oldValue = previousEntry.Value;
+						}
 
-							var value = await getter(oldValue, Context);
-							cacheEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
+						var value = await getter(oldValue, Context);
+						var refreshedEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
 
-							await Extensions.OnValueRefreshAsync(StackId, requestId, cacheKey, settings.TimeToLive);
+						await Extensions.OnValueRefreshAsync(StackId, requestId, cacheKey, settings.TimeToLive);
 
-							return cacheEntry;
-						}, settings);
-					}
-					else
-					{
-						return cacheEntry;
-					}
+						return refreshedEntry;
+					}, settings);
 				}
 				finally
 				{
-					CacheKeyLock.TryRemove(cacheKey, out var _);
+					UnlockWaitingTasks(cacheKey);
+				}
+			}
+			else if (!exitIfLocked)
+			{
+				var delayedResultSource = new TaskCompletionSource<bool>();
+				var waitList = new[] { delayedResultSource };
+				WaitingKeyRefresh.AddOrUpdate(cacheKey, waitList, (key, oldList) => oldList.Concat(waitList));
+
+				//Last minute check to confirm whether waiting is required
+				var currentEntry = await GetAsync<T>(cacheKey);
+				if (currentEntry != null && !currentEntry.HasElapsed(settings.StaleAfter))
+				{
+					UnlockWaitingTasks(cacheKey);
+					return currentEntry;
+				}
+
+				//Lock until we are notified to be unlocked
+				await delayedResultSource.Task;
+
+				//Get the updated value from the cache stack
+				return await GetAsync<T>(cacheKey);
+			}
+
+			return cacheEntry;
+		}
+		private void UnlockWaitingTasks(string cacheKey)
+		{
+			if (WaitingKeyRefresh.TryRemove(cacheKey, out var waitingTasks))
+			{
+				foreach (var task in waitingTasks)
+				{
+					task.TrySetResult(true);
 				}
 			}
 		}

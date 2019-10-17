@@ -14,12 +14,13 @@ Job=Core  Runtime=Core
 
 ## Cache Stack Benchmark
 
-|           Method |  Mean [ns] | Error [ns] | StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
-|----------------- |-----------:|-----------:|------------:|-------:|------:|------:|--------------:|
-| SetupAndTeardown |   799.8 ns |   7.078 ns |    6.621 ns | 0.5322 |     - |     - |        1672 B |
-|          GetMiss |   901.2 ns |   5.846 ns |    5.469 ns | 0.5560 |     - |     - |        1744 B |
-|           GetHit | 1,370.9 ns |   7.944 ns |    7.431 ns | 0.6580 |     - |     - |        2064 B |
-|         GetOrSet | 3,285.0 ns |  27.313 ns |   25.548 ns | 1.1292 |     - |     - |        3552 B |
+|               Method |       Mean [ns] |     Error [ns] |    StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|--------------------- |----------------:|---------------:|---------------:|-------:|------:|------:|--------------:|
+|     SetupAndTeardown |        793.4 ns |       6.361 ns |       5.950 ns | 0.5322 |     - |     - |        1672 B |
+|              GetMiss |        897.4 ns |       8.973 ns |       8.393 ns | 0.5560 |     - |     - |        1744 B |
+|               GetHit |      1,340.8 ns |      18.681 ns |      16.560 ns | 0.6580 |     - |     - |        2064 B |
+|             GetOrSet |      2,909.8 ns |      33.077 ns |      30.941 ns | 0.9766 |     - |     - |        3072 B |
+| GetOrSetSimultaneous | 62,188,133.3 ns | 360,310.471 ns | 337,034.638 ns |      - |     - |     - |        5560 B |
 
 ## Cache Layer Comparison Benchmark
 
