@@ -31,27 +31,27 @@ Job=Core  Runtime=Core
 
 ## Cache Layer Comparison Benchmark
 
-|                 Method |         Mean |         Error |         StdDev |       Median |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 | Allocated |
-|----------------------- |-------------:|--------------:|---------------:|-------------:|---------:|--------:|-----------:|------:|------:|----------:|
-|       MemoryCacheLayer |     162.4 us |     0.7841 us |      0.6548 us |     162.3 us |     1.00 |    0.00 |    53.4668 |     - |     - |  168368 B |
-|        RedisCacheLayer |  51,552.8 us | 1,039.5253 us |  2,931.9995 us |  50,540.3 us |   349.49 |   10.68 |          - |     - |     - |     840 B |
-| ProtobufFileCacheLayer | 219,721.0 us | 4,286.0394 us |  6,146.9096 us | 218,381.8 us | 1,364.24 |   32.32 |          - |     - |     - |   16816 B |
-|     JsonFileCacheLayer | 260,188.6 us | 5,203.1785 us |  8,693.3423 us | 259,910.0 us | 1,608.31 |   45.69 |  1000.0000 |     - |     - | 3033264 B |
-|      MongoDbCacheLayer | 460,912.6 us | 9,136.3891 us | 19,470.3901 us | 460,819.6 us | 2,932.59 |   97.12 | 11000.0000 |     - |     - |   45152 B |
+|                 Method |         Mean |        Error |        StdDev |       Median |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 | Allocated |
+|----------------------- |-------------:|-------------:|--------------:|-------------:|---------:|--------:|-----------:|------:|------:|----------:|
+|       MemoryCacheLayer |     129.5 us |     1.813 us |      1.696 us |     129.3 us |     1.00 |    0.00 |    35.1563 |     - |     - |  111000 B |
+|        RedisCacheLayer |  51,005.3 us | 1,060.949 us |  2,479.935 us |  50,179.2 us |   423.89 |   14.55 |          - |     - |     - |     840 B |
+| ProtobufFileCacheLayer | 216,167.6 us | 4,017.195 us |  3,757.687 us | 216,462.6 us | 1,669.69 |   35.25 |          - |     - |     - |   16816 B |
+|     JsonFileCacheLayer | 263,159.9 us | 5,165.585 us |  8,193.165 us | 263,139.1 us | 2,025.91 |   69.27 |  1000.0000 |     - |     - | 3022792 B |
+|      MongoDbCacheLayer | 456,742.1 us | 9,124.671 us | 20,965.448 us | 456,641.1 us | 3,585.83 |  221.79 | 11000.0000 |     - |     - |   45152 B |
 
 ## In-Memory Benchmarks
 
 ### MemoryCacheLayer
 
-|                  Method |   Mean [ns] | Error [ns] |  StdDev [ns] |   Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
-|------------------------ |------------:|-----------:|-------------:|--------:|------:|------:|--------------:|
-|                 GetMiss |    263.8 ns |   5.107 ns |     7.160 ns |  0.2499 |     - |     - |         784 B |
-|                  GetHit |    500.5 ns |   9.462 ns |     8.850 ns |  0.3052 |     - |     - |         960 B |
-|      GetHitSimultaneous |    597.5 ns |  11.746 ns |    17.217 ns |  0.3290 |     - |     - |        1032 B |
-|                  SetNew |    461.4 ns |  11.080 ns |    32.670 ns |  0.2828 |     - |     - |         888 B |
-|             SetExisting |    668.6 ns |  13.347 ns |    12.485 ns |  0.3386 |     - |     - |        1064 B |
-| SetExistingSimultaneous |    976.5 ns |  20.851 ns |    31.209 ns |  0.3948 |     - |     - |        1240 B |
-|                 SetMany | 37,740.0 ns | 747.389 ns | 1,790.697 ns | 12.0239 |     - |     - |       37776 B |
+|                  Method |   Mean [ns] | Error [ns] | StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|------------------------ |------------:|-----------:|------------:|-------:|------:|------:|--------------:|
+|                 GetMiss |    264.6 ns |   3.055 ns |    2.708 ns | 0.0892 |     - |     - |         280 B |
+|                  GetHit |    564.6 ns |   4.581 ns |    4.285 ns | 0.1450 |     - |     - |         456 B |
+|      GetHitSimultaneous |    665.1 ns |   5.320 ns |    4.976 ns | 0.1678 |     - |     - |         528 B |
+|                  SetNew |    473.1 ns |   5.679 ns |    4.742 ns | 0.1221 |     - |     - |         384 B |
+|             SetExisting |    708.8 ns |   4.888 ns |    4.572 ns | 0.1345 |     - |     - |         424 B |
+| SetExistingSimultaneous |    967.3 ns |   8.977 ns |    7.958 ns | 0.1469 |     - |     - |         464 B |
+|                 SetMany | 32,058.1 ns | 426.115 ns |  398.589 ns | 6.9580 |     - |     - |       21920 B |
 
 ## File System Benchmarks
 

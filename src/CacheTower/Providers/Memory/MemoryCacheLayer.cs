@@ -2,13 +2,16 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CacheTower.Providers.Memory
 {
-	public class MemoryCacheLayer : ICacheLayer
+	public class MemoryCacheLayer : ICacheLayer, IDisposable
 	{
-		private ConcurrentDictionary<string, CacheEntry> Cache { get; } = new ConcurrentDictionary<string, CacheEntry>();
+		private bool Disposed;
+		private ReaderWriterLockSlim LockObj { get; } = new ReaderWriterLockSlim();
+		private Dictionary<string, CacheEntry> Cache { get; } = new Dictionary<string, CacheEntry>();
 
 		private static readonly Task<bool> CompletedTaskTrue = Task.FromResult(true);
 
@@ -19,7 +22,15 @@ namespace CacheTower.Providers.Memory
 				var cacheEntry = cachePair.Value;
 				if (cacheEntry.HasElapsed(cacheEntry.TimeToLive))
 				{
-					Cache.TryRemove(cachePair.Key, out var _);
+					LockObj.EnterWriteLock();
+					try
+					{
+						Cache.Remove(cachePair.Key);
+					}
+					finally
+					{
+						LockObj.ExitWriteLock();
+					}
 				}
 			}
 
@@ -28,18 +39,36 @@ namespace CacheTower.Providers.Memory
 
 		public Task EvictAsync(string cacheKey)
 		{
-			Cache.TryRemove(cacheKey, out var _);
+			LockObj.EnterWriteLock();
+			try
+			{
+				Cache.Remove(cacheKey);
+			}
+			finally
+			{
+				LockObj.ExitWriteLock();
+			}
+
 			return Task.CompletedTask;
 		}
 
 		public Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
-			if (Cache.TryGetValue(cacheKey, out var cacheEntry))
-			{
-				return Task.FromResult(cacheEntry as CacheEntry<T>);
-			}
+			LockObj.EnterReadLock();
 
-			return Task.FromResult(default(CacheEntry<T>));
+			try
+			{
+				if (Cache.TryGetValue(cacheKey, out var cacheEntry))
+				{
+					return Task.FromResult(cacheEntry as CacheEntry<T>);
+				}
+
+				return Task.FromResult(default(CacheEntry<T>));
+			}
+			finally
+			{
+				LockObj.ExitReadLock();
+			}
 		}
 
 		public Task<bool> IsAvailableAsync(string cacheKey)
@@ -49,12 +78,38 @@ namespace CacheTower.Providers.Memory
 
 		public Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			Cache.AddOrUpdate(cacheKey, cacheEntry, (key, old) =>
+			LockObj.EnterWriteLock();
+
+			try
 			{
-				return cacheEntry;
-			});
+				Cache[cacheKey] = cacheEntry;
+			}
+			finally
+			{
+				LockObj.ExitWriteLock();
+			}
 
 			return Task.CompletedTask;
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (Disposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				LockObj.Dispose();
+			}
+
+			Disposed = true;
 		}
 	}
 }
