@@ -33,11 +33,11 @@ Job=Core  Runtime=Core
 
 |                 Method |         Mean |        Error |        StdDev |       Median |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 | Allocated |
 |----------------------- |-------------:|-------------:|--------------:|-------------:|---------:|--------:|-----------:|------:|------:|----------:|
-|       MemoryCacheLayer |     129.5 us |     1.813 us |      1.696 us |     129.3 us |     1.00 |    0.00 |    35.1563 |     - |     - |  111000 B |
-|        RedisCacheLayer |  51,005.3 us | 1,060.949 us |  2,479.935 us |  50,179.2 us |   423.89 |   14.55 |          - |     - |     - |     840 B |
-| ProtobufFileCacheLayer | 216,167.6 us | 4,017.195 us |  3,757.687 us | 216,462.6 us | 1,669.69 |   35.25 |          - |     - |     - |   16816 B |
-|     JsonFileCacheLayer | 263,159.9 us | 5,165.585 us |  8,193.165 us | 263,139.1 us | 2,025.91 |   69.27 |  1000.0000 |     - |     - | 3022792 B |
-|      MongoDbCacheLayer | 456,742.1 us | 9,124.671 us | 20,965.448 us | 456,641.1 us | 3,585.83 |  221.79 | 11000.0000 |     - |     - |   45152 B |
+|       MemoryCacheLayer |     127.4 us |     1.563 us |      1.462 us |     126.9 us |     1.00 |    0.00 |    35.6445 |     - |     - |  112144 B |
+|        RedisCacheLayer |  50,921.4 us | 1,058.014 us |  2,749.920 us |  50,003.7 us |   430.76 |   14.96 |          - |     - |     - |     840 B |
+| ProtobufFileCacheLayer | 221,660.5 us | 4,287.792 us |  6,417.765 us | 220,449.0 us | 1,749.32 |   50.66 |          - |     - |     - |   16656 B |
+|     JsonFileCacheLayer | 264,991.2 us | 6,127.700 us |  8,788.164 us | 261,843.0 us | 2,082.24 |   68.84 |  1000.0000 |     - |     - | 3032400 B |
+|      MongoDbCacheLayer | 489,227.4 us | 9,754.848 us | 17,339.233 us | 490,359.0 us | 3,876.51 |   99.00 | 11000.0000 |     - |     - |   45152 B |
 
 ## In-Memory Benchmarks
 
@@ -45,13 +45,13 @@ Job=Core  Runtime=Core
 
 |                  Method |   Mean [ns] | Error [ns] | StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |------------------------ |------------:|-----------:|------------:|-------:|------:|------:|--------------:|
-|                 GetMiss |    264.6 ns |   3.055 ns |    2.708 ns | 0.0892 |     - |     - |         280 B |
-|                  GetHit |    564.6 ns |   4.581 ns |    4.285 ns | 0.1450 |     - |     - |         456 B |
-|      GetHitSimultaneous |    665.1 ns |   5.320 ns |    4.976 ns | 0.1678 |     - |     - |         528 B |
-|                  SetNew |    473.1 ns |   5.679 ns |    4.742 ns | 0.1221 |     - |     - |         384 B |
-|             SetExisting |    708.8 ns |   4.888 ns |    4.572 ns | 0.1345 |     - |     - |         424 B |
-| SetExistingSimultaneous |    967.3 ns |   8.977 ns |    7.958 ns | 0.1469 |     - |     - |         464 B |
-|                 SetMany | 32,058.1 ns | 426.115 ns |  398.589 ns | 6.9580 |     - |     - |       21920 B |
+|                 GetMiss |    268.5 ns |   2.053 ns |    1.920 ns | 0.0892 |     - |     - |         280 B |
+|                  GetHit |    572.6 ns |   6.720 ns |    6.286 ns | 0.1450 |     - |     - |         456 B |
+|      GetHitSimultaneous |    653.7 ns |   8.282 ns |    7.342 ns | 0.1678 |     - |     - |         528 B |
+|                  SetNew |    477.4 ns |   5.536 ns |    5.178 ns | 0.1221 |     - |     - |         384 B |
+|             SetExisting |    714.4 ns |   9.202 ns |    8.608 ns | 0.1345 |     - |     - |         424 B |
+| SetExistingSimultaneous |    990.4 ns |  10.608 ns |    9.922 ns | 0.1469 |     - |     - |         464 B |
+|                 SetMany | 31,995.6 ns | 303.621 ns |  284.007 ns | 6.9580 |     - |     - |       21920 B |
 
 ## File System Benchmarks
 

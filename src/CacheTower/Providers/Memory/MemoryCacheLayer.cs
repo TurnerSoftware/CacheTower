@@ -17,21 +17,37 @@ namespace CacheTower.Providers.Memory
 
 		public Task CleanupAsync()
 		{
-			foreach (var cachePair in Cache)
+			LockObj.EnterUpgradeableReadLock();
+
+			try
 			{
-				var cacheEntry = cachePair.Value;
-				if (cacheEntry.HasElapsed(cacheEntry.TimeToLive))
+				var keysToRemove = new List<string>();
+
+				foreach (var cachePair in Cache)
 				{
-					LockObj.EnterWriteLock();
-					try
+					var cacheEntry = cachePair.Value;
+					if (cacheEntry.HasElapsed(cacheEntry.TimeToLive))
 					{
-						Cache.Remove(cachePair.Key);
-					}
-					finally
-					{
-						LockObj.ExitWriteLock();
+						keysToRemove.Add(cachePair.Key);
 					}
 				}
+
+				LockObj.EnterWriteLock();
+				try
+				{
+					foreach (var key in keysToRemove)
+					{
+						Cache.Remove(key);
+					}
+				}
+				finally
+				{
+					LockObj.ExitWriteLock();
+				}
+			}
+			finally
+			{
+				LockObj.ExitUpgradeableReadLock();
 			}
 
 			return Task.CompletedTask;
