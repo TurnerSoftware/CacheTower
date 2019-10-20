@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
@@ -21,29 +22,33 @@ namespace CacheTower.Providers.Memory
 
 			try
 			{
-				var keysToRemove = new List<string>();
+				var keysToRemove = ArrayPool<string>.Shared.Rent(Cache.Count);
+				var index = 0;
 
 				foreach (var cachePair in Cache)
 				{
 					var cacheEntry = cachePair.Value;
 					if (cacheEntry.HasElapsed(cacheEntry.TimeToLive))
 					{
-						keysToRemove.Add(cachePair.Key);
+						keysToRemove[index] = cachePair.Key;
+						index++;
 					}
 				}
 
 				LockObj.EnterWriteLock();
 				try
 				{
-					foreach (var key in keysToRemove)
+					for (var i = index - 1; i >= 0; i--)
 					{
-						Cache.Remove(key);
+						Cache.Remove(keysToRemove[i]);
 					}
 				}
 				finally
 				{
 					LockObj.ExitWriteLock();
 				}
+
+				ArrayPool<string>.Shared.Return(keysToRemove);
 			}
 			finally
 			{
