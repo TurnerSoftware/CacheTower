@@ -10,7 +10,7 @@ using StackExchange.Redis;
 
 namespace CacheTower.Tests.Providers.Redis
 {
-	[TestClass, Ignore]
+	[TestClass]
 	public class RedisCacheLayerTests : BaseCacheLayerTests
 	{
 		[TestInitialize]

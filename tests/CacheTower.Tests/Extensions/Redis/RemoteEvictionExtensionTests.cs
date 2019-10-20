@@ -10,7 +10,7 @@ using Moq;
 
 namespace CacheTower.Tests.Extensions.Redis
 {
-	[TestClass, Ignore]
+	[TestClass]
 	public class RemoteEvictionExtensionTests
 	{
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
