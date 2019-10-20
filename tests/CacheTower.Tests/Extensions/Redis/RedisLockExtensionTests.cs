@@ -44,14 +44,16 @@ namespace CacheTower.Tests.Extensions.Redis
 		public async Task RefreshValueNotifiesChannelSubscribers()
 		{
 			var connection = RedisHelper.GetConnection();
-			var hasMessagedSubscribers = false;
+			var taskCompletionSource = new TaskCompletionSource<bool>();
 
 			await connection.GetSubscriber().SubscribeAsync("CacheTower.CacheLock", (channel, value) =>
 			{
 				if (value == "TestKey")
 				{
-					hasMessagedSubscribers = true;
+					taskCompletionSource.SetResult(true);
 				}
+
+				taskCompletionSource.SetResult(false);
 			});
 
 			var cacheStackMock = new Mock<ICacheStack>();
@@ -62,9 +64,17 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			await extension.RefreshValueAsync(string.Empty, "TestKey", 
 				() => Task.FromResult(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
-			await Task.Delay(1000);
 
-			Assert.IsTrue(hasMessagedSubscribers, "Subscribers were not notified about the refreshed value");
+
+			var waitTask = taskCompletionSource.Task;
+			await Task.WhenAny(waitTask, Task.Delay(TimeSpan.FromSeconds(10)));
+
+			if (!waitTask.IsCompleted)
+			{
+				Assert.Fail("Subscriber response took too long");
+			}
+
+			Assert.IsTrue(waitTask.Result, "Subscribers were not notified about the refreshed value");
 		}
 
 
@@ -124,6 +134,9 @@ namespace CacheTower.Tests.Extensions.Redis
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
+
+			await Task.Delay(250);
+			
 			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
