@@ -129,18 +129,18 @@ namespace CacheTower.Tests.Extensions.Redis
 			var primaryTask = extensionOne.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(1000);
+						await Task.Delay(2000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
 
-			await Task.Delay(250);
+			await Task.Delay(500);
 			
 			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(1000);
+						await Task.Delay(2000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
@@ -150,7 +150,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			Assert.AreEqual(await primaryTask, await succeedingTask, "Processing task call didn't complete first - something has gone very wrong.");
 
 			cacheStackMockOne.Verify(c => c.GetAsync<int>("TestKey"), Times.Never, "Processing task shouldn't be querying existing values");
-			cacheStackMockTwo.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Missed checks whether waiting was required or retrieving the updated value");
+			cacheStackMockTwo.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Missed GetAsync for retrieving the updated value - this means the registered stack returned the updated value early");
 		}
 	}
 }
