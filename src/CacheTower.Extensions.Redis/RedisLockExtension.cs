@@ -71,7 +71,7 @@ namespace CacheTower.Extensions.Redis
 				}
 				finally
 				{
-					await Database.KeyDeleteAsync(cacheKey);
+					await Database.KeyDeleteAsync(cacheKey, CommandFlags.FireAndForget);
 				}
 			}
 			else
