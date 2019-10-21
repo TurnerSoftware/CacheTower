@@ -9,9 +9,9 @@ using Nito.AsyncEx;
 namespace CacheTower.Providers.FileSystem
 {
 #if NETSTANDARD2_0
-	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IDisposable where TManifest : IManifestEntry, new()
+	public abstract class FileCacheLayerBase<TManifest> : IAsyncCacheLayer, IDisposable where TManifest : IManifestEntry, new()
 #elif NETSTANDARD2_1
-	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IAsyncDisposable where TManifest : IManifestEntry, new()
+	public abstract class FileCacheLayerBase<TManifest> : IAsyncCacheLayer, IAsyncDisposable where TManifest : IManifestEntry, new()
 #endif
 	{
 		private bool Disposed = false;

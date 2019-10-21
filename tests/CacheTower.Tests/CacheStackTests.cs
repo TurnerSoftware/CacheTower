@@ -38,13 +38,13 @@ namespace CacheTower.Tests
 			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
 			await cacheStack.SetAsync("Cleanup_CleansAllTheLayers", cacheEntry);
 
-			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Cleanup_CleansAllTheLayers"));
-			Assert.AreEqual(cacheEntry, await layer2.GetAsync<int>("Cleanup_CleansAllTheLayers"));
+			Assert.AreEqual(cacheEntry, layer1.Get<int>("Cleanup_CleansAllTheLayers"));
+			Assert.AreEqual(cacheEntry, layer2.Get<int>("Cleanup_CleansAllTheLayers"));
 
 			await cacheStack.CleanupAsync();
 
-			Assert.IsNull(await layer1.GetAsync<int>("Cleanup_CleansAllTheLayers"));
-			Assert.IsNull(await layer2.GetAsync<int>("Cleanup_CleansAllTheLayers"));
+			Assert.IsNull(layer1.Get<int>("Cleanup_CleansAllTheLayers"));
+			Assert.IsNull(layer2.Get<int>("Cleanup_CleansAllTheLayers"));
 
 			await DisposeOf(cacheStack);
 		}
@@ -58,13 +58,13 @@ namespace CacheTower.Tests
 			var cacheStack = new CacheStack(null, new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = await cacheStack.SetAsync("Evict_EvictsAllTheLayers", 42, TimeSpan.FromDays(1));
 
-			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Evict_EvictsAllTheLayers"));
-			Assert.AreEqual(cacheEntry, await layer2.GetAsync<int>("Evict_EvictsAllTheLayers"));
+			Assert.AreEqual(cacheEntry, layer1.Get<int>("Evict_EvictsAllTheLayers"));
+			Assert.AreEqual(cacheEntry, layer2.Get<int>("Evict_EvictsAllTheLayers"));
 
 			await cacheStack.EvictAsync("Evict_EvictsAllTheLayers");
 
-			Assert.IsNull(await layer1.GetAsync<int>("Evict_EvictsAllTheLayers"));
-			Assert.IsNull(await layer2.GetAsync<int>("Evict_EvictsAllTheLayers"));
+			Assert.IsNull(layer1.Get<int>("Evict_EvictsAllTheLayers"));
+			Assert.IsNull(layer2.Get<int>("Evict_EvictsAllTheLayers"));
 
 			await DisposeOf(cacheStack);
 		}
@@ -78,8 +78,8 @@ namespace CacheTower.Tests
 			var cacheStack = new CacheStack(null, new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = await cacheStack.SetAsync("Set_SetsAllTheLayers", 42, TimeSpan.FromDays(1));
 
-			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Set_SetsAllTheLayers"));
-			Assert.AreEqual(cacheEntry, await layer2.GetAsync<int>("Set_SetsAllTheLayers"));
+			Assert.AreEqual(cacheEntry, layer1.Get<int>("Set_SetsAllTheLayers"));
+			Assert.AreEqual(cacheEntry, layer2.Get<int>("Set_SetsAllTheLayers"));
 
 			await DisposeOf(cacheStack);
 		}
@@ -93,12 +93,12 @@ namespace CacheTower.Tests
 
 			var cacheStack = new CacheStack(null, new[] { layer1, layer2, layer3 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow, TimeSpan.FromDays(1));
-			await layer2.SetAsync("Get_BackPropagatesToEarlierCacheLayers", cacheEntry);
+			layer2.Set("Get_BackPropagatesToEarlierCacheLayers", cacheEntry);
 
 			var cacheEntryFromStack = await cacheStack.GetAsync<int>("Get_BackPropagatesToEarlierCacheLayers");
 			Assert.AreEqual(cacheEntry, cacheEntryFromStack);
-			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Get_BackPropagatesToEarlierCacheLayers"));
-			Assert.IsNull(await layer3.GetAsync<int>("Get_BackPropagatesToEarlierCacheLayers"));
+			Assert.AreEqual(cacheEntry, layer1.Get<int>("Get_BackPropagatesToEarlierCacheLayers"));
+			Assert.IsNull(layer3.Get<int>("Get_BackPropagatesToEarlierCacheLayers"));
 
 			await DisposeOf(cacheStack);
 		}

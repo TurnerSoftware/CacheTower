@@ -6,7 +6,7 @@ using BenchmarkDotNet.Attributes;
 
 namespace CacheTower.Benchmarks.Providers.FileSystem
 {
-	public abstract class BaseFileCacheLayerBenchmark : BaseCacheLayerBenchmark
+	public abstract class BaseFileCacheLayerBenchmark : BaseAsyncCacheLayerBenchmark
 	{
 		protected string DirectoryPath { get; set; }
 

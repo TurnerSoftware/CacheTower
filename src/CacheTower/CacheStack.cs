@@ -63,7 +63,14 @@ namespace CacheTower
 			
 			foreach (var layer in CacheLayers)
 			{
-				await layer.CleanupAsync();
+				if (layer is ISyncCacheLayer syncLayer)
+				{
+					syncLayer.Cleanup();
+				}
+				else if (layer is IAsyncCacheLayer asyncLayer)
+				{
+					await asyncLayer.CleanupAsync();
+				}
 			}
 		}
 
@@ -78,7 +85,14 @@ namespace CacheTower
 
 			foreach (var layer in CacheLayers)
 			{
-				await layer.EvictAsync(cacheKey);
+				if (layer is ISyncCacheLayer syncLayer)
+				{
+					syncLayer.Evict(cacheKey);
+				}
+				else if (layer is IAsyncCacheLayer asyncLayer)
+				{
+					await asyncLayer.EvictAsync(cacheKey);
+				}
 			}
 		}
 
@@ -102,7 +116,14 @@ namespace CacheTower
 
 			foreach (var layer in CacheLayers)
 			{
-				await layer.SetAsync(cacheKey, cacheEntry);
+				if (layer is ISyncCacheLayer syncLayer)
+				{
+					syncLayer.Set(cacheKey, cacheEntry);
+				}
+				else if (layer is IAsyncCacheLayer asyncLayer)
+				{
+					await asyncLayer.SetAsync(cacheKey, cacheEntry);
+				}
 			}
 		}
 
@@ -118,19 +139,57 @@ namespace CacheTower
 			for (var i = 0; i < CacheLayers.Length; i++)
 			{
 				var cacheLayer = CacheLayers[i];
-				if (await cacheLayer.IsAvailableAsync(cacheKey))
+
+				if (cacheLayer is ISyncCacheLayer syncLayer)
 				{
-					var cacheEntry = await cacheLayer.GetAsync<T>(cacheKey);
-					if (cacheEntry != default)
+					if (syncLayer.IsAvailable(cacheKey))
 					{
-						//Populate previous cache layers
-						for (; --i >= 0;)
+						var cacheEntry = syncLayer.Get<T>(cacheKey);
+						if (cacheEntry != default)
 						{
-							cacheLayer = CacheLayers[i];
-							await cacheLayer.SetAsync(cacheKey, cacheEntry);
+							//Populate previous cache layers
+							for (; --i >= 0;)
+							{
+								var previousLayer = CacheLayers[i];
+
+								if (previousLayer is ISyncCacheLayer prevSyncLayer)
+								{
+									prevSyncLayer.Set(cacheKey, cacheEntry);
+								}
+								else if (previousLayer is IAsyncCacheLayer prevAsyncLayer)
+								{
+									await prevAsyncLayer.SetAsync(cacheKey, cacheEntry);
+								}
+							}
+
+							return cacheEntry;
 						}
-						
-						return cacheEntry;
+					}
+				}
+				else if (cacheLayer is IAsyncCacheLayer asyncLayer)
+				{
+					if (await asyncLayer.IsAvailableAsync(cacheKey))
+					{
+						var cacheEntry = await asyncLayer.GetAsync<T>(cacheKey);
+						if (cacheEntry != default)
+						{
+							//Populate previous cache layers
+							for (; --i >= 0;)
+							{
+								var previousLayer = CacheLayers[i];
+
+								if (previousLayer is ISyncCacheLayer prevSyncLayer)
+								{
+									prevSyncLayer.Set(cacheKey, cacheEntry);
+								}
+								else if (previousLayer is IAsyncCacheLayer prevAsyncLayer)
+								{
+									await prevAsyncLayer.SetAsync(cacheKey, cacheEntry);
+								}
+							}
+
+							return cacheEntry;
+						}
 					}
 				}
 			}

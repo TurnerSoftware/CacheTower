@@ -11,7 +11,15 @@ namespace CacheTower.Tests.Providers
 {
 	public abstract class BaseCacheLayerTests : TestBase
 	{
-		protected static async Task AssertGetSetCacheAsync(ICacheLayer cacheLayer)
+		protected static void AssertGetSetCache(ISyncCacheLayer cacheLayer)
+		{
+			var cacheEntry = new CacheEntry<int>(12, DateTime.UtcNow, TimeSpan.FromDays(1));
+			cacheLayer.Set("AssertGetSetCache", cacheEntry);
+			var cacheEntryGet = cacheLayer.Get<int>("AssertGetSetCache");
+
+			Assert.AreEqual(cacheEntry, cacheEntryGet, "Set value in cache doesn't match retrieved value");
+		}
+		protected static async Task AssertGetSetCacheAsync(IAsyncCacheLayer cacheLayer)
 		{
 			var cacheEntry = new CacheEntry<int>(12, DateTime.UtcNow, TimeSpan.FromDays(1));
 			await cacheLayer.SetAsync("AssertGetSetCache", cacheEntry);
@@ -20,12 +28,34 @@ namespace CacheTower.Tests.Providers
 			Assert.AreEqual(cacheEntry, cacheEntryGet, "Set value in cache doesn't match retrieved value");
 		}
 
-		protected static async Task AssertCacheAvailabilityAsync(ICacheLayer cacheLayer, bool expected)
+		protected static void AssertCacheAvailability(ISyncCacheLayer cacheLayer, bool expected)
+		{
+			Assert.AreEqual(expected, cacheLayer.IsAvailable("AnyCacheKey-DoesntNeedToExist"));
+		}
+		protected static async Task AssertCacheAvailabilityAsync(IAsyncCacheLayer cacheLayer, bool expected)
 		{
 			Assert.AreEqual(expected, await cacheLayer.IsAvailableAsync("AnyCacheKey-DoesntNeedToExist"));
 		}
 
-		protected static async Task AssertCacheEvictionAsync(ICacheLayer cacheLayer)
+		protected static void AssertCacheEviction(ISyncCacheLayer cacheLayer)
+		{
+			var cacheEntry = new CacheEntry<int>(77, DateTime.UtcNow, TimeSpan.FromDays(1));
+			cacheLayer.Set("AssertCacheEviction-ToEvict", cacheEntry);
+			cacheLayer.Set("AssertCacheEviction-ToKeep", cacheEntry);
+
+			var cacheEntryGetPreEviction1 = cacheLayer.Get<int>("AssertCacheEviction-ToEvict");
+			var cacheEntryGetPreEviction2 = cacheLayer.Get<int>("AssertCacheEviction-ToKeep");
+			Assert.IsNotNull(cacheEntryGetPreEviction1, "Value not set in cache");
+			Assert.IsNotNull(cacheEntryGetPreEviction2, "Value not set in cache");
+
+			cacheLayer.Evict("AssertCacheEviction-ToEvict");
+
+			var cacheEntryGetPostEviction1 = cacheLayer.Get<int>("AssertCacheEviction-ToEvict");
+			var cacheEntryGetPostEviction2 = cacheLayer.Get<int>("AssertCacheEviction-ToKeep");
+			Assert.IsNull(cacheEntryGetPostEviction1, "Didn't evict value that should have been");
+			Assert.IsNotNull(cacheEntryGetPostEviction2, "Evicted entry that should have been kept");
+		}
+		protected static async Task AssertCacheEvictionAsync(IAsyncCacheLayer cacheLayer)
 		{
 			var cacheEntry = new CacheEntry<int>(77, DateTime.UtcNow, TimeSpan.FromDays(1));
 			await cacheLayer.SetAsync("AssertCacheEviction-ToEvict", cacheEntry);
@@ -44,7 +74,24 @@ namespace CacheTower.Tests.Providers
 			Assert.IsNotNull(cacheEntryGetPostEviction2, "Evicted entry that should have been kept");
 		}
 
-		protected static async Task AssertCacheCleanupAsync(ICacheLayer cacheLayer)
+		protected static void AssertCacheCleanup(ISyncCacheLayer cacheLayer)
+		{
+			CacheEntry<int> DoCleanupTest(DateTime dateTime)
+			{
+				var cacheKey = $"AssertCacheCleanup-(DateTime:{dateTime})";
+
+				var cacheEntry = new CacheEntry<int>(98, dateTime, TimeSpan.FromDays(1));
+				cacheLayer.Set(cacheKey, cacheEntry);
+
+				cacheLayer.Cleanup();
+
+				return cacheLayer.Get<int>(cacheKey);
+			}
+
+			Assert.IsNotNull(DoCleanupTest(DateTime.UtcNow), "Cleanup removed entry that was still live");
+			Assert.IsNull(DoCleanupTest(DateTime.UtcNow.AddDays(-2)), "Cleanup kept entry past the end of life");
+		}
+		protected static async Task AssertCacheCleanupAsync(IAsyncCacheLayer cacheLayer)
 		{
 			async Task<CacheEntry<int>> DoCleanupTest(DateTime dateTime)
 			{
@@ -62,7 +109,31 @@ namespace CacheTower.Tests.Providers
 			Assert.IsNull(await DoCleanupTest(DateTime.UtcNow.AddDays(-2)), "Cleanup kept entry past the end of life");
 		}
 
-		protected static async Task AssertComplexTypeCachingAsync(ICacheLayer cacheLayer)
+		protected static void AssertComplexTypeCaching(ISyncCacheLayer cacheLayer)
+		{
+			var complexTypeOneEntry = new CacheEntry<ComplexTypeCaching_TypeOne>(new ComplexTypeCaching_TypeOne
+			{
+				ExampleString = "Hello World",
+				ExampleNumber = 99,
+				ListOfNumbers = new List<int>() { 1, 2, 4, 8 }
+			}, DateTime.UtcNow, TimeSpan.FromDays(1));
+			cacheLayer.Set("ComplexTypeOne", complexTypeOneEntry);
+			var complexTypeOneEntryGet = cacheLayer.Get<ComplexTypeCaching_TypeOne>("ComplexTypeOne");
+
+			Assert.AreEqual(complexTypeOneEntry, complexTypeOneEntryGet, "Set value in cache doesn't match retrieved value");
+
+			var complexTypeTwoEntry = new CacheEntry<ComplexTypeCaching_TypeTwo>(new ComplexTypeCaching_TypeTwo
+			{
+				ExampleString = "Hello World",
+				ArrayOfObjects = new[] { complexTypeOneEntry.Value },
+				DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "Z", 26 } }
+			}, DateTime.UtcNow, TimeSpan.FromDays(1));
+			cacheLayer.Set("ComplexTypeTwo", complexTypeTwoEntry);
+			var complexTypeTwoEntryGet = cacheLayer.Get<ComplexTypeCaching_TypeTwo>("ComplexTypeTwo");
+
+			Assert.AreEqual(complexTypeTwoEntry, complexTypeTwoEntryGet, "Set value in cache doesn't match retrieved value");
+		}
+		protected static async Task AssertComplexTypeCachingAsync(IAsyncCacheLayer cacheLayer)
 		{
 			var complexTypeOneEntry = new CacheEntry<ComplexTypeCaching_TypeOne>(new ComplexTypeCaching_TypeOne
 			{
