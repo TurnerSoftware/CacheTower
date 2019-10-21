@@ -87,6 +87,11 @@ namespace CacheTower.Providers.FileSystem
 		{
 			using (await ManifestLock.LockAsync())
 			{
+				if (!Directory.Exists(DirectoryPath))
+				{
+					Directory.CreateDirectory(DirectoryPath);
+				}
+
 				await SerializeFileAsync(ManifestPath, CacheManifest);
 			}
 		}
