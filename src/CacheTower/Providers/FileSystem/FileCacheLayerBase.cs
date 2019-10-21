@@ -38,6 +38,22 @@ namespace CacheTower.Providers.FileSystem
 
 		protected abstract Task SerializeAsync<T>(Stream stream, T value);
 
+		private async Task<T> DeserializeFileAsync<T>(string path)
+		{
+			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024))
+			{
+				return await DeserializeAsync<T>(stream);
+			}
+		}
+
+		private async Task SerializeFileAsync<T>(string path, T value)
+		{
+			using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1024))
+			{
+				await SerializeAsync(stream, value);
+			}
+		}
+
 		private async Task TryLoadManifestAsync()
 		{
 			//Avoid unnecessary lock contention way after manifest is loaded by checking before lock
@@ -50,11 +66,7 @@ namespace CacheTower.Providers.FileSystem
 					{
 						if (File.Exists(ManifestPath))
 						{
-							using (var stream = new FileStream(ManifestPath, FileMode.Open, FileAccess.Read))
-							{
-
-								CacheManifest = await DeserializeAsync<ConcurrentDictionary<string, IManifestEntry>>(stream);
-							}
+							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string, IManifestEntry>>(ManifestPath);
 						}
 						else
 						{
@@ -64,10 +76,7 @@ namespace CacheTower.Providers.FileSystem
 							}
 
 							CacheManifest = new ConcurrentDictionary<string, IManifestEntry>();
-							using (var stream = new FileStream(ManifestPath, FileMode.OpenOrCreate, FileAccess.Write))
-							{
-								await SerializeAsync(stream, CacheManifest);
-							}
+							await SerializeFileAsync(ManifestPath, CacheManifest);
 						}
 					}
 				}
@@ -78,10 +87,7 @@ namespace CacheTower.Providers.FileSystem
 		{
 			using (await ManifestLock.LockAsync())
 			{
-				using (var stream = new FileStream(ManifestPath, FileMode.Open, FileAccess.Write))
-				{
-					await SerializeAsync(stream, CacheManifest);
-				}
+				await SerializeFileAsync(ManifestPath, CacheManifest);
 			}
 		}
 
@@ -194,11 +200,8 @@ namespace CacheTower.Providers.FileSystem
 					if (CacheManifest.ContainsKey(cacheKey))
 					{
 						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
-						using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read))
-						{
-							var value = await DeserializeAsync<T>(stream);
-							return new CacheEntry<T>(value, manifestEntry.CachedAt, manifestEntry.TimeToLive);
-						}
+						var value = await DeserializeFileAsync<T>(path);
+						return new CacheEntry<T>(value, manifestEntry.CachedAt, manifestEntry.TimeToLive);
 					}
 				}
 			}
@@ -242,10 +245,7 @@ namespace CacheTower.Providers.FileSystem
 			using (await lockObj.WriterLockAsync())
 			{
 				var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
-				using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
-				{
-					await SerializeAsync(stream, cacheEntry.Value);
-				}
+				await SerializeFileAsync(path, cacheEntry.Value);
 			}
 		}
 
