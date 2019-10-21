@@ -127,6 +127,24 @@ namespace CacheTower
 			}
 		}
 
+		private async Task BackPopulateCache<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
+		{
+			//Populate previous cache layers
+			for (; --fromIndexExclusive >= 0;)
+			{
+				var previousLayer = CacheLayers[fromIndexExclusive];
+
+				if (previousLayer is ISyncCacheLayer prevSyncLayer)
+				{
+					prevSyncLayer.Set(cacheKey, cacheEntry);
+				}
+				else if (previousLayer is IAsyncCacheLayer prevAsyncLayer)
+				{
+					await prevAsyncLayer.SetAsync(cacheKey, cacheEntry);
+				}
+			}
+		}
+
 		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			ThrowIfDisposed();
@@ -147,21 +165,7 @@ namespace CacheTower
 						var cacheEntry = syncLayer.Get<T>(cacheKey);
 						if (cacheEntry != default)
 						{
-							//Populate previous cache layers
-							for (; --i >= 0;)
-							{
-								var previousLayer = CacheLayers[i];
-
-								if (previousLayer is ISyncCacheLayer prevSyncLayer)
-								{
-									prevSyncLayer.Set(cacheKey, cacheEntry);
-								}
-								else if (previousLayer is IAsyncCacheLayer prevAsyncLayer)
-								{
-									await prevAsyncLayer.SetAsync(cacheKey, cacheEntry);
-								}
-							}
-
+							await BackPopulateCache(i, cacheKey, cacheEntry);
 							return cacheEntry;
 						}
 					}
@@ -173,21 +177,7 @@ namespace CacheTower
 						var cacheEntry = await asyncLayer.GetAsync<T>(cacheKey);
 						if (cacheEntry != default)
 						{
-							//Populate previous cache layers
-							for (; --i >= 0;)
-							{
-								var previousLayer = CacheLayers[i];
-
-								if (previousLayer is ISyncCacheLayer prevSyncLayer)
-								{
-									prevSyncLayer.Set(cacheKey, cacheEntry);
-								}
-								else if (previousLayer is IAsyncCacheLayer prevAsyncLayer)
-								{
-									await prevAsyncLayer.SetAsync(cacheKey, cacheEntry);
-								}
-							}
-
+							await BackPopulateCache(i, cacheKey, cacheEntry);
 							return cacheEntry;
 						}
 					}
