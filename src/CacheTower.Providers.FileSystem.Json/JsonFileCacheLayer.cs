@@ -19,33 +19,26 @@ namespace CacheTower.Providers.FileSystem.Json
 			public T Value { get; set; }
 		}
 
-		protected override async Task<T> DeserializeAsync<T>(Stream stream)
+		protected override T Deserialize<T>(Stream stream)
 		{
-			using (var memStream = new MemoryStream((int)stream.Length))
+			using (var streamReader = new StreamReader(stream, Encoding.UTF8, false, 1024))
+			using (var jsonReader = new JsonTextReader(streamReader))
 			{
-				await stream.CopyToAsync(memStream);
-				memStream.Seek(0, SeekOrigin.Begin);
+				var serializer = new JsonSerializer();
+				var wrapper = serializer.Deserialize<DataWrapper<T>>(jsonReader);
 
-				using (var streamReader = new StreamReader(memStream))
-				using (var jsonReader = new JsonTextReader(streamReader))
+				if (wrapper == default)
 				{
-					var serializer = new JsonSerializer();
-					var wrapper = serializer.Deserialize<DataWrapper<T>>(jsonReader);
-
-					if (wrapper == default)
-					{
-						return default;
-					}
-
-					return wrapper.Value;
+					return default;
 				}
+
+				return wrapper.Value;
 			}
 		}
 
-		protected override async Task SerializeAsync<T>(Stream stream, T value)
+		protected override void Serialize<T>(Stream stream, T value)
 		{
-			using (var memStream = new MemoryStream())
-			using (var streamWriter = new StreamWriter(memStream))
+			using (var streamWriter = new StreamWriter(stream, Encoding.UTF8, 1024, true))
 			using (var jsonWriter = new JsonTextWriter(streamWriter))
 			{
 				var wrapper = new DataWrapper<T>
@@ -55,10 +48,8 @@ namespace CacheTower.Providers.FileSystem.Json
 
 				var serializer = new JsonSerializer();
 				serializer.Serialize(jsonWriter, wrapper);
-				await jsonWriter.FlushAsync();
-
-				memStream.Seek(0, SeekOrigin.Begin);
-				await memStream.CopyToAsync(stream);
+				jsonWriter.Flush();
+				jsonWriter.CloseOutput = false;
 			}
 		}
 	}

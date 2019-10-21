@@ -34,23 +34,29 @@ namespace CacheTower.Providers.FileSystem
 			ManifestPath = Path.Combine(directoryPath, "manifest" + fileExtension);
 		}
 
-		protected abstract Task<T> DeserializeAsync<T>(Stream stream);
+		protected abstract T Deserialize<T>(Stream stream);
 
-		protected abstract Task SerializeAsync<T>(Stream stream, T value);
+		protected abstract void Serialize<T>(Stream stream, T value);
 
 		private async Task<T> DeserializeFileAsync<T>(string path)
 		{
 			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024))
+			using (var memStream = new MemoryStream((int)stream.Length))
 			{
-				return await DeserializeAsync<T>(stream);
+				await stream.CopyToAsync(memStream);
+				memStream.Seek(0, SeekOrigin.Begin);
+				return Deserialize<T>(memStream);
 			}
 		}
 
 		private async Task SerializeFileAsync<T>(string path, T value)
 		{
 			using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1024))
+			using (var memStream = new MemoryStream())
 			{
-				await SerializeAsync(stream, value);
+				Serialize(memStream, value);
+				memStream.Seek(0, SeekOrigin.Begin);
+				await memStream.CopyToAsync(stream);
 			}
 		}
 

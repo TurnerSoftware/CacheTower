@@ -14,14 +14,13 @@ namespace CacheTower.Benchmarks.Providers.FileSystem
 		{
 			public NoOpFileCacheLayer(string directoryPath) : base(directoryPath, ".noop") { }
 
-			protected override Task<T> DeserializeAsync<T>(Stream stream)
+			protected override T Deserialize<T>(Stream stream)
 			{
-				return Task.FromResult(default(T));
+				return default;
 			}
 
-			protected override Task SerializeAsync<T>(Stream stream, T value)
+			protected override void Serialize<T>(Stream stream, T value)
 			{
-				return Task.CompletedTask;
 			}
 		}
 
