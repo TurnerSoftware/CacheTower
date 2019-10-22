@@ -159,7 +159,7 @@ namespace CacheTower.Tests
 			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack);
 
 			//Give enough time for the background task back propagation to happen
-			await Task.Delay(500);
+			await Task.Delay(2000);
 
 			Assert.AreEqual(cacheEntry, layer1.Get<int>("GetOrSet_BackPropagatesToEarlierCacheLayers"));
 			Assert.IsNull(layer3.Get<int>("GetOrSet_BackPropagatesToEarlierCacheLayers"));

@@ -95,7 +95,7 @@ namespace CacheTower.Tests.Extensions.Redis
 				return await extension.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(1000);
+						await Task.Delay(2000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
