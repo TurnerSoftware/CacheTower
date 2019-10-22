@@ -28,13 +28,15 @@ namespace CacheTower.Providers.Database.MongoDB
 			IndexWriter = new EntityIndexWriter<DbCachedEntry>(connection);
 		}
 
-		private async Task TryConfigureIndexes()
+		private Task TryConfigureIndexes()
 		{
 			if (!HasSetIndexes)
 			{
 				HasSetIndexes = true;
-				await IndexWriter.ApplyIndexingAsync();
+				return IndexWriter.ApplyIndexingAsync();
 			}
+
+			return Task.CompletedTask;
 		}
 
 		public async Task CleanupAsync()
