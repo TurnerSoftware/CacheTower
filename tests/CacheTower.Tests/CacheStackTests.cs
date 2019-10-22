@@ -49,6 +49,13 @@ namespace CacheTower.Tests
 			await DisposeOf(cacheStack);
 		}
 
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
+		public async Task EvictThrowsOnNullKey()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await cacheStack.EvictAsync(null);
+		}
+
 		[TestMethod]
 		public async Task Evict_EvictsAllTheLayers()
 		{
