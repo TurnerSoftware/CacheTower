@@ -125,22 +125,24 @@ namespace CacheTower.Tests.Extensions.Redis
 			extensionTwo.Register(cacheStackMockTwo.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var secondaryTaskWait = new TaskCompletionSource<bool>();
 
 			var primaryTask = extensionOne.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(3000);
+						secondaryTaskWait.SetResult(true);
+						await Task.Delay(2000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
 
-			await Task.Delay(1000);
+			await secondaryTaskWait.Task;
 			
 			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(3000);
+						await Task.Delay(2000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
