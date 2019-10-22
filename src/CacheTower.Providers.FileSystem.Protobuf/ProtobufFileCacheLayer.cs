@@ -22,24 +22,14 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 			}
 		}
 
-		protected override async Task<T> DeserializeAsync<T>(Stream stream)
+		protected override T Deserialize<T>(Stream stream)
 		{
-			using (var memStream = new MemoryStream((int)stream.Length))
-			{
-				await stream.CopyToAsync(memStream);
-				memStream.Seek(0, SeekOrigin.Begin);
-				return Serializer.Deserialize<T>(memStream);
-			}
+			return Serializer.Deserialize<T>(stream);
 		}
 
-		protected override async Task SerializeAsync<T>(Stream stream, T value)
+		protected override void Serialize<T>(Stream stream, T value)
 		{
-			using (var memStream = new MemoryStream())
-			{
-				Serializer.Serialize(memStream, value);
-				memStream.Seek(0, SeekOrigin.Begin);
-				await memStream.CopyToAsync(stream);
-			}
+			Serializer.Serialize(stream, value);
 		}
 	}
 }

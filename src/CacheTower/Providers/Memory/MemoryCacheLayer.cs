@@ -8,15 +8,13 @@ using System.Threading.Tasks;
 
 namespace CacheTower.Providers.Memory
 {
-	public class MemoryCacheLayer : ICacheLayer, IDisposable
+	public class MemoryCacheLayer : ISyncCacheLayer, IDisposable
 	{
 		private bool Disposed;
 		private ReaderWriterLockSlim LockObj { get; } = new ReaderWriterLockSlim();
 		private Dictionary<string, CacheEntry> Cache { get; } = new Dictionary<string, CacheEntry>();
 
-		private static readonly Task<bool> CompletedTaskTrue = Task.FromResult(true);
-
-		public Task CleanupAsync()
+		public void Cleanup()
 		{
 			LockObj.EnterUpgradeableReadLock();
 
@@ -54,11 +52,9 @@ namespace CacheTower.Providers.Memory
 			{
 				LockObj.ExitUpgradeableReadLock();
 			}
-
-			return Task.CompletedTask;
 		}
 
-		public Task EvictAsync(string cacheKey)
+		public void Evict(string cacheKey)
 		{
 			LockObj.EnterWriteLock();
 			try
@@ -69,11 +65,9 @@ namespace CacheTower.Providers.Memory
 			{
 				LockObj.ExitWriteLock();
 			}
-
-			return Task.CompletedTask;
 		}
 
-		public Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public CacheEntry<T> Get<T>(string cacheKey)
 		{
 			LockObj.EnterReadLock();
 
@@ -81,10 +75,10 @@ namespace CacheTower.Providers.Memory
 			{
 				if (Cache.TryGetValue(cacheKey, out var cacheEntry))
 				{
-					return Task.FromResult(cacheEntry as CacheEntry<T>);
+					return cacheEntry as CacheEntry<T>;
 				}
 
-				return Task.FromResult(default(CacheEntry<T>));
+				return default;
 			}
 			finally
 			{
@@ -92,12 +86,12 @@ namespace CacheTower.Providers.Memory
 			}
 		}
 
-		public Task<bool> IsAvailableAsync(string cacheKey)
+		public bool IsAvailable(string cacheKey)
 		{
-			return CompletedTaskTrue;
+			return true;
 		}
 
-		public Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public void Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			LockObj.EnterWriteLock();
 
@@ -109,8 +103,6 @@ namespace CacheTower.Providers.Memory
 			{
 				LockObj.ExitWriteLock();
 			}
-
-			return Task.CompletedTask;
 		}
 
 		public void Dispose()

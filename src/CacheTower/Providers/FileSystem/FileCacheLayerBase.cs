@@ -9,9 +9,9 @@ using Nito.AsyncEx;
 namespace CacheTower.Providers.FileSystem
 {
 #if NETSTANDARD2_0
-	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IDisposable where TManifest : IManifestEntry, new()
+	public abstract class FileCacheLayerBase<TManifest> : IAsyncCacheLayer, IDisposable where TManifest : IManifestEntry, new()
 #elif NETSTANDARD2_1
-	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IAsyncDisposable where TManifest : IManifestEntry, new()
+	public abstract class FileCacheLayerBase<TManifest> : IAsyncCacheLayer, IAsyncDisposable where TManifest : IManifestEntry, new()
 #endif
 	{
 		private bool Disposed = false;
@@ -34,23 +34,29 @@ namespace CacheTower.Providers.FileSystem
 			ManifestPath = Path.Combine(directoryPath, "manifest" + fileExtension);
 		}
 
-		protected abstract Task<T> DeserializeAsync<T>(Stream stream);
+		protected abstract T Deserialize<T>(Stream stream);
 
-		protected abstract Task SerializeAsync<T>(Stream stream, T value);
+		protected abstract void Serialize<T>(Stream stream, T value);
 
 		private async Task<T> DeserializeFileAsync<T>(string path)
 		{
 			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024))
+			using (var memStream = new MemoryStream((int)stream.Length))
 			{
-				return await DeserializeAsync<T>(stream);
+				await stream.CopyToAsync(memStream);
+				memStream.Seek(0, SeekOrigin.Begin);
+				return Deserialize<T>(memStream);
 			}
 		}
 
 		private async Task SerializeFileAsync<T>(string path, T value)
 		{
 			using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1024))
+			using (var memStream = new MemoryStream())
 			{
-				await SerializeAsync(stream, value);
+				Serialize(memStream, value);
+				memStream.Seek(0, SeekOrigin.Begin);
+				await memStream.CopyToAsync(stream);
 			}
 		}
 
@@ -87,6 +93,11 @@ namespace CacheTower.Providers.FileSystem
 		{
 			using (await ManifestLock.LockAsync())
 			{
+				if (!Directory.Exists(DirectoryPath))
+				{
+					Directory.CreateDirectory(DirectoryPath);
+				}
+
 				await SerializeFileAsync(ManifestPath, CacheManifest);
 			}
 		}

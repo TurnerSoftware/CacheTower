@@ -12,7 +12,7 @@ using MongoFramework.Infrastructure.Mapping;
 
 namespace CacheTower.Providers.Database.MongoDB
 {
-	public class MongoDbCacheLayer : ICacheLayer
+	public class MongoDbCacheLayer : IAsyncCacheLayer
 	{
 		private bool? IsDatabaseAvailable { get; set; }
 		private IEntityReader<DbCachedEntry> EntityReader { get; }

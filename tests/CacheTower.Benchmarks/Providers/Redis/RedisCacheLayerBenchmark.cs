@@ -9,7 +9,7 @@ using StackExchange.Redis;
 
 namespace CacheTower.Benchmarks.Providers.Redis
 {
-	public class RedisCacheLayerBenchmark : BaseCacheLayerBenchmark
+	public class RedisCacheLayerBenchmark : BaseAsyncCacheLayerBenchmark
 	{
 		[GlobalSetup]
 		public void Setup()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -125,29 +126,33 @@ namespace CacheTower.Tests.Extensions.Redis
 			extensionTwo.Register(cacheStackMockTwo.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var secondaryTaskKickoff = new TaskCompletionSource<bool>();
 
 			var primaryTask = extensionOne.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(2000);
+						secondaryTaskKickoff.SetResult(true);
+						await Task.Delay(3000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
 
-			await Task.Delay(500);
-			
+			await secondaryTaskKickoff.Task;
+
 			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
-					async () =>
+					() =>
 					{
-						await Task.Delay(2000);
-						return cacheEntry;
+						return Task.FromResult(cacheEntry);
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
 
 			var succeedingTask = await Task.WhenAny(primaryTask, secondaryTask);
 			Assert.AreEqual(await primaryTask, await succeedingTask, "Processing task call didn't complete first - something has gone very wrong.");
+
+			//Let the secondary task finish before we verify ICacheStack method calls
+			await secondaryTask;
 
 			cacheStackMockOne.Verify(c => c.GetAsync<int>("TestKey"), Times.Never, "Processing task shouldn't be querying existing values");
 			cacheStackMockTwo.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Missed GetAsync for retrieving the updated value - this means the registered stack returned the updated value early");
