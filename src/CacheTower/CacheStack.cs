@@ -236,13 +236,11 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			CacheEntry<T> cacheEntry = default;
-			var requestId = Guid.NewGuid().ToString();
-
 			if (WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<bool>>()))
 			{
 				try
 				{
+					var requestId = Guid.NewGuid().ToString();
 					return await Extensions.RefreshValueAsync(requestId, cacheKey, async () =>
 					{
 						var previousEntry = await GetAsync<T>(cacheKey);
@@ -287,7 +285,7 @@ namespace CacheTower
 				return await GetAsync<T>(cacheKey);
 			}
 
-			return cacheEntry;
+			return default;
 		}
 		private void UnlockWaitingTasks(string cacheKey)
 		{
