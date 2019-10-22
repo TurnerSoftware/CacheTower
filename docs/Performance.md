@@ -1,6 +1,11 @@
 # Performance
 
-Test Machine
+The performance figures below are as a guide only. Different systems and configurations can drastically change performance results.
+Run the benchmark suite on your target machine to best gauge how the performance is for your use case.
+
+Regarding specific tests, it is best to look at the implementations themselves to understand what the test is doing in that time/allocation allotment.
+
+**Test Machine**
 
 ```
 BenchmarkDotNet=v0.11.5, OS=Windows 10.0.18362
