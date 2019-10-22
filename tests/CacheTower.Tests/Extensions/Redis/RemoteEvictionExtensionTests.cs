@@ -40,7 +40,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 			var completionSource = new TaskCompletionSource<bool>();
 
-			await connection.GetSubscriber().SubscribeAsync("CacheTower.RemoteEviction", async (channel, value) =>
+			await connection.GetSubscriber().SubscribeAsync("CacheTower.RemoteEviction", (channel, value) =>
 			{
 				if (value == "TestKey")
 				{
