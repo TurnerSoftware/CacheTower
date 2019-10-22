@@ -42,6 +42,42 @@ namespace CacheTower.Tests.Extensions.Redis
 		}
 
 		[TestMethod]
+		public async Task CustomLockTimeout()
+		{
+			var extension = new RedisLockExtension(RedisHelper.GetConnection(), lockTimeout: TimeSpan.FromDays(1));
+			var refreshWaiterTask = new TaskCompletionSource<bool>();
+			var lockWaiterTask = new TaskCompletionSource<bool>();
+
+			var refreshTask = extension.RefreshValueAsync("RequestId", "TestLock", async () =>
+			{
+				lockWaiterTask.SetResult(true);
+				await refreshWaiterTask.Task;
+				return new CacheEntry<int>(5, DateTime.UtcNow, TimeSpan.FromDays(1));
+			}, new CacheSettings(TimeSpan.FromHours(3)));
+
+			await lockWaiterTask.Task;
+
+			var database = RedisHelper.GetConnection().GetDatabase();
+			var keyWithExpiry = await database.StringGetWithExpiryAsync("TestLock");
+
+			refreshWaiterTask.SetResult(true);
+
+			//Confirm we are reading the right key
+			Assert.AreEqual("RequestId", (string)keyWithExpiry.Value);
+
+			var lockTimeout = TimeSpan.FromDays(1);
+			var actualExpiry = keyWithExpiry.Expiry.Value;
+
+			//Due to the logistics of the wait etc, we can't do an exact comparison
+			//Instead, we can safely say the above code should be completed within a minute
+			//With that in mind, remove that from the set lock timeout and compare the expiry
+			//is greater than this new "comparison timeout".
+			var comparisonTimeout = lockTimeout - TimeSpan.FromMinutes(1);
+
+			Assert.IsTrue(comparisonTimeout < keyWithExpiry.Expiry.Value);
+		}
+
+		[TestMethod]
 		public async Task RefreshValueNotifiesChannelSubscribers()
 		{
 			var connection = RedisHelper.GetConnection();
