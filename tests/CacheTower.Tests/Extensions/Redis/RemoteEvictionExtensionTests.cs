@@ -25,6 +25,14 @@ namespace CacheTower.Tests.Extensions.Redis
 			new RemoteEvictionExtension(RedisHelper.GetConnection(), null);
 		}
 
+		[TestMethod, ExpectedException(typeof(InvalidOperationException))]
+		public void ThrowForRegisteringMoreThanOneCacheStack()
+		{
+			var extension = new RemoteEvictionExtension(RedisHelper.GetConnection());
+			var cacheStackMock = new Mock<ICacheStack>();
+			extension.Register(cacheStackMock.Object);
+			extension.Register(cacheStackMock.Object);
+		}
 
 		[TestMethod]
 		public async Task EvictsFromChannelButNotFromRegisteredCacheStack()
