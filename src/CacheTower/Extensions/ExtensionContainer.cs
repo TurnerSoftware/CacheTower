@@ -42,13 +42,6 @@ namespace CacheTower.Extensions
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Register(ICacheStack cacheStack)
 		{
-			RefreshWrapperExtension?.Register(cacheStack);
-
-			foreach (var extension in ValueRefreshExtensions)
-			{
-				extension.Register(cacheStack);
-			}
-
 			foreach (var extension in AllExtensions)
 			{
 				extension.Register(cacheStack);
