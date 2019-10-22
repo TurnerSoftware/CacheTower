@@ -93,10 +93,10 @@ var myCacheStack = new CacheStack(myContext, new [] {
 
 Somewhere in your code base where you are wanting to optionally pull data from your cache.
 ```csharp
-await myCacheStack.GetOrSetAsync<MyTypeInTheCache>("MyCacheKey", (old, context) => {
+await myCacheStack.GetOrSetAsync<MyTypeInTheCache>("MyCacheKey", async (old, context) => {
 	//Here is where your heavy work code goes, maybe a call to the DB or API
 	//Your returned value will be cached
 	//"context" here is what you declared in the CacheStack constructor
-	return new MyTypeInTheCache();
+	return await HoweverIGetMyData();
 }, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromMinutes(60));
 ```
