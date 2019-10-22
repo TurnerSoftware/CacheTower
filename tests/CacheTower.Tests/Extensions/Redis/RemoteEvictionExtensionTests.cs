@@ -38,13 +38,13 @@ namespace CacheTower.Tests.Extensions.Redis
 		public async Task EvictsFromChannelButNotFromRegisteredCacheStack()
 		{
 			var connection = RedisHelper.GetConnection();
-			var hasMessagedSubscribers = false;
+			var completionSource = new TaskCompletionSource<bool>();
 
-			await connection.GetSubscriber().SubscribeAsync("CacheTower.RemoteEviction", (channel, value) =>
+			await connection.GetSubscriber().SubscribeAsync("CacheTower.RemoteEviction", async (channel, value) =>
 			{
 				if (value == "TestKey")
 				{
-					hasMessagedSubscribers = true;
+					completionSource.SetResult(true);
 				}
 			});
 
@@ -53,9 +53,10 @@ namespace CacheTower.Tests.Extensions.Redis
 			extension.Register(cacheStackMock.Object);
 
 			await extension.OnValueRefreshAsync(string.Empty, "TestKey", TimeSpan.FromDays(1));
-			await Task.Delay(1000);
 
-			Assert.IsTrue(hasMessagedSubscribers, "Subscribers were not notified about the refreshed value");
+			await Task.WhenAny(completionSource.Task, Task.Delay(6000));
+
+			Assert.IsTrue(completionSource.Task.IsCompleted, "Subscribers were not notified about the refreshed value within the time limit");
 			cacheStackMock.Verify(c => c.EvictAsync("TestKey"), Times.Never, "The CacheStack that published the refresh was told to evict its own cache");
 		}
 	}
