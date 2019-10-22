@@ -50,7 +50,7 @@ namespace CacheTower.Tests
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
-		public async Task EvictThrowsOnNullKey()
+		public async Task Evict_ThrowsOnNullKey()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.EvictAsync(null);
@@ -76,6 +76,27 @@ namespace CacheTower.Tests
 			await DisposeOf(cacheStack);
 		}
 
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
+		public async Task Get_ThrowsOnNullKey()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await cacheStack.GetAsync<int>(null);
+		}
+
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
+		public async Task Set_ThrowsOnNullKey()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await cacheStack.SetAsync(null, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+		}
+
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
+		public async Task Set_ThrowsOnNullCacheEntry()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await cacheStack.SetAsync("MyCacheKey", (CacheEntry<int>)null);
+		}
+
 		[TestMethod]
 		public async Task Set_SetsAllTheLayers()
 		{
@@ -89,6 +110,20 @@ namespace CacheTower.Tests
 			Assert.AreEqual(cacheEntry, layer2.Get<int>("Set_SetsAllTheLayers"));
 
 			await DisposeOf(cacheStack);
+		}
+
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
+		public async Task GetOrSet_ThrowsOnNullKey()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await cacheStack.GetOrSetAsync<int>(null, (old, context) => Task.FromResult(5), new CacheSettings(TimeSpan.FromDays(1)));
+		}
+
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
+		public async Task GetOrSet_ThrowsOnNullGetter()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheSettings(TimeSpan.FromDays(1)));
 		}
 
 		[TestMethod]

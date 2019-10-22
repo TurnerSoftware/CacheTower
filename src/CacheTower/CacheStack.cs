@@ -112,6 +112,11 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheKey));
 			}
 
+			if (cacheEntry == null)
+			{
+				throw new ArgumentNullException(nameof(cacheEntry));
+			}
+
 			foreach (var layer in CacheLayers)
 			{
 				if (layer is ISyncCacheLayer syncLayer)
