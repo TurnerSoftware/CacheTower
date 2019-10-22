@@ -144,6 +144,8 @@ namespace CacheTower.Tests.Extensions.Redis
 			var succeedingTask = await Task.WhenAny(primaryTask, secondaryTask);
 			Assert.AreEqual(await primaryTask, await succeedingTask, "Processing task call didn't complete first - something has gone very wrong.");
 
+			await secondaryTask;
+
 			cacheStackMock.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Missed checks whether waiting was required or retrieving the updated value");
 		}
 
