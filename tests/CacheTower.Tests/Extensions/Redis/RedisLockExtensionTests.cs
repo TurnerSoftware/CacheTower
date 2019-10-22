@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -125,25 +126,36 @@ namespace CacheTower.Tests.Extensions.Redis
 			extensionTwo.Register(cacheStackMockTwo.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
-			var secondaryTaskWait = new TaskCompletionSource<bool>();
+			var secondaryTaskKickoff = new TaskCompletionSource<bool>();
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
 
 			var primaryTask = extensionOne.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						secondaryTaskWait.SetResult(true);
-						await Task.Delay(2000);
+						stopwatch.Stop();
+						secondaryTaskKickoff.SetResult(true);
+
+						if (stopwatch.Elapsed.TotalSeconds > 15)
+						{
+							Assert.Fail("Lock took too long to acquire");
+						}
+
+						//Use the time it took to get the lock as an approximation of how long we should delay for
+						//This delay is used to get the secondary task hitting the lock
+						await Task.Delay((int)stopwatch.ElapsedMilliseconds * 2);
+
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
 
-			await secondaryTaskWait.Task;
+			await secondaryTaskKickoff.Task;
 			
 			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
-					async () =>
+					() =>
 					{
-						await Task.Delay(2000);
-						return cacheEntry;
+						return Task.FromResult(cacheEntry);
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
