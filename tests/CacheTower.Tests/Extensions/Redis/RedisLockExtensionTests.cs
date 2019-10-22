@@ -127,31 +127,19 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
 			var secondaryTaskKickoff = new TaskCompletionSource<bool>();
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
 
 			var primaryTask = extensionOne.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						stopwatch.Stop();
 						secondaryTaskKickoff.SetResult(true);
-
-						if (stopwatch.Elapsed.TotalSeconds > 15)
-						{
-							Assert.Fail("Lock took too long to acquire");
-						}
-
-						//Use the time it took to get the lock as an approximation of how long we should delay for
-						//This delay is used to get the secondary task hitting the lock
-						await Task.Delay((int)stopwatch.ElapsedMilliseconds * 2);
-
+						await Task.Delay(1000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
 
 			await secondaryTaskKickoff.Task;
-			
+
 			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
 					() =>
 					{
@@ -162,6 +150,9 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var succeedingTask = await Task.WhenAny(primaryTask, secondaryTask);
 			Assert.AreEqual(await primaryTask, await succeedingTask, "Processing task call didn't complete first - something has gone very wrong.");
+
+			//Let the secondary task finish before we verify ICacheStack method calls
+			await secondaryTask;
 
 			cacheStackMockOne.Verify(c => c.GetAsync<int>("TestKey"), Times.Never, "Processing task shouldn't be querying existing values");
 			cacheStackMockTwo.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Missed GetAsync for retrieving the updated value - this means the registered stack returned the updated value early");
