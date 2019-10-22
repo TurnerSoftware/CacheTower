@@ -125,25 +125,32 @@ namespace CacheTower.Tests.Extensions.Redis
 			extension.Register(cacheStackMock.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var secondaryTaskKickoff = new TaskCompletionSource<bool>();
 
-			async Task<CacheEntry<int>> DoWorkAsync()
-			{
-				return await extension.RefreshValueAsync(string.Empty, "TestKey",
+			var primaryTask = extension.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(2000);
+						secondaryTaskKickoff.SetResult(true);
+						await Task.Delay(3000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
-			}
 
-			var primaryTask = DoWorkAsync();
-			var secondaryTask = DoWorkAsync();
+			await secondaryTaskKickoff.Task;
+
+			var secondaryTask = extension.RefreshValueAsync(string.Empty, "TestKey",
+					() =>
+					{
+						return Task.FromResult(cacheEntry);
+					},
+					new CacheSettings(TimeSpan.FromDays(1))
+				);
 
 			var succeedingTask = await Task.WhenAny(primaryTask, secondaryTask);
 			Assert.AreEqual(await primaryTask, await succeedingTask, "Processing task call didn't complete first - something has gone very wrong.");
 
+			//Let the secondary task finish before we verify ICacheStack method calls
 			await secondaryTask;
 
 			cacheStackMock.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Missed checks whether waiting was required or retrieving the updated value");
