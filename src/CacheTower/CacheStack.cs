@@ -208,7 +208,7 @@ namespace CacheTower
 					{
 						//Refresh the value in the current thread though short circuit if we're unable to establish a lock
 						//If the lock isn't established, it will instead use the stale cache entry (even if past the allowed stale period)
-						var refreshedCacheEntry = await RefreshValueAsync(cacheKey, getter, settings, exitIfLocked: true);
+						var refreshedCacheEntry = await RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: false);
 						if (refreshedCacheEntry != default)
 						{
 							cacheEntry = refreshedCacheEntry;
@@ -217,7 +217,7 @@ namespace CacheTower
 					else
 					{
 						//Refresh the value in the background
-						_ = Task.Run(() => RefreshValueAsync(cacheKey, getter, settings, exitIfLocked: true));
+						_ = Task.Run(() => RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: false));
 					}
 				}
 
@@ -226,13 +226,13 @@ namespace CacheTower
 			else
 			{
 				//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
-				cacheEntry = await RefreshValueAsync(cacheKey, getter, settings, exitIfLocked: false);
+				cacheEntry = await RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: true);
 			}
 
 			return cacheEntry.Value;
 		}
 
-		private async Task<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool exitIfLocked)
+		private async Task<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool waitForRefresh)
 		{
 			ThrowIfDisposed();
 
@@ -264,7 +264,7 @@ namespace CacheTower
 					UnlockWaitingTasks(cacheKey);
 				}
 			}
-			else if (!exitIfLocked)
+			else if (waitForRefresh)
 			{
 				var delayedResultSource = new TaskCompletionSource<bool>();
 				var waitList = new[] { delayedResultSource };
