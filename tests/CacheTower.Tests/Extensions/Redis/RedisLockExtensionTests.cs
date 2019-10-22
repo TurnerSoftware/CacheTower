@@ -132,7 +132,7 @@ namespace CacheTower.Tests.Extensions.Redis
 					async () =>
 					{
 						secondaryTaskKickoff.SetResult(true);
-						await Task.Delay(1000);
+						await Task.Delay(3000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
