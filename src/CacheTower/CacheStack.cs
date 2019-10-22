@@ -65,9 +65,9 @@ namespace CacheTower
 				{
 					syncLayer.Cleanup();
 				}
-				else if (layer is IAsyncCacheLayer asyncLayer)
+				else
 				{
-					await asyncLayer.CleanupAsync();
+					await (layer as IAsyncCacheLayer).CleanupAsync();
 				}
 			}
 		}
@@ -87,9 +87,9 @@ namespace CacheTower
 				{
 					syncLayer.Evict(cacheKey);
 				}
-				else if (layer is IAsyncCacheLayer asyncLayer)
+				else
 				{
-					await asyncLayer.EvictAsync(cacheKey);
+					await (layer as IAsyncCacheLayer).EvictAsync(cacheKey);
 				}
 			}
 		}
@@ -118,27 +118,9 @@ namespace CacheTower
 				{
 					syncLayer.Set(cacheKey, cacheEntry);
 				}
-				else if (layer is IAsyncCacheLayer asyncLayer)
+				else
 				{
-					await asyncLayer.SetAsync(cacheKey, cacheEntry);
-				}
-			}
-		}
-
-		private async Task BackPopulateCache<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
-		{
-			//Populate previous cache layers
-			for (; --fromIndexExclusive >= 0;)
-			{
-				var previousLayer = CacheLayers[fromIndexExclusive];
-
-				if (previousLayer is ISyncCacheLayer prevSyncLayer)
-				{
-					prevSyncLayer.Set(cacheKey, cacheEntry);
-				}
-				else if (previousLayer is IAsyncCacheLayer prevAsyncLayer)
-				{
-					await prevAsyncLayer.SetAsync(cacheKey, cacheEntry);
+					await (layer as IAsyncCacheLayer).SetAsync(cacheKey, cacheEntry);
 				}
 			}
 		}
@@ -152,31 +134,42 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheKey));
 			}
 
-			for (var i = 0; i < CacheLayers.Length; i++)
+			var result = await InternalGetAsync<T>(cacheKey);
+			if (result != default)
 			{
-				var cacheLayer = CacheLayers[i];
+				return result.CacheEntry;
+			}
 
-				if (cacheLayer is ISyncCacheLayer syncLayer)
+			return default;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private async Task<(int LayerIndex, CacheEntry<T> CacheEntry)> InternalGetAsync<T>(string cacheKey)
+		{
+			for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
+			{
+				var layer = CacheLayers[layerIndex];
+
+				if (layer is ISyncCacheLayer syncLayer)
 				{
 					if (syncLayer.IsAvailable(cacheKey))
 					{
 						var cacheEntry = syncLayer.Get<T>(cacheKey);
 						if (cacheEntry != default)
 						{
-							await BackPopulateCache(i, cacheKey, cacheEntry);
-							return cacheEntry;
+							return (layerIndex, cacheEntry);
 						}
 					}
 				}
-				else if (cacheLayer is IAsyncCacheLayer asyncLayer)
+				else
 				{
+					var asyncLayer = layer as IAsyncCacheLayer;
 					if (await asyncLayer.IsAvailableAsync(cacheKey))
 					{
 						var cacheEntry = await asyncLayer.GetAsync<T>(cacheKey);
 						if (cacheEntry != default)
 						{
-							await BackPopulateCache(i, cacheKey, cacheEntry);
-							return cacheEntry;
+							return (layerIndex, cacheEntry);
 						}
 					}
 				}
@@ -199,9 +192,11 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(getter));
 			}
 
-			var cacheEntry = await GetAsync<T>(cacheKey);
-			if (cacheEntry != default)
+			var cacheEntryPoint = await InternalGetAsync<T>(cacheKey);
+			if (cacheEntryPoint != default)
 			{
+				var cacheEntry = cacheEntryPoint.CacheEntry;
+
 				if (cacheEntry.HasElapsed(settings.StaleAfter))
 				{
 					if (cacheEntry.HasElapsed(settings.TimeToLive))
@@ -220,16 +215,54 @@ namespace CacheTower
 						_ = Task.Run(() => RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: false));
 					}
 				}
+				else if (cacheEntryPoint.LayerIndex > 0)
+				{
+					//If a lower-level cache is missing the latest data, attempt to set it in the background
+					_ = Task.Run(() => BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry));
+				}
 
 				return cacheEntry.Value;
 			}
 			else
 			{
 				//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
-				cacheEntry = await RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: true);
+				return (await RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: true)).Value;
 			}
+		}
 
-			return cacheEntry.Value;
+		private async Task BackPopulateCacheAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
+		{
+			ThrowIfDisposed();
+
+			if (WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<bool>>()))
+			{
+				try
+				{
+					for (; --fromIndexExclusive >= 0;)
+					{
+						var previousLayer = CacheLayers[fromIndexExclusive];
+						if (previousLayer is ISyncCacheLayer prevSyncLayer)
+						{
+							if (prevSyncLayer.IsAvailable(cacheKey))
+							{
+								prevSyncLayer.Set(cacheKey, cacheEntry);
+							}
+						}
+						else
+						{
+							var prevAsyncLayer = previousLayer as IAsyncCacheLayer;
+							if (await prevAsyncLayer.IsAvailableAsync(cacheKey))
+							{
+								await prevAsyncLayer.SetAsync(cacheKey, cacheEntry);
+							}
+						}
+					}
+				}
+				finally
+				{
+					UnlockWaitingTasks(cacheKey);
+				}
+			}
 		}
 
 		private async Task<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool waitForRefresh)

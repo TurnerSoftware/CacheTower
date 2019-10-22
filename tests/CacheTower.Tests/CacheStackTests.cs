@@ -85,25 +85,6 @@ namespace CacheTower.Tests
 		}
 
 		[TestMethod]
-		public async Task Get_BackPropagatesToEarlierCacheLayers()
-		{
-			var layer1 = new MemoryCacheLayer();
-			var layer2 = new MemoryCacheLayer();
-			var layer3 = new MemoryCacheLayer();
-
-			var cacheStack = new CacheStack(null, new[] { layer1, layer2, layer3 }, Array.Empty<ICacheExtension>());
-			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow, TimeSpan.FromDays(1));
-			layer2.Set("Get_BackPropagatesToEarlierCacheLayers", cacheEntry);
-
-			var cacheEntryFromStack = await cacheStack.GetAsync<int>("Get_BackPropagatesToEarlierCacheLayers");
-			Assert.AreEqual(cacheEntry, cacheEntryFromStack);
-			Assert.AreEqual(cacheEntry, layer1.Get<int>("Get_BackPropagatesToEarlierCacheLayers"));
-			Assert.IsNull(layer3.Get<int>("Get_BackPropagatesToEarlierCacheLayers"));
-
-			await DisposeOf(cacheStack);
-		}
-
-		[TestMethod]
 		public async Task GetOrSet_CacheMiss()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
@@ -155,6 +136,33 @@ namespace CacheTower.Tests
 
 			var refetchedResult = await cacheStack.GetAsync<int>("GetOrSet_CacheHitBackgroundRefresh");
 			Assert.AreEqual(27, refetchedResult.Value);
+
+			await DisposeOf(cacheStack);
+		}
+
+		[TestMethod]
+		public async Task GetOrSet_BackPropagatesToEarlierCacheLayers()
+		{
+			var layer1 = new MemoryCacheLayer();
+			var layer2 = new MemoryCacheLayer();
+			var layer3 = new MemoryCacheLayer();
+
+			var cacheStack = new CacheStack(null, new[] { layer1, layer2, layer3 }, Array.Empty<ICacheExtension>());
+			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow, TimeSpan.FromDays(1));
+			layer2.Set("GetOrSet_BackPropagatesToEarlierCacheLayers", cacheEntry);
+
+			var cacheEntryFromStack = await cacheStack.GetOrSetAsync<int>("GetOrSet_BackPropagatesToEarlierCacheLayers", (old, context) =>
+			{
+				return Task.FromResult(14);
+			}, new CacheSettings(TimeSpan.FromDays(1)));
+
+			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack);
+
+			//Give enough time for the background task back propagation to happen
+			await Task.Delay(500);
+
+			Assert.AreEqual(cacheEntry, layer1.Get<int>("GetOrSet_BackPropagatesToEarlierCacheLayers"));
+			Assert.IsNull(layer3.Get<int>("GetOrSet_BackPropagatesToEarlierCacheLayers"));
 
 			await DisposeOf(cacheStack);
 		}
