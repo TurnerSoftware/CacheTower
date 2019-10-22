@@ -129,18 +129,18 @@ namespace CacheTower.Tests.Extensions.Redis
 			var primaryTask = extensionOne.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(2000);
+						await Task.Delay(3000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
 				);
 
-			await Task.Delay(500);
+			await Task.Delay(1000);
 			
 			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
 					async () =>
 					{
-						await Task.Delay(2000);
+						await Task.Delay(3000);
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
