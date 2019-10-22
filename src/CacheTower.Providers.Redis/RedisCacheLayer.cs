@@ -9,13 +9,11 @@ namespace CacheTower.Providers.Redis
 {
 	public class RedisCacheLayer : IAsyncCacheLayer
 	{
-		private ConnectionMultiplexer Connection { get; }
 		private IDatabaseAsync Database { get; }
 		private bool? IsCacheAvailable { get; set; }
 
 		public RedisCacheLayer(ConnectionMultiplexer connection, int databaseIndex = -1)
 		{
-			Connection = connection;
 			Database = connection.GetDatabase(databaseIndex);
 		}
 
@@ -25,9 +23,9 @@ namespace CacheTower.Providers.Redis
 			return Task.CompletedTask;
 		}
 
-		public async Task EvictAsync(string cacheKey)
+		public Task EvictAsync(string cacheKey)
 		{
-			await Database.KeyDeleteAsync(cacheKey);
+			return Database.KeyDeleteAsync(cacheKey);
 		}
 
 		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
