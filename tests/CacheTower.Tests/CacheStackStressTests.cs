@@ -64,21 +64,25 @@ namespace CacheTower.Tests
 		public async Task SimulatenousGetOrSet_CacheMiss_UniqueKeys(int iterations)
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			
-			Task<int> lastTask = null;
+
+			var allTasks = new List<Task<int>>(iterations);
 
 			for (var i = 0; i < iterations; i++)
 			{
 				var index = i;
-				lastTask = cacheStack.GetOrSetAsync<int>($"SimulatenousGetOrSet_{index}", async (oldValue, context) => {
+				var iterationTask = cacheStack.GetOrSetAsync<int>($"SimulatenousGetOrSet_{index}", async (oldValue, context) => {
 					await Task.Delay(100);
 					return index + 1;
 				}, new CacheSettings(TimeSpan.FromDays(1)));
+
+				allTasks.Add(iterationTask);
 			}
 
-			var result = await lastTask;
+			var lastTaskResult = await allTasks[iterations - 1];
 
-			Assert.AreEqual(iterations, result);
+			Assert.AreEqual(iterations, lastTaskResult);
+
+			await Task.WhenAll(allTasks);
 
 			await DisposeOf(cacheStack);
 		}
