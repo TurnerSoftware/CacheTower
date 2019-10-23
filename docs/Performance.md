@@ -138,3 +138,11 @@ Job=Core  Runtime=Core
 | OnValueRefresh | 75,526.0 ns | 8,869.9 ns | 35,873.5 ns | 69,450.0 ns |     - |     - |     - |         976 B |
 |       Overhead | 11,637.2 ns | 1,925.9 ns |  7,723.0 ns |  8,650.0 ns |     - |     - |     - |         352 B |
 |       Register | 21,225.6 ns | 3,118.8 ns | 12,362.2 ns | 15,950.0 ns |     - |     - |     - |         568 B |
+
+### RedisLockExtension
+
+|       Method |    Mean [ns] |  Error [ns] |  StdDev [ns] |  Median [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|------------- |-------------:|------------:|-------------:|-------------:|------:|------:|------:|--------------:|
+| RefreshValue | 434,459.2 ns | 26,291.8 ns | 106,635.1 ns | 417,800.0 ns |     - |     - |     - |        2000 B |
+|     Overhead |  27,972.8 ns |  4,211.1 ns |  16,543.6 ns |  20,200.0 ns |     - |     - |     - |        1128 B |
+|     Register |  25,761.5 ns |  3,558.7 ns |  14,022.7 ns |  19,950.0 ns |     - |     - |     - |        1128 B |
