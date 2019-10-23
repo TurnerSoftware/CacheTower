@@ -14,7 +14,9 @@ namespace CacheTower.Extensions.Redis
 		private string RedisChannel { get; }
 
 		private bool IsRegistered { get; set;  }
-		private ConcurrentDictionary<string, string> FlaggedRefreshes { get; } = new ConcurrentDictionary<string, string>();
+
+		private object FlaggedRefreshesLockObj = new object();
+		private HashSet<string> FlaggedRefreshes { get; } = new HashSet<string>();
 
 		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
 		{
@@ -31,7 +33,11 @@ namespace CacheTower.Extensions.Redis
 
 		public async Task OnValueRefreshAsync(string requestId, string cacheKey, TimeSpan timeToLive)
 		{
-			FlaggedRefreshes.TryAdd(cacheKey, requestId);
+			lock (FlaggedRefreshesLockObj)
+			{
+				FlaggedRefreshes.Add(cacheKey);
+			}
+
 			await Subscriber.PublishAsync(RedisChannel, cacheKey, CommandFlags.FireAndForget);
 		}
 
@@ -46,7 +52,13 @@ namespace CacheTower.Extensions.Redis
 			Subscriber.Subscribe(RedisChannel, async (channel, value) =>
 			{
 				string cacheKey = value;
-				if (!FlaggedRefreshes.TryRemove(cacheKey, out var _))
+				var shouldEvictLocally = false;
+				lock (FlaggedRefreshesLockObj)
+				{
+					shouldEvictLocally = FlaggedRefreshes.Remove(cacheKey) == false;
+				}
+
+				if (shouldEvictLocally)
 				{
 					await cacheStack.EvictAsync(cacheKey);
 				}
