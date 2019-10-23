@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Akavache;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.AlternativesBenchmark.Utils;
@@ -21,6 +22,12 @@ namespace CacheTower.AlternativesBenchmark
 
 		private const string DirectoryPath = "CacheAlternatives/FileCache";
 
+		[GlobalSetup]
+		public void Setup()
+		{
+			BlobCache.ApplicationName = nameof(CacheAlternatives_JsonFile_Benchmark);
+		}
+
 		[IterationSetup]
 		public void IterationSetup()
 		{
@@ -28,6 +35,11 @@ namespace CacheTower.AlternativesBenchmark
 			{
 				Directory.Delete(DirectoryPath, true);
 			}
+		}
+		[IterationSetup(Target = nameof(Akavache_LocalMachine))]
+		public void AkavacheSetup()
+		{
+			BlobCache.LocalMachine.InvalidateAll();
 		}
 		[GlobalCleanup]
 		public void GlobalCleanup()
@@ -56,7 +68,7 @@ namespace CacheTower.AlternativesBenchmark
 		}
 
 		[Benchmark]
-		public void MonkeyCache()
+		public void MonkeyCache_FileStore()
 		{
 			var barrel = Barrel.Create(DirectoryPath);
 			
@@ -70,6 +82,17 @@ namespace CacheTower.AlternativesBenchmark
 				{
 					barrel.Add("GetOrSet_TestKey", "Hello World", TimeSpan.FromDays(1));
 				}
+			});
+		}
+
+		[Benchmark]
+		public void Akavache_LocalMachine()
+		{
+			LoopAction(Iterations, () =>
+			{
+				BlobCache.LocalMachine.InsertObject("TestKey", 123, TimeSpan.FromDays(1));
+				BlobCache.LocalMachine.GetObject<int>("TestKey");
+				BlobCache.LocalMachine.GetOrCreateObject("GetOrSet_TestKey", () => "Hello World");
 			});
 		}
 	}

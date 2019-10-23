@@ -35,16 +35,19 @@ Job=Core  Runtime=Core
 
 # JSON File Caching
 
-|                        Method | Iterations |         Mean |      Error |     StdDev | Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 |   Allocated |
-|------------------------------ |----------- |-------------:|-----------:|-----------:|------:|--------:|-----------:|------:|------:|------------:|
-| CacheTower_JsonFileCacheLayer |          1 |     6.489 ms |  0.2167 ms |  0.9008 ms |  1.00 |    0.00 |          - |     - |     - |    14.42 KB |
-|                   MonkeyCache |          1 |     6.153 ms |  0.2143 ms |  0.9050 ms |  0.97 |    0.20 |          - |     - |     - |    65.81 KB |
-|                               |            |              |            |            |       |         |            |       |       |             |
-| CacheTower_JsonFileCacheLayer |        100 |   147.167 ms |  2.9970 ms |  8.2546 ms |  1.00 |    0.00 |          - |     - |     - |       14 KB |
-|                   MonkeyCache |        100 |   180.314 ms |  3.4049 ms |  3.3440 ms |  1.24 |    0.06 |  1000.0000 |     - |     - |  4379.57 KB |
-|                               |            |              |            |            |       |         |            |       |       |             |
-| CacheTower_JsonFileCacheLayer |       1000 | 1,445.278 ms | 28.6562 ms | 55.2107 ms |  1.00 |    0.00 |  9000.0000 |     - |     - |       14 KB |
-|                   MonkeyCache |       1000 | 1,850.698 ms | 24.4773 ms | 22.8961 ms |  1.28 |    0.06 | 14000.0000 |     - |     - | 43596.71 KB |
+|                        Method | Iterations |         Mean |      Error |     StdDev |       Median | Ratio | RatioSD |      Gen 0 |      Gen 1 | Gen 2 |   Allocated |
+|------------------------------ |----------- |-------------:|-----------:|-----------:|-------------:|------:|--------:|-----------:|-----------:|------:|------------:|
+| CacheTower_JsonFileCacheLayer |          1 |     6.450 ms |  0.1971 ms |  0.8171 ms |     6.422 ms |  1.00 |    0.00 |          - |          - |     - |    14.42 KB |
+|         MonkeyCache_FileStore |          1 |     6.071 ms |  0.2088 ms |  0.8747 ms |     6.075 ms |  0.96 |    0.20 |          - |          - |     - |    65.81 KB |
+|         Akavache_LocalMachine |          1 |     2.218 ms |  0.0945 ms |  0.3905 ms |     2.135 ms |  0.35 |    0.08 |          - |          - |     - |    81.07 KB |
+|                               |            |              |            |            |              |       |         |            |            |       |             |
+| CacheTower_JsonFileCacheLayer |        100 |   150.829 ms |  3.0392 ms | 11.9040 ms |   149.086 ms |  1.00 |    0.00 |          - |          - |     - |       14 KB |
+|         MonkeyCache_FileStore |        100 |   182.428 ms |  3.6303 ms |  5.6519 ms |   182.509 ms |  1.23 |    0.10 |  1000.0000 |          - |     - |  4379.57 KB |
+|         Akavache_LocalMachine |        100 |   131.856 ms |  2.6053 ms |  5.0815 ms |   131.755 ms |  0.89 |    0.07 |  2000.0000 |  1000.0000 |     - |  6367.09 KB |
+|                               |            |              |            |            |              |       |         |            |            |       |             |
+| CacheTower_JsonFileCacheLayer |       1000 | 1,495.962 ms | 31.2089 ms | 60.8705 ms | 1,476.287 ms |  1.00 |    0.00 |  9000.0000 |          - |     - |       14 KB |
+|         MonkeyCache_FileStore |       1000 | 1,841.313 ms | 19.7300 ms | 18.4554 ms | 1,835.842 ms |  1.21 |    0.06 | 14000.0000 |          - |     - | 43596.71 KB |
+|         Akavache_LocalMachine |       1000 | 1,435.708 ms | 18.4453 ms | 17.2538 ms | 1,429.102 ms |  0.94 |    0.05 | 20000.0000 | 10000.0000 |     - | 63475.94 KB |
 
 ## Redis Caching
 
