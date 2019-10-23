@@ -27,7 +27,7 @@ namespace CacheTower.Benchmarks.Providers
 		}
 		protected Func<ICacheLayer> CacheLayerProvider { get; set; }
 
-		protected async Task DisposeOf(ICacheLayer cacheLayer)
+		protected static async Task DisposeOf(ICacheLayer cacheLayer)
 		{
 			if (cacheLayer is IDisposable disposableLayer)
 			{
