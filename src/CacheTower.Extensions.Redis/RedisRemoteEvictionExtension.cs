@@ -9,7 +9,6 @@ namespace CacheTower.Extensions.Redis
 {
 	public class RedisRemoteEvictionExtension : IValueRefreshExtension
 	{
-		private ConnectionMultiplexer Connection { get; }
 		private ISubscriber Subscriber { get; }
 		private string RedisChannel { get; }
 
@@ -20,14 +19,17 @@ namespace CacheTower.Extensions.Redis
 
 		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
 		{
-			Connection = connection ?? throw new ArgumentNullException(nameof(connection));
+			if (connection == null)
+			{
+				throw new ArgumentNullException(nameof(connection));
+			}
 
 			if (channelPrefix == null)
 			{
 				throw new ArgumentNullException(nameof(channelPrefix));
 			}
 
-			Subscriber = Connection.GetSubscriber();
+			Subscriber = connection.GetSubscriber();
 			RedisChannel = $"{channelPrefix}.RemoteEviction";
 		}
 
