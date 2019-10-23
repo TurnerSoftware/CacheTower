@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Akavache;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.Providers.Memory;
@@ -14,6 +15,12 @@ namespace CacheTower.AlternativesBenchmark
 	{
 		[Params(1, 100, 1000)]
 		public int Iterations;
+
+		[GlobalSetup]
+		public void Setup()
+		{
+			BlobCache.ApplicationName = nameof(CacheAlternatives_Memory_Benchmark);
+		}
 
 		[Benchmark(Baseline = true)]
 		public async Task CacheTower_MemoryCacheLayer()
@@ -52,6 +59,17 @@ namespace CacheTower.AlternativesBenchmark
 					});
 				});
 			}
+		}
+
+		[Benchmark]
+		public void Akavache_InMemory()
+		{
+			LoopAction(Iterations, () =>
+			{
+				BlobCache.InMemory.InsertObject("TestKey", 123, TimeSpan.FromDays(1));
+				BlobCache.InMemory.GetObject<int>("TestKey");
+				BlobCache.InMemory.GetOrCreateObject("GetOrSet_TestKey", () => "Hello World");
+			});
 		}
 	}
 }
