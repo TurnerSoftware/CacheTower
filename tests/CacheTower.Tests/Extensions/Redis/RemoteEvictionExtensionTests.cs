@@ -54,7 +54,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			await extension.OnValueRefreshAsync(string.Empty, "TestKey", TimeSpan.FromDays(1));
 
-			var completedTask = await Task.WhenAny(completionSource.Task, Task.Delay(10000));
+			var completedTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(30)));
 
 			Assert.AreEqual(completionSource.Task, completedTask, "Subscribers were not notified about the refreshed value within the time limit");
 			cacheStackMock.Verify(c => c.EvictAsync("TestKey"), Times.Never, "The CacheStack that published the refresh was told to evict its own cache");
