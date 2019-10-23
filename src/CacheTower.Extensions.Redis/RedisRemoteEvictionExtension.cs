@@ -15,7 +15,7 @@ namespace CacheTower.Extensions.Redis
 
 		private bool IsRegistered { get; set;  }
 
-		private object FlaggedRefreshesLockObj = new object();
+		private readonly object FlaggedRefreshesLockObj = new object();
 		private HashSet<string> FlaggedRefreshes { get; } = new HashSet<string>();
 
 		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
