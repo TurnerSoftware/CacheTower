@@ -19,19 +19,19 @@ Job=Core  Runtime=Core
 
 # Memory Caching
 
-|                            Method | Iterations |             Mean |         Error |        StdDev |    Ratio | RatioSD |      Gen 0 |      Gen 1 | Gen 2 |  Allocated |
-|---------------------------------- |----------- |-----------------:|--------------:|--------------:|---------:|--------:|-----------:|-----------:|------:|-----------:|
-|       CacheTower_MemoryCacheLayer |          1 |         3.054 us |     0.0304 us |     0.0284 us |     1.00 |    0.00 |     0.7820 |          - |     - |     2.4 KB |
-| CacheManager_MicrosoftMemoryCache |          1 |        20.241 us |     0.2066 us |     0.1933 us |     6.63 |    0.07 |     2.4719 |     1.2207 |     - |    7.66 KB |
-|                 Akavache_InMemory |          1 |     1,377.079 us |    10.2108 us |     9.0516 us |   450.89 |    6.15 |    19.5313 |     9.7656 |     - |   63.62 KB |
-|                                   |            |                  |               |               |          |         |            |            |       |            |
-|       CacheTower_MemoryCacheLayer |        100 |        97.900 us |     0.6145 us |     0.5748 us |     1.00 |    0.00 |    17.0898 |          - |     - |   52.67 KB |
-| CacheManager_MicrosoftMemoryCache |        100 |       209.274 us |     1.2602 us |     1.0523 us |     2.14 |    0.02 |    10.9863 |     3.6621 |     - |   33.97 KB |
-|                 Akavache_InMemory |        100 |   137,334.057 us |   957.2473 us |   895.4097 us | 1,402.85 |   12.22 |  2000.0000 |  1000.0000 |     - | 6364.58 KB |
-|                                   |            |                  |               |               |          |         |            |            |       |            |
-|       CacheTower_MemoryCacheLayer |       1000 |       945.631 us |    13.1357 us |    11.6445 us |     1.00 |    0.00 |   166.0156 |          - |     - |   509.7 KB |
-| CacheManager_MicrosoftMemoryCache |       1000 |     1,928.871 us |    24.4260 us |    22.8481 us |     2.04 |    0.04 |    85.9375 |          - |     - |  273.16 KB |
-|                 Akavache_InMemory |       1000 | 1,403,949.033 us | 9,306.6741 us | 8,705.4687 us | 1,485.49 |   23.32 | 20000.0000 | 10000.0000 |     - | 63594.5 KB |
+|                            Method | Iterations |             Mean |         Error |        StdDev |    Ratio | RatioSD |      Gen 0 |     Gen 1 | Gen 2 |   Allocated |
+|---------------------------------- |----------- |-----------------:|--------------:|--------------:|---------:|--------:|-----------:|----------:|------:|------------:|
+|       CacheTower_MemoryCacheLayer |          1 |         3.209 us |     0.0361 us |     0.0338 us |     1.00 |    0.00 |     0.7820 |         - |     - |      2.4 KB |
+| CacheManager_MicrosoftMemoryCache |          1 |        20.125 us |     0.1989 us |     0.1763 us |     6.27 |    0.08 |     2.4719 |    1.1902 |     - |     7.66 KB |
+|                 Akavache_InMemory |          1 |     1,390.838 us |    10.1667 us |     9.5099 us |   433.50 |    5.74 |    19.5313 |    9.7656 |     - |    63.87 KB |
+|                                   |            |                  |               |               |          |         |            |           |       |             |
+|       CacheTower_MemoryCacheLayer |        100 |        96.805 us |     1.0490 us |     0.8760 us |     1.00 |    0.00 |    17.0898 |         - |     - |    52.67 KB |
+| CacheManager_MicrosoftMemoryCache |        100 |       211.908 us |     1.5315 us |     1.4325 us |     2.19 |    0.03 |    10.9863 |    3.6621 |     - |    33.97 KB |
+|                 Akavache_InMemory |        100 |   132,724.138 us | 2,628.2322 us | 5,187.8740 us | 1,432.98 |   47.54 |  2000.0000 | 1000.0000 |     - |  6367.49 KB |
+|                                   |            |                  |               |               |          |         |            |           |       |             |
+|       CacheTower_MemoryCacheLayer |       1000 |       937.390 us |     4.7230 us |     4.4179 us |     1.00 |    0.00 |   166.0156 |         - |     - |    509.7 KB |
+| CacheManager_MicrosoftMemoryCache |       1000 |     1,900.141 us |    10.0000 us |     9.3540 us |     2.03 |    0.01 |    87.8906 |         - |     - |   273.16 KB |
+|                 Akavache_InMemory |       1000 | 1,409,045.413 us | 8,932.9597 us | 8,355.8961 us | 1,503.20 |   12.58 | 20000.0000 | 5000.0000 |     - | 63407.21 KB |
 
 # JSON File Caching
 

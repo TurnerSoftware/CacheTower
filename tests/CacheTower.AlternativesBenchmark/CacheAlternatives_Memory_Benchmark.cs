@@ -16,12 +16,6 @@ namespace CacheTower.AlternativesBenchmark
 		[Params(1, 100, 1000)]
 		public int Iterations;
 
-		[GlobalSetup]
-		public void Setup()
-		{
-			BlobCache.ApplicationName = nameof(CacheAlternatives_Memory_Benchmark);
-		}
-
 		[Benchmark(Baseline = true)]
 		public async Task CacheTower_MemoryCacheLayer()
 		{
@@ -64,12 +58,15 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark]
 		public void Akavache_InMemory()
 		{
-			LoopAction(Iterations, () =>
+			using (var blobCache = new InMemoryBlobCache())
 			{
-				BlobCache.InMemory.InsertObject("TestKey", 123, TimeSpan.FromDays(1));
-				BlobCache.InMemory.GetObject<int>("TestKey");
-				BlobCache.InMemory.GetOrCreateObject("GetOrSet_TestKey", () => "Hello World");
-			});
+				LoopAction(Iterations, () =>
+				{
+					blobCache.InsertObject("TestKey", 123, TimeSpan.FromDays(1));
+					blobCache.GetObject<int>("TestKey");
+					blobCache.GetOrCreateObject("GetOrSet_TestKey", () => "Hello World");
+				});
+			}
 		}
 	}
 }
