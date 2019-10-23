@@ -37,7 +37,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.Databa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.Redis", "src\CacheTower.Providers.Redis\CacheTower.Providers.Redis.csproj", "{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Extensions.Redis", "src\CacheTower.Extensions.Redis\CacheTower.Extensions.Redis.csproj", "{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Extensions.Redis", "src\CacheTower.Extensions.Redis\CacheTower.Extensions.Redis.csproj", "{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.AlternativesBenchmark", "tests\CacheTower.AlternativesBenchmark\CacheTower.AlternativesBenchmark.csproj", "{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,10 @@ Global
 		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +96,7 @@ Global
 		{D878CE3B-7B20-4733-9C81-4A3291DCC115} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 		{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
+		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA} = {91095A10-6DD6-412A-B47A-ADD020DB7DF5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F159337A-B345-49EE-8D58-A72EF1643174}

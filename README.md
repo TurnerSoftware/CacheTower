@@ -44,7 +44,8 @@ There are pros-and-cons to each of the types of cache layers though the idea is 
 - MongoDB caching can be fast and convenient under certain workloads (eg. when you don't have Redis).
 - Redis caching is about as fast as possible while not being in-memory in the same process (or potentially server).
 
-See also: [Performance Figures & Comparisons](/docs/Performance.md)
+See also: [Performance Figures & Cache Layer Comparisons](/docs/Performance.md)
+See also: [Comparisons to Cache Tower Alternatives](/docs/Comparison.md)
 
 ## Extension System
 
