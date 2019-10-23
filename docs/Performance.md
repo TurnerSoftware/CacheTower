@@ -127,3 +127,14 @@ Job=Core  Runtime=Core
 |                  SetNew |    427,622.5 ns |  25,171.8 ns | 102,948.5 ns |    415,300.0 ns |     - |     - |     - |        1296 B |
 |             SetExisting |    718,655.3 ns |  37,569.8 ns | 154,921.8 ns |    684,850.0 ns |     - |     - |     - |        1240 B |
 |                 SetMany | 13,766,335.1 ns | 274,239.7 ns | 854,522.7 ns | 13,713,300.0 ns |     - |     - |     - |        1168 B |
+
+
+## Extensions
+
+### RedisRemoteEvictionExtension
+
+|         Method |   Mean [ns] | Error [ns] | StdDev [ns] | Median [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|--------------- |------------:|-----------:|------------:|------------:|------:|------:|------:|--------------:|
+| OnValueRefresh | 61,698.9 ns | 8,456.3 ns | 33,812.7 ns | 50,600.0 ns |     - |     - |     - |        1520 B |
+|       Overhead | 14,981.3 ns | 2,968.6 ns | 11,972.4 ns |  9,600.0 ns |     - |     - |     - |         952 B |
+|       Register | 27,473.4 ns | 4,461.5 ns | 17,735.9 ns | 18,900.0 ns |     - |     - |     - |        1168 B |
