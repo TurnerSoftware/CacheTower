@@ -15,7 +15,7 @@ namespace CacheTower.Extensions.Redis
 		private bool IsRegistered { get; set;  }
 
 		private readonly object FlaggedRefreshesLockObj = new object();
-		private HashSet<string> FlaggedRefreshes { get; } = new HashSet<string>();
+		private HashSet<string> FlaggedRefreshes { get; }
 
 		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
 		{
@@ -31,6 +31,7 @@ namespace CacheTower.Extensions.Redis
 
 			Subscriber = connection.GetSubscriber();
 			RedisChannel = $"{channelPrefix}.RemoteEviction";
+			FlaggedRefreshes = new HashSet<string>(StringComparer.Ordinal);
 		}
 
 		public async Task OnValueRefreshAsync(string requestId, string cacheKey, TimeSpan timeToLive)

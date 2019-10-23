@@ -21,7 +21,7 @@ namespace CacheTower.Extensions.Redis
 
 		private ICacheStack RegisteredStack { get; set; }
 		
-		private ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; } = new ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>>();
+		private ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
 
 		public RedisLockExtension(ConnectionMultiplexer connection, int databaseIndex = -1, string channelPrefix = "CacheTower", TimeSpan? lockTimeout = default)
 		{
@@ -43,6 +43,8 @@ namespace CacheTower.Extensions.Redis
 			{
 				LockTimeout = lockTimeout.Value;
 			}
+
+			LockedOnKeyRefresh = new ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>>(StringComparer.Ordinal);
 
 			Subscriber.Subscribe(RedisChannel, (channel, value) => UnlockWaitingTasks(value));
 		}

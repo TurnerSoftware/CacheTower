@@ -18,7 +18,7 @@ namespace CacheTower
 	{
 		private bool Disposed;
 
-		private ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> WaitingKeyRefresh { get; } = new ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>>();
+		private ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> WaitingKeyRefresh { get; }
 
 		private ICacheLayer[] CacheLayers { get; }
 
@@ -44,6 +44,8 @@ namespace CacheTower
 
 			Extensions = new ExtensionContainer(extensions);
 			Extensions.Register(this);
+
+			WaitingKeyRefresh = new ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>>(StringComparer.Ordinal);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

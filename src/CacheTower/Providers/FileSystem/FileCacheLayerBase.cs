@@ -25,13 +25,14 @@ namespace CacheTower.Providers.FileSystem
 		private HashAlgorithm FileNameHashAlgorithm { get; } = MD5.Create();
 
 		private ConcurrentDictionary<string, IManifestEntry> CacheManifest { get; set; }
-		private ConcurrentDictionary<string, AsyncReaderWriterLock> FileLock { get; } = new ConcurrentDictionary<string, AsyncReaderWriterLock>();
+		private ConcurrentDictionary<string, AsyncReaderWriterLock> FileLock { get; }
 
 		protected FileCacheLayerBase(string directoryPath, string fileExtension)
 		{
 			DirectoryPath = directoryPath;
 			FileExtension = fileExtension;
 			ManifestPath = Path.Combine(directoryPath, "manifest" + fileExtension);
+			FileLock = new ConcurrentDictionary<string, AsyncReaderWriterLock>(StringComparer.Ordinal);
 		}
 
 		protected abstract T Deserialize<T>(Stream stream);

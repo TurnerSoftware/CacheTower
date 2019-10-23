@@ -12,7 +12,7 @@ namespace CacheTower.Providers.Memory
 	{
 		private bool Disposed;
 		private ReaderWriterLockSlim LockObj { get; } = new ReaderWriterLockSlim();
-		private Dictionary<string, CacheEntry> Cache { get; } = new Dictionary<string, CacheEntry>();
+		private Dictionary<string, CacheEntry> Cache { get; } = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);
 
 		public void Cleanup()
 		{
