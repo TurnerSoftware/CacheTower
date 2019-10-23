@@ -67,7 +67,7 @@ Using Redis in this way can avoid cache stampedes where multiple different web s
 
 If you are only running one web server with one instance (singleton) of `CacheStack`, you won't need this extension.
 
-#### RemoteEvictionExtension
+#### RedisRemoteEvictionExtension
 
 This extension uses the pub/sub feature of Redis to co-ordinate cache invalidation from other `CacheStack` instances.
 This works in the situation where one web server has refreshed a key and wants to let the other web servers know their data is now old.

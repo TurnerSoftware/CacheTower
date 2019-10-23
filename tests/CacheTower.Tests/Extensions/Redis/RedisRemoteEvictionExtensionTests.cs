@@ -11,24 +11,24 @@ using Moq;
 namespace CacheTower.Tests.Extensions.Redis
 {
 	[TestClass]
-	public class RemoteEvictionExtensionTests
+	public class RedisRemoteEvictionExtensionTests
 	{
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullConnection()
 		{
-			new RemoteEvictionExtension(null);
+			new RedisRemoteEvictionExtension(null);
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullChannel()
 		{
-			new RemoteEvictionExtension(RedisHelper.GetConnection(), null);
+			new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), null);
 		}
 
 		[TestMethod, ExpectedException(typeof(InvalidOperationException))]
 		public void ThrowForRegisteringMoreThanOneCacheStack()
 		{
-			var extension = new RemoteEvictionExtension(RedisHelper.GetConnection());
+			var extension = new RedisRemoteEvictionExtension(RedisHelper.GetConnection());
 			var cacheStackMock = new Mock<ICacheStack>();
 			extension.Register(cacheStackMock.Object);
 			extension.Register(cacheStackMock.Object);
@@ -49,7 +49,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			});
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RemoteEvictionExtension(connection);
+			var extension = new RedisRemoteEvictionExtension(connection);
 			extension.Register(cacheStackMock.Object);
 
 			await extension.OnValueRefreshAsync(string.Empty, "TestKey", TimeSpan.FromDays(1));

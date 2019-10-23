@@ -12,7 +12,7 @@ namespace CacheTower.Benchmarks.Extensions.Redis
 		[GlobalSetup]
 		public void Setup()
 		{
-			CacheExtensionProvider = () => new RemoteEvictionExtension(RedisHelper.GetConnection());
+			CacheExtensionProvider = () => new RedisRemoteEvictionExtension(RedisHelper.GetConnection());
 		}
 
 		[IterationSetup]

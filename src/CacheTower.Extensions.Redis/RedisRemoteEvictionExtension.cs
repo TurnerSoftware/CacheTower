@@ -7,7 +7,7 @@ using StackExchange.Redis;
 
 namespace CacheTower.Extensions.Redis
 {
-	public class RemoteEvictionExtension : IValueRefreshExtension
+	public class RedisRemoteEvictionExtension : IValueRefreshExtension
 	{
 		private ConnectionMultiplexer Connection { get; }
 		private ISubscriber Subscriber { get; }
@@ -16,7 +16,7 @@ namespace CacheTower.Extensions.Redis
 		private bool IsRegistered { get; set;  }
 		private ConcurrentDictionary<string, string> FlaggedRefreshes { get; } = new ConcurrentDictionary<string, string>();
 
-		public RemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
+		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
 		{
 			Connection = connection ?? throw new ArgumentNullException(nameof(connection));
 
@@ -39,7 +39,7 @@ namespace CacheTower.Extensions.Redis
 		{
 			if (IsRegistered)
 			{
-				throw new InvalidOperationException($"{nameof(RemoteEvictionExtension)} can only be registered to one {nameof(ICacheStack)}");
+				throw new InvalidOperationException($"{nameof(RedisRemoteEvictionExtension)} can only be registered to one {nameof(ICacheStack)}");
 			}
 			IsRegistered = true;
 
