@@ -141,17 +141,40 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheKey));
 			}
 
-			var result = await InternalGetAsync<T>(cacheKey);
-			if (result != default)
+			for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
 			{
-				return result.CacheEntry;
+				var layer = CacheLayers[layerIndex];
+
+				if (layer is ISyncCacheLayer syncLayer)
+				{
+					if (syncLayer.IsAvailable(cacheKey))
+					{
+						var cacheEntry = syncLayer.Get<T>(cacheKey);
+						if (cacheEntry != default)
+						{
+							return cacheEntry;
+						}
+					}
+				}
+				else
+				{
+					var asyncLayer = layer as IAsyncCacheLayer;
+					if (await asyncLayer.IsAvailableAsync(cacheKey))
+					{
+						var cacheEntry = await asyncLayer.GetAsync<T>(cacheKey);
+						if (cacheEntry != default)
+						{
+							return cacheEntry;
+						}
+					}
+				}
 			}
 
 			return default;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private async Task<(int LayerIndex, CacheEntry<T> CacheEntry)> InternalGetAsync<T>(string cacheKey)
+		private async Task<(int LayerIndex, CacheEntry<T> CacheEntry)> GetWithLayerIndexAsync<T>(string cacheKey)
 		{
 			for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
 			{
@@ -199,7 +222,7 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(getter));
 			}
 
-			var cacheEntryPoint = await InternalGetAsync<T>(cacheKey);
+			var cacheEntryPoint = await GetWithLayerIndexAsync<T>(cacheKey);
 			if (cacheEntryPoint != default)
 			{
 				var cacheEntry = cacheEntryPoint.CacheEntry;
@@ -327,6 +350,7 @@ namespace CacheTower
 
 			return default;
 		}
+
 		private void UnlockWaitingTasks(string cacheKey)
 		{
 			if (WaitingKeyRefresh.TryRemove(cacheKey, out var waitingTasks))

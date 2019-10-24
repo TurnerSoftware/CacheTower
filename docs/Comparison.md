@@ -19,53 +19,51 @@ Job=Core  Runtime=Core
 
 # Memory Caching
 
-|                            Method | UnrollFactor | Iterations |             Mean |          Error |         StdDev |           Median |    Ratio | RatioSD |      Gen 0 |      Gen 1 | Gen 2 |   Allocated |
-|---------------------------------- |------------- |----------- |-----------------:|---------------:|---------------:|-----------------:|---------:|--------:|-----------:|-----------:|------:|------------:|
-|     CacheManager_DictionaryHandle |            1 |          1 |       102.496 us |      7.7619 us |     31.3036 us |        95.150 us |        ? |       ? |          - |          - |     - |     6.77 KB |
-|                                   |              |            |                  |                |                |                  |          |         |            |            |       |             |
-|       CacheTower_MemoryCacheLayer |           16 |          1 |         2.719 us |      0.0299 us |      0.0280 us |         2.723 us |     1.00 |    0.00 |     0.7820 |          - |     - |      2.4 KB |
-| CacheManager_MicrosoftMemoryCache |           16 |          1 |        18.527 us |      0.1342 us |      0.1255 us |        18.522 us |     6.81 |    0.07 |     2.4719 |     1.2207 |     - |     7.66 KB |
-|                 Akavache_InMemory |           16 |          1 |     1,253.554 us |     12.9732 us |     12.1351 us |     1,250.921 us |   461.11 |    7.61 |    19.5313 |     9.7656 |     - |    63.87 KB |
-|                                   |              |            |                  |                |                |                  |          |         |            |            |       |             |
-|     CacheManager_DictionaryHandle |            1 |        100 |       223.305 us |     12.2775 us |     49.5152 us |       215.000 us |        ? |       ? |          - |          - |     - |    33.07 KB |
-|                                   |              |            |                  |                |                |                  |          |         |            |            |       |             |
-|       CacheTower_MemoryCacheLayer |           16 |        100 |        92.969 us |      1.3990 us |      1.3087 us |        92.896 us |     1.00 |    0.00 |    17.0898 |          - |     - |    52.67 KB |
-| CacheManager_MicrosoftMemoryCache |           16 |        100 |       198.039 us |      2.1745 us |      2.0340 us |       198.787 us |     2.13 |    0.04 |    10.9863 |     3.6621 |     - |    33.97 KB |
-|                 Akavache_InMemory |           16 |        100 |   123,427.228 us |  1,446.5894 us |  1,353.1407 us |   123,651.175 us | 1,327.90 |   25.94 |  2000.0000 |  1000.0000 |     - |  6354.04 KB |
-|                                   |              |            |                  |                |                |                  |          |         |            |            |       |             |
-|     CacheManager_DictionaryHandle |            1 |       1000 |     1,141.992 us |     54.7043 us |    229.2228 us |     1,092.000 us |        ? |       ? |          - |          - |     - |   272.13 KB |
-|                                   |              |            |                  |                |                |                  |          |         |            |            |       |             |
-|       CacheTower_MemoryCacheLayer |           16 |       1000 |       908.358 us |     16.3206 us |     15.2663 us |       897.447 us |     1.00 |    0.00 |   166.0156 |          - |     - |    509.7 KB |
-| CacheManager_MicrosoftMemoryCache |           16 |       1000 |     1,874.944 us |     12.0480 us |     11.2697 us |     1,877.787 us |     2.06 |    0.03 |    87.8906 |          - |     - |   273.16 KB |
-|                 Akavache_InMemory |           16 |       1000 | 1,272,187.573 us | 14,974.5973 us | 14,007.2476 us | 1,273,392.700 us | 1,400.95 |   30.49 | 20000.0000 | 10000.0000 |     - | 63448.96 KB |
-
-
+|                             Method | UnrollFactor | Iterations |               Mean |            Error |           StdDev |             Median |    Ratio | RatioSD |      Gen 0 |      Gen 1 |  Gen 2 |  Allocated |
+|----------------------------------- |------------- |----------- |-------------------:|-----------------:|-----------------:|-------------------:|---------:|--------:|-----------:|-----------:|-------:|-----------:|
+|      CacheManager_DictionaryHandle |            1 |          1 |        94,993.5 ns |      5,682.45 ns |     23,111.64 ns |        93,100.0 ns |        ? |       ? |          - |          - |      - |     6936 B |
+|                                    |              |            |                    |                  |                  |                    |          |         |            |            |        |            |
+|        CacheTower_MemoryCacheLayer |           16 |          1 |         2,519.4 ns |         36.70 ns |         34.33 ns |         2,527.4 ns |     1.00 |    0.00 |     0.7286 |          - |      - |     2296 B |
+|  CacheManager_MicrosoftMemoryCache |           16 |          1 |        17,253.1 ns |        199.49 ns |        186.61 ns |        17,312.9 ns |     6.85 |    0.12 |     2.4719 |     1.2207 | 0.0305 |     7848 B |
+|                  Akavache_InMemory |           16 |          1 |     1,221,610.0 ns |     14,584.16 ns |     13,642.03 ns |     1,218,822.9 ns |   484.95 |    7.53 |    19.5313 |     9.7656 |      - |    65451 B |
+|                                    |              |            |                    |                  |                  |                    |          |         |            |            |        |            |
+|      CacheManager_DictionaryHandle |            1 |        100 |       213,070.7 ns |     10,711.59 ns |     42,830.36 ns |       206,050.0 ns |        ? |       ? |          - |          - |      - |    33864 B |
+|                                    |              |            |                    |                  |                  |                    |          |         |            |            |        |            |
+|        CacheTower_MemoryCacheLayer |           16 |        100 |        83,600.9 ns |      1,624.69 ns |      1,668.44 ns |        84,408.1 ns |     1.00 |    0.00 |    14.5264 |          - |      - |    45856 B |
+|  CacheManager_MicrosoftMemoryCache |           16 |        100 |       189,094.7 ns |        875.95 ns |        731.46 ns |       189,317.2 ns |     2.26 |    0.05 |    10.9863 |     3.6621 |      - |    34789 B |
+|                  Akavache_InMemory |           16 |        100 |   120,265,656.7 ns |  1,606,334.01 ns |  1,502,565.83 ns |   120,450,925.0 ns | 1,442.08 |   33.35 |  2000.0000 |  1000.0000 |      - |  6506536 B |
+|                                    |              |            |                    |                  |                  |                    |          |         |            |            |        |            |
+|      CacheManager_DictionaryHandle |            1 |       1000 |     1,157,168.8 ns |     57,037.70 ns |    240,878.38 ns |     1,109,200.0 ns |        ? |       ? |          - |          - |      - |   278664 B |
+|                                    |              |            |                    |                  |                  |                    |          |         |            |            |        |            |
+|        CacheTower_MemoryCacheLayer |           16 |       1000 |       815,082.7 ns |     16,042.87 ns |     19,702.08 ns |       816,285.3 ns |     1.00 |    0.00 |   140.6250 |          - |      - |   441856 B |
+|  CacheManager_MicrosoftMemoryCache |           16 |       1000 |     1,689,425.7 ns |     33,436.61 ns |     31,276.63 ns |     1,675,673.2 ns |     2.09 |    0.05 |    87.8906 |          - |      - |   279715 B |
+|                  Akavache_InMemory |           16 |       1000 | 1,241,049,440.0 ns | 14,223,316.09 ns | 13,304,498.69 ns | 1,242,759,100.0 ns | 1,534.82 |   48.25 | 20000.0000 | 10000.0000 |      - | 64971736 B |
 
 # JSON File Caching
 
 |                        Method | Iterations |         Mean |      Error |     StdDev |       Median | Ratio | RatioSD |      Gen 0 |      Gen 1 | Gen 2 |   Allocated |
 |------------------------------ |----------- |-------------:|-----------:|-----------:|-------------:|------:|--------:|-----------:|-----------:|------:|------------:|
-| CacheTower_JsonFileCacheLayer |          1 |     5.689 ms |  0.1689 ms |  0.7057 ms |     5.630 ms |  1.00 |    0.00 |          - |          - |     - |    14.42 KB |
-|         MonkeyCache_FileStore |          1 |     5.218 ms |  0.1625 ms |  0.6863 ms |     5.160 ms |  0.93 |    0.17 |          - |          - |     - |    65.81 KB |
-|         Akavache_LocalMachine |          1 |     1.891 ms |  0.0703 ms |  0.2868 ms |     1.813 ms |  0.34 |    0.06 |          - |          - |     - |    81.07 KB |
+| CacheTower_JsonFileCacheLayer |          1 |     6.034 ms |  0.1816 ms |  0.7447 ms |     5.959 ms |  1.00 |    0.00 |          - |          - |     - |    14.42 KB |
+|         MonkeyCache_FileStore |          1 |     5.205 ms |  0.1518 ms |  0.6295 ms |     5.152 ms |  0.87 |    0.14 |          - |          - |     - |    65.81 KB |
+|         Akavache_LocalMachine |          1 |     1.884 ms |  0.0630 ms |  0.2578 ms |     1.825 ms |  0.32 |    0.06 |          - |          - |     - |    81.07 KB |
 |                               |            |              |            |            |              |       |         |            |            |       |             |
-| CacheTower_JsonFileCacheLayer |        100 |   135.478 ms |  2.7366 ms | 10.9423 ms |   133.238 ms |  1.00 |    0.00 |          - |          - |     - |       14 KB |
-|         MonkeyCache_FileStore |        100 |   162.651 ms |  3.2236 ms |  8.5485 ms |   160.330 ms |  1.20 |    0.11 |  1000.0000 |          - |     - |  4379.57 KB |
-|         Akavache_LocalMachine |        100 |   118.770 ms |  2.4258 ms |  6.3479 ms |   116.760 ms |  0.87 |    0.08 |  2000.0000 |  1000.0000 |     - |  6367.09 KB |
+| CacheTower_JsonFileCacheLayer |        100 |   131.593 ms |  2.6266 ms | 10.6830 ms |   130.260 ms |  1.00 |    0.00 |          - |          - |     - |       14 KB |
+|         MonkeyCache_FileStore |        100 |   159.427 ms |  3.1417 ms |  5.3348 ms |   157.128 ms |  1.20 |    0.12 |  1000.0000 |          - |     - |  4379.57 KB |
+|         Akavache_LocalMachine |        100 |   115.571 ms |  2.3326 ms |  4.9710 ms |   113.956 ms |  0.87 |    0.08 |  2000.0000 |  1000.0000 |     - |  6367.09 KB |
 |                               |            |              |            |            |              |       |         |            |            |       |             |
-| CacheTower_JsonFileCacheLayer |       1000 | 1,259.683 ms | 24.7294 ms | 47.0502 ms | 1,260.364 ms |  1.00 |    0.00 |  9000.0000 |          - |     - |       14 KB |
-|         MonkeyCache_FileStore |       1000 | 1,637.846 ms | 32.4476 ms | 64.0485 ms | 1,645.843 ms |  1.30 |    0.08 | 14000.0000 |          - |     - | 43596.71 KB |
-|         Akavache_LocalMachine |       1000 | 1,345.352 ms | 21.2547 ms | 19.8817 ms | 1,344.432 ms |  1.10 |    0.04 | 20000.0000 | 10000.0000 |     - | 63472.94 KB |
+| CacheTower_JsonFileCacheLayer |       1000 | 1,195.648 ms | 23.7437 ms | 34.8032 ms | 1,194.876 ms |  1.00 |    0.00 |  9000.0000 |          - |     - |       14 KB |
+|         MonkeyCache_FileStore |       1000 | 1,620.753 ms | 32.2338 ms | 47.2478 ms | 1,613.729 ms |  1.36 |    0.05 | 14000.0000 |          - |     - | 43596.71 KB |
+|         Akavache_LocalMachine |       1000 | 1,308.221 ms | 17.3054 ms | 16.1874 ms | 1,314.735 ms |  1.11 |    0.03 | 20000.0000 | 10000.0000 |     - | 63500.31 KB |
 
 ## Redis Caching
 
 |                     Method | Iterations |       Mean |     Error |    StdDev |     Median | Ratio | RatioSD |     Gen 0 | Gen 1 | Gen 2 |  Allocated |
 |--------------------------- |----------- |-----------:|----------:|----------:|-----------:|------:|--------:|----------:|------:|------:|-----------:|
-| CacheTower_RedisCacheLayer |          1 |   1.471 ms | 0.1311 ms | 0.3761 ms |   1.408 ms |  1.00 |    0.00 |         - |     - |     - |     4.2 KB |
-|         CacheManager_Redis |          1 |   2.340 ms | 0.1235 ms | 0.3523 ms |   2.340 ms |  1.70 |    0.52 |         - |     - |     - |   22.77 KB |
+| CacheTower_RedisCacheLayer |          1 |   1.404 ms | 0.1187 ms | 0.3328 ms |   1.357 ms |  1.00 |    0.00 |         - |     - |     - |     4.2 KB |
+|         CacheManager_Redis |          1 |   2.463 ms | 0.1577 ms | 0.4600 ms |   2.332 ms |  1.87 |    0.61 |         - |     - |     - |   22.67 KB |
 |                            |            |            |           |           |            |       |         |           |       |       |            |
-| CacheTower_RedisCacheLayer |        100 |  42.174 ms | 0.8972 ms | 2.4711 ms |  41.323 ms |  1.00 |    0.00 |         - |     - |     - |     3.8 KB |
-|         CacheManager_Redis |        100 |  45.689 ms | 1.0551 ms | 3.0611 ms |  44.689 ms |  1.09 |    0.08 |         - |     - |     - |  399.34 KB |
+| CacheTower_RedisCacheLayer |        100 |  42.750 ms | 0.4372 ms | 0.3650 ms |  42.666 ms |  1.00 |    0.00 |         - |     - |     - |     4.2 KB |
+|         CacheManager_Redis |        100 |  40.962 ms | 0.8096 ms | 2.0607 ms |  40.726 ms |  1.01 |    0.05 |         - |     - |     - |  399.34 KB |
 |                            |            |            |           |           |            |       |         |           |       |       |            |
-| CacheTower_RedisCacheLayer |       1000 | 393.530 ms | 4.8321 ms | 4.0350 ms | 394.228 ms |  1.00 |    0.00 | 1000.0000 |     - |     - |    3.93 KB |
-|         CacheManager_Redis |       1000 | 422.326 ms | 4.8577 ms | 4.5439 ms | 421.350 ms |  1.07 |    0.02 | 1000.0000 |     - |     - | 3824.77 KB |
+| CacheTower_RedisCacheLayer |       1000 | 376.129 ms | 2.6748 ms | 2.5021 ms | 375.899 ms |  1.00 |    0.00 | 1000.0000 |     - |     - |    3.93 KB |
+|         CacheManager_Redis |       1000 | 391.740 ms | 3.1877 ms | 2.9817 ms | 390.573 ms |  1.04 |    0.01 | 1000.0000 |     - |     - | 3824.81 KB |

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace CacheTower
@@ -23,6 +24,7 @@ namespace CacheTower
 			TimeToLive = timeToLive;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool HasElapsed(TimeSpan timeSpan)
 		{
 			return CachedAt.Add(timeSpan) < DateTime.UtcNow;
