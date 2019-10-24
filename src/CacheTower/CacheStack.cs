@@ -18,7 +18,7 @@ namespace CacheTower
 	{
 		private bool Disposed;
 
-		private ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> WaitingKeyRefresh { get; }
+		private Dictionary<string, IEnumerable<TaskCompletionSource<bool>>> WaitingKeyRefresh { get; }
 
 		private ICacheLayer[] CacheLayers { get; }
 
@@ -40,7 +40,7 @@ namespace CacheTower
 			Extensions = new ExtensionContainer(extensions);
 			Extensions.Register(this);
 
-			WaitingKeyRefresh = new ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>>(StringComparer.Ordinal);
+			WaitingKeyRefresh = new Dictionary<string, IEnumerable<TaskCompletionSource<bool>>>(StringComparer.Ordinal);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -259,7 +259,17 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			if (WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<bool>>()))
+			var hasLock = false;
+			lock (WaitingKeyRefresh)
+			{
+				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
+				if (hasLock)
+				{
+					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<bool>>();
+				}
+			}
+
+			if (hasLock)
 			{
 				try
 				{
@@ -294,7 +304,17 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			if (WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<bool>>()))
+			var hasLock = false;
+			lock (WaitingKeyRefresh)
+			{
+				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
+				if (hasLock)
+				{
+					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<bool>>();
+				}
+			}
+
+			if (hasLock)
 			{
 				try
 				{
@@ -326,7 +346,18 @@ namespace CacheTower
 			{
 				var delayedResultSource = new TaskCompletionSource<bool>();
 				var waitList = new[] { delayedResultSource };
-				WaitingKeyRefresh.AddOrUpdate(cacheKey, waitList, (key, oldList) => oldList.Concat(waitList));
+
+				lock (WaitingKeyRefresh)
+				{
+					if (WaitingKeyRefresh.TryGetValue(cacheKey, out var oldList))
+					{
+						WaitingKeyRefresh[cacheKey] = oldList.Concat(waitList);
+					}
+					else
+					{
+						WaitingKeyRefresh[cacheKey] = waitList;
+					}
+				}
 
 				//Last minute check to confirm whether waiting is required
 				var currentEntry = await GetAsync<T>(cacheKey);
@@ -348,11 +379,15 @@ namespace CacheTower
 
 		private void UnlockWaitingTasks(string cacheKey)
 		{
-			if (WaitingKeyRefresh.TryRemove(cacheKey, out var waitingTasks))
+			lock (WaitingKeyRefresh)
 			{
-				foreach (var task in waitingTasks)
+				if (WaitingKeyRefresh.TryGetValue(cacheKey, out var waitingTasks))
 				{
-					task.TrySetResult(true);
+					WaitingKeyRefresh.Remove(cacheKey);
+					foreach (var task in waitingTasks)
+					{
+						task.TrySetResult(true);
+					}
 				}
 			}
 		}
