@@ -262,11 +262,15 @@ namespace CacheTower
 			var hasLock = false;
 			lock (WaitingKeyRefresh)
 			{
+#if NETSTANDARD2_0
 				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
 				if (hasLock)
 				{
 					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<bool>>();
 				}
+#elif NETSTANDARD2_1
+				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<bool>>());
+#endif
 			}
 
 			if (hasLock)
@@ -307,11 +311,15 @@ namespace CacheTower
 			var hasLock = false;
 			lock (WaitingKeyRefresh)
 			{
+#if NETSTANDARD2_0
 				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
 				if (hasLock)
 				{
 					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<bool>>();
 				}
+#elif NETSTANDARD2_1
+				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<bool>>());
+#endif
 			}
 
 			if (hasLock)
