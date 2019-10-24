@@ -3,6 +3,10 @@
 The performance figures below are as a guide only. Different systems and configurations can drastically change performance results.
 Run the benchmark suite on your target machine to best gauge how the performance is for your use case.
 
+Keep in mind:
+- The scale of time and the size of allocation differences between these libraries (some differences are so small that they are within a margin of error)
+- The various libraries have different features, you would hopefully be choosing one not just because of its performance
+
 If you are one of the maintainers of the libraries referenced below and you feel the test is unfair (eg. not properly configured), open a PR to fix it!
 
 **Test Machine**
