@@ -84,16 +84,5 @@ namespace CacheTower.AlternativesBenchmark
 				}
 			});
 		}
-
-		[Benchmark]
-		public void Akavache_LocalMachine()
-		{
-			LoopAction(Iterations, () =>
-			{
-				BlobCache.LocalMachine.InsertObject("TestKey", 123, TimeSpan.FromDays(1));
-				BlobCache.LocalMachine.GetObject<int>("TestKey");
-				BlobCache.LocalMachine.GetOrCreateObject("GetOrSet_TestKey", () => "Hello World");
-			});
-		}
 	}
 }
