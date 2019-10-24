@@ -6,6 +6,7 @@ using Akavache;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.Providers.Memory;
+using EasyCaching.InMemory;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace CacheTower.AlternativesBenchmark
@@ -17,7 +18,7 @@ namespace CacheTower.AlternativesBenchmark
 		public int Iterations;
 
 		[Benchmark(Baseline = true)]
-		public async Task CacheTower_MemoryCacheLayer()
+		public async Task CacheTower_MemoryCacheLayer_ViaCacheStack()
 		{
 			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
@@ -29,6 +30,25 @@ namespace CacheTower.AlternativesBenchmark
 					{
 						return Task.FromResult("Hello World");
 					}, new CacheSettings(TimeSpan.FromDays(1)));
+				});
+			}
+		}
+
+		[Benchmark]
+		public void CacheTower_MemoryCacheLayer_Direct()
+		{
+			using (var layer = new MemoryCacheLayer())
+			{
+				LoopAction(Iterations, () =>
+				{
+					layer.Set("TestKey", new CacheEntry<int>(123, DateTime.UtcNow, TimeSpan.FromDays(1)));
+					layer.Get<int>("TestKey");
+
+					var getOrSetResult = layer.Get<string>("GetOrSet_TestKey");
+					if (getOrSetResult == null)
+					{
+						layer.Set("GetOrSet_TestKey", new CacheEntry<string>("Hello World", DateTime.UtcNow, TimeSpan.FromDays(1)));
+					}
 				});
 			}
 		}
@@ -97,6 +117,40 @@ namespace CacheTower.AlternativesBenchmark
 					blobCache.GetOrCreateObject("GetOrSet_TestKey", () => "Hello World");
 				});
 			}
+		}
+
+		[Benchmark]
+		public void EasyCaching_InMemory()
+		{
+			var easyCaching = new DefaultInMemoryCachingProvider(
+				"EasyCaching",
+				new[] { new InMemoryCaching("EasyCaching", new InMemoryCachingOptions()) },
+				new InMemoryOptions()
+			);
+
+			LoopAction(Iterations, () =>
+			{
+				easyCaching.Set("TestKey", 123, TimeSpan.FromDays(1));
+				easyCaching.Get<int>("TestKey");
+				easyCaching.Get("GetOrSet_TestKey", () => "Hello World", TimeSpan.FromDays(1));
+			});
+		}
+
+		[Benchmark]
+		public async Task EasyCaching_InMemoryAsync()
+		{
+			var easyCaching = new DefaultInMemoryCachingProvider(
+				"EasyCaching", 
+				new[] { new InMemoryCaching("EasyCaching", new InMemoryCachingOptions()) },
+				new InMemoryOptions()
+			);
+
+			await LoopActionAsync(Iterations, async () =>
+			{
+				await easyCaching.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
+				await easyCaching.GetAsync<int>("TestKey");
+				await easyCaching.GetAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
+			});
 		}
 	}
 }

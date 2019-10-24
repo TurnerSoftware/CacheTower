@@ -6,6 +6,8 @@ using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.AlternativesBenchmark.Utils;
 using CacheTower.Providers.Redis;
+using EasyCaching.Redis;
+using EasyCaching.Serialization.Protobuf;
 using ProtoBuf;
 
 namespace CacheTower.AlternativesBenchmark
@@ -72,6 +74,30 @@ namespace CacheTower.AlternativesBenchmark
 					});
 				});
 			}
+		}
+
+		[Benchmark]
+		public async Task EasyCaching_Redis()
+		{
+			var redisOptions = new RedisOptions
+			{
+				DBConfig = new RedisDBOptions
+				{
+					Configuration = "localhost:6379,ssl=false"
+				}
+			};
+
+			var easyCaching = new DefaultRedisCachingProvider("EasyCaching", new[] {
+				new RedisDatabaseProvider("EasyCaching", redisOptions)
+			}, 
+			new[] { new DefaultProtobufSerializer("EasyCaching") }, redisOptions);
+
+			await LoopActionAsync(Iterations, async () =>
+			{
+				await easyCaching.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
+				await easyCaching.GetAsync<int>("TestKey");
+				await easyCaching.GetAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
+			});
 		}
 	}
 }
