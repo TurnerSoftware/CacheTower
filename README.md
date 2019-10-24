@@ -45,6 +45,7 @@ There are pros-and-cons to each of the types of cache layers though the idea is 
 - Redis caching is about as fast as possible while not being in-memory in the same process (or potentially server).
 
 See also: [Performance Figures & Cache Layer Comparisons](/docs/Performance.md)
+
 See also: [Comparisons to Cache Tower Alternatives](/docs/Comparison.md)
 
 ## Extension System
