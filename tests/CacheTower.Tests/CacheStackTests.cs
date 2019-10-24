@@ -21,10 +21,11 @@ namespace CacheTower.Tests
 		{
 			new CacheStack(null, Array.Empty<ICacheLayer>(), Array.Empty<ICacheExtension>());
 		}
-		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
-		public void ConstructorThrowsOnNullExtensions()
+		[TestMethod]
+		public async Task ConstructorAllowsNullExtensions()
 		{
-			new CacheStack(null, new[] { new MemoryCacheLayer() }, null);
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null);
+			await DisposeOf(cacheStack);
 		}
 
 		[TestMethod]

@@ -14,29 +14,42 @@ namespace CacheTower.Extensions
 #endif
 	{
 		private bool Disposed;
+
+		private bool HasRefreshWrapperExtension { get; }
 		private IRefreshWrapperExtension RefreshWrapperExtension { get; }
+		private bool HasValueRefreshExtensions { get; }
 		private IValueRefreshExtension[] ValueRefreshExtensions { get; }
 		private ICacheExtension[] AllExtensions { get; }
 
 		public ExtensionContainer(ICacheExtension[] extensions)
 		{
-			var valueRefreshExtensions = new List<IValueRefreshExtension>();
-			
-			foreach (var extension in extensions)
+			if (extensions != null && extensions.Length > 0)
 			{
-				if (RefreshWrapperExtension == null && extension is IRefreshWrapperExtension refreshWrapperExtension)
+				var valueRefreshExtensions = new List<IValueRefreshExtension>();
+
+				foreach (var extension in extensions)
 				{
-					RefreshWrapperExtension = refreshWrapperExtension;
+					if (RefreshWrapperExtension == null && extension is IRefreshWrapperExtension refreshWrapperExtension)
+					{
+						HasRefreshWrapperExtension = true;
+						RefreshWrapperExtension = refreshWrapperExtension;
+					}
+
+					if (extension is IValueRefreshExtension valueRefreshExtension)
+					{
+						HasValueRefreshExtensions = true;
+						valueRefreshExtensions.Add(valueRefreshExtension);
+					}
 				}
 
-				if (extension is IValueRefreshExtension valueRefreshExtension)
-				{
-					valueRefreshExtensions.Add(valueRefreshExtension);
-				}
+				ValueRefreshExtensions = valueRefreshExtensions.ToArray();
+				AllExtensions = extensions;
 			}
-
-			ValueRefreshExtensions = valueRefreshExtensions.ToArray();
-			AllExtensions = extensions;
+			else
+			{
+				ValueRefreshExtensions = Array.Empty<IValueRefreshExtension>();
+				AllExtensions = ValueRefreshExtensions;
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -52,7 +65,7 @@ namespace CacheTower.Extensions
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Task<CacheEntry<T>> RefreshValueAsync<T>(string requestId, string cacheKey, Func<Task<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
-			if (RefreshWrapperExtension == null)
+			if (!HasRefreshWrapperExtension)
 			{
 				return valueProvider();
 			}
@@ -65,9 +78,12 @@ namespace CacheTower.Extensions
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public async Task OnValueRefreshAsync(string requestId, string cacheKey, TimeSpan timeToLive)
 		{
-			foreach (var extension in ValueRefreshExtensions)
+			if (HasValueRefreshExtensions)
 			{
-				await extension.OnValueRefreshAsync(requestId, cacheKey, timeToLive);
+				foreach (var extension in ValueRefreshExtensions)
+				{
+					await extension.OnValueRefreshAsync(requestId, cacheKey, timeToLive);
+				}
 			}
 		}
 

@@ -10,8 +10,22 @@ using Moq;
 namespace CacheTower.Tests.Extensions
 {
 	[TestClass]
-	public class ExtensionContainerTests
+	public class ExtensionContainerTests : TestBase
 	{
+		[TestMethod]
+		public async Task AcceptsNullExtensions()
+		{
+			var container = new ExtensionContainer(null);
+			await DisposeOf(container);
+		}
+
+		[TestMethod]
+		public async Task AcceptsEmptyExtensions()
+		{
+			var container = new ExtensionContainer(Array.Empty<ICacheExtension>());
+			await DisposeOf(container);
+		}
+		
 		[TestMethod]
 		public async Task RefreshWrapperExtension()
 		{
@@ -35,6 +49,8 @@ namespace CacheTower.Tests.Extensions
 				),
 				Times.Once
 			);
+
+			await DisposeOf(container);
 		}
 
 		[TestMethod]
@@ -53,6 +69,8 @@ namespace CacheTower.Tests.Extensions
 				e.OnValueRefreshAsync("ValueRefreshTestRequestId", "ValueRefreshTestCacheKey", TimeSpan.FromDays(1)),
 				Times.Once
 			);
+
+			await DisposeOf(container);
 		}
 	}
 }

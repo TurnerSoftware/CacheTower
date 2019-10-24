@@ -37,11 +37,6 @@ namespace CacheTower
 
 			CacheLayers = cacheLayers;
 
-			if (extensions == null)
-			{
-				throw new ArgumentNullException(nameof(extensions));
-			}
-
 			Extensions = new ExtensionContainer(extensions);
 			Extensions.Register(this);
 
