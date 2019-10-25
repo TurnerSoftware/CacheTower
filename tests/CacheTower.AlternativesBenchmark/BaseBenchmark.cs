@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
 
 namespace CacheTower.AlternativesBenchmark
 {
+	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser, MaxIterationCount(200)]
 	public abstract class BaseBenchmark
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

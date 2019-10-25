@@ -12,7 +12,6 @@ using ProtoBuf;
 
 namespace CacheTower.AlternativesBenchmark
 {
-	[CoreJob, MemoryDiagnoser]
 	public class CacheAlternatives_Redis_Benchmark : BaseBenchmark
 	{
 		[Params(1, 100, 1000)]

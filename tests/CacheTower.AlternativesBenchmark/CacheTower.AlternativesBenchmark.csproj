@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="akavache.core" Version="6.9.1" />
-    <PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.0" />
     <PackageReference Include="CacheManager.Core" Version="1.2.0" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" Version="1.2.0" />
     <PackageReference Include="CacheManager.Serialization.ProtoBuf" Version="1.2.0" />

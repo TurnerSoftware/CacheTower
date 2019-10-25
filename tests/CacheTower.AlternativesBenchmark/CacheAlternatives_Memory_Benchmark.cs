@@ -11,7 +11,6 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace CacheTower.AlternativesBenchmark
 {
-	[CoreJob, MemoryDiagnoser, MaxIterationCount(200)]
 	public class CacheAlternatives_Memory_Benchmark : BaseBenchmark
 	{
 		[Params(1, 100, 1000)]

@@ -16,7 +16,6 @@ using ProtoBuf;
 
 namespace CacheTower.AlternativesBenchmark
 {
-	[CoreJob, MemoryDiagnoser, MaxIterationCount(200)]
 	public class CacheAlternatives_File_Benchmark : BaseBenchmark
 	{
 		[Params(1, 100, 1000)]

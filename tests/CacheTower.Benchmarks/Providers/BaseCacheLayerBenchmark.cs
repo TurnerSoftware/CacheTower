@@ -6,6 +6,7 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
 
@@ -18,7 +19,7 @@ namespace CacheTower.Benchmarks.Providers
 		{
 			public ConfigSettings()
 			{
-				Add(Job.Core.WithMaxIterationCount(200));
+				Add(Job.Default.With(CoreRuntime.Core30).WithMaxIterationCount(200));
 				Add(MemoryDiagnoser.Default);
 				
 				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(true, SizeUnit.B, TimeUnit.Nanosecond);
