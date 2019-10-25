@@ -21,18 +21,18 @@ Job=Core  Runtime=Core
 
 |                    Method |       Mean [ns] |    Error [ns] |   StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |-------------------------- |----------------:|--------------:|--------------:|-------:|------:|------:|--------------:|
-|          SetupAndTeardown |        269.1 ns |       5.12 ns |       5.03 ns | 0.1326 |     - |     - |         416 B |
-|                       Set |        619.8 ns |       8.12 ns |       6.78 ns | 0.2108 |     - |     - |         664 B |
-|             Set_TwoLayers |        791.0 ns |      13.50 ns |      12.63 ns | 0.3233 |     - |     - |        1016 B |
-|                     Evict |        712.9 ns |       5.46 ns |       4.56 ns | 0.2108 |     - |     - |         664 B |
-|           Evict_TwoLayers |        974.4 ns |      15.46 ns |      14.46 ns | 0.3233 |     - |     - |        1016 B |
-|                   Cleanup |        905.3 ns |      16.13 ns |      15.09 ns | 0.2108 |     - |     - |         664 B |
-|         Cleanup_TwoLayers |      1,348.3 ns |       7.87 ns |       7.36 ns | 0.3223 |     - |     - |        1016 B |
-|                   GetMiss |        365.4 ns |       3.34 ns |       3.12 ns | 0.1326 |     - |     - |         416 B |
-|                    GetHit |        720.6 ns |      14.39 ns |      15.99 ns | 0.2346 |     - |     - |         736 B |
-|                  GetOrSet |      2,070.8 ns |      24.48 ns |      22.90 ns | 0.5112 |     - |     - |        1608 B |
-|  GetOrSet_TwoSimultaneous | 62,167,395.6 ns | 373,082.52 ns | 348,981.62 ns |      - |     - |     - |        3898 B |
-| GetOrSet_FourSimultaneous | 62,107,135.7 ns | 355,965.18 ns | 315,553.86 ns |      - |     - |     - |        4578 B |
+|          SetupAndTeardown |        286.4 ns |       6.94 ns |       6.16 ns | 0.1326 |     - |     - |         416 B |
+|                       Set |        668.6 ns |       6.07 ns |       5.07 ns | 0.2108 |     - |     - |         664 B |
+|             Set_TwoLayers |        906.2 ns |       5.14 ns |       4.81 ns | 0.3233 |     - |     - |        1016 B |
+|                     Evict |        778.8 ns |       6.55 ns |       5.81 ns | 0.2108 |     - |     - |         664 B |
+|           Evict_TwoLayers |      1,116.9 ns |       5.70 ns |       5.33 ns | 0.3223 |     - |     - |        1016 B |
+|                   Cleanup |      1,006.9 ns |       9.76 ns |       9.13 ns | 0.2098 |     - |     - |         664 B |
+|         Cleanup_TwoLayers |      1,489.0 ns |      10.36 ns |       9.19 ns | 0.3223 |     - |     - |        1016 B |
+|                   GetMiss |        401.0 ns |       3.81 ns |       3.57 ns | 0.1326 |     - |     - |         416 B |
+|                    GetHit |        815.8 ns |       6.47 ns |       5.41 ns | 0.2346 |     - |     - |         736 B |
+|                  GetOrSet |      1,985.8 ns |       9.84 ns |       9.20 ns | 0.4768 |     - |     - |        1504 B |
+|  GetOrSet_TwoSimultaneous | 62,171,738.5 ns | 418,770.92 ns | 391,718.58 ns |      - |     - |     - |        3771 B |
+| GetOrSet_FourSimultaneous | 62,111,005.8 ns | 477,178.35 ns | 446,352.92 ns |      - |     - |     - |        3599 B |
 
 ## Cache Layer Comparison Benchmark
 
@@ -135,14 +135,14 @@ Job=Core  Runtime=Core
 
 |         Method |   Mean [ns] | Error [ns] | StdDev [ns] | Median [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |--------------- |------------:|-----------:|------------:|------------:|------:|------:|------:|--------------:|
-| OnValueRefresh | 53,739.4 ns | 5,327.0 ns | 21,052.6 ns | 45,700.0 ns |     - |     - |     - |         976 B |
-|       Overhead |  9,375.7 ns | 1,534.0 ns |  6,026.5 ns |  7,300.0 ns |     - |     - |     - |         352 B |
-|       Register | 17,344.7 ns | 2,179.4 ns |  8,459.0 ns | 14,650.0 ns |     - |     - |     - |         568 B |
+| OnValueRefresh | 54,195.5 ns | 5,770.1 ns | 22,871.1 ns | 45,500.0 ns |     - |     - |     - |         976 B |
+|       Overhead |  7,189.4 ns |   493.2 ns |  1,860.8 ns |  6,900.0 ns |     - |     - |     - |         352 B |
+|       Register | 19,111.9 ns | 2,889.9 ns | 11,488.4 ns | 14,700.0 ns |     - |     - |     - |         568 B |
 
 ### RedisLockExtension
 
 |       Method |    Mean [ns] |  Error [ns] | StdDev [ns] |  Median [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |------------- |-------------:|------------:|------------:|-------------:|------:|------:|------:|--------------:|
-| RefreshValue | 430,521.7 ns | 21,899.5 ns | 88,820.8 ns | 415,300.0 ns |     - |     - |     - |       10336 B |
-|     Overhead |  21,877.6 ns |  2,849.8 ns | 11,095.0 ns |  18,150.0 ns |     - |     - |     - |        1128 B |
-|     Register |  28,021.3 ns |  3,538.0 ns | 13,732.0 ns |  21,500.0 ns |     - |     - |     - |        1128 B |
+| RefreshValue | 407,611.7 ns | 17,617.5 ns | 72,251.6 ns | 398,150.0 ns |     - |     - |     - |       12768 B |
+|     Overhead |  23,471.5 ns |  3,210.1 ns | 12,573.6 ns |  18,550.0 ns |     - |     - |     - |        1128 B |
+|     Register |  22,177.2 ns |  2,915.5 ns | 11,385.0 ns |  17,800.0 ns |     - |     - |     - |        1128 B |
