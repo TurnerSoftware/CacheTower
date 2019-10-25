@@ -34,7 +34,7 @@ namespace CacheTower.Extensions.Redis
 			FlaggedRefreshes = new HashSet<string>(StringComparer.Ordinal);
 		}
 
-		public async Task OnValueRefreshAsync(string requestId, string cacheKey, TimeSpan timeToLive)
+		public async Task OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive)
 		{
 			lock (FlaggedRefreshesLockObj)
 			{

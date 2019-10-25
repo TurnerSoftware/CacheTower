@@ -326,8 +326,7 @@ namespace CacheTower
 			{
 				try
 				{
-					var requestId = Guid.NewGuid().ToString();
-					return await Extensions.RefreshValueAsync(requestId, cacheKey, async () =>
+					return await Extensions.RefreshValueAsync(cacheKey, async () =>
 					{
 						var previousEntry = await GetAsync<T>(cacheKey);
 
@@ -340,7 +339,7 @@ namespace CacheTower
 						var value = await getter(oldValue, Context);
 						var refreshedEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
 
-						await Extensions.OnValueRefreshAsync(requestId, cacheKey, settings.TimeToLive);
+						await Extensions.OnValueRefreshAsync(cacheKey, settings.TimeToLive);
 
 						return refreshedEntry;
 					}, settings);

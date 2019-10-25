@@ -52,7 +52,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var extension = new RedisRemoteEvictionExtension(connection);
 			extension.Register(cacheStackMock.Object);
 
-			await extension.OnValueRefreshAsync(string.Empty, "TestKey", TimeSpan.FromDays(1));
+			await extension.OnValueRefreshAsync("TestKey", TimeSpan.FromDays(1));
 
 			var completedTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(30)));
 

@@ -13,7 +13,7 @@ namespace CacheTower.Benchmarks.Extensions
 		{
 			var extension = CacheExtensionProvider() as IValueRefreshExtension;
 			extension.Register(CacheStack);
-			await extension.OnValueRefreshAsync("a611d518-a94e-4b83-a3ac-e8edc13222c5", "OnValueRefreshCacheKey", TimeSpan.FromDays(1));
+			await extension.OnValueRefreshAsync("OnValueRefreshCacheKey", TimeSpan.FromDays(1));
 			await DisposeOf(extension);
 		}
 	}

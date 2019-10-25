@@ -48,7 +48,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var refreshWaiterTask = new TaskCompletionSource<bool>();
 			var lockWaiterTask = new TaskCompletionSource<bool>();
 
-			var refreshTask = extension.RefreshValueAsync("RequestId", "TestLock", async () =>
+			var refreshTask = extension.RefreshValueAsync("TestLock", async () =>
 			{
 				lockWaiterTask.SetResult(true);
 				await refreshWaiterTask.Task;
@@ -61,9 +61,6 @@ namespace CacheTower.Tests.Extensions.Redis
 			var keyWithExpiry = await database.StringGetWithExpiryAsync("TestLock");
 
 			refreshWaiterTask.SetResult(true);
-
-			//Confirm we are reading the right key
-			Assert.AreEqual("RequestId", (string)keyWithExpiry.Value);
 
 			var lockTimeout = TimeSpan.FromDays(1);
 			var actualExpiry = keyWithExpiry.Expiry.Value;
@@ -99,7 +96,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
 
-			await extension.RefreshValueAsync(string.Empty, "TestKey", 
+			await extension.RefreshValueAsync("TestKey", 
 				() => Task.FromResult(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
 
 
@@ -127,7 +124,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
 			var secondaryTaskKickoff = new TaskCompletionSource<bool>();
 
-			var primaryTask = extension.RefreshValueAsync(string.Empty, "TestKey",
+			var primaryTask = extension.RefreshValueAsync("TestKey",
 					async () =>
 					{
 						secondaryTaskKickoff.SetResult(true);
@@ -139,7 +136,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			await secondaryTaskKickoff.Task;
 
-			var secondaryTask = extension.RefreshValueAsync(string.Empty, "TestKey",
+			var secondaryTask = extension.RefreshValueAsync("TestKey",
 					() =>
 					{
 						return Task.FromResult(cacheEntry);
@@ -173,7 +170,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
 			var secondaryTaskKickoff = new TaskCompletionSource<bool>();
 
-			var primaryTask = extensionOne.RefreshValueAsync(string.Empty, "TestKey",
+			var primaryTask = extensionOne.RefreshValueAsync("TestKey",
 					async () =>
 					{
 						secondaryTaskKickoff.SetResult(true);
@@ -185,7 +182,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			await secondaryTaskKickoff.Task;
 
-			var secondaryTask = extensionTwo.RefreshValueAsync(string.Empty, "TestKey",
+			var secondaryTask = extensionTwo.RefreshValueAsync("TestKey",
 					() =>
 					{
 						return Task.FromResult(cacheEntry);

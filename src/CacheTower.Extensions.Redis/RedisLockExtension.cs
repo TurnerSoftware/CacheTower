@@ -59,9 +59,9 @@ namespace CacheTower.Extensions.Redis
 			RegisteredStack = cacheStack;
 		}
 
-		public async Task<CacheEntry<T>> RefreshValueAsync<T>(string requestId, string cacheKey, Func<Task<CacheEntry<T>>> valueProvider, CacheSettings settings)
+		public async Task<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<Task<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
-			var hasLock = await Database.StringSetAsync(cacheKey, requestId, expiry: LockTimeout, when: When.NotExists);
+			var hasLock = await Database.StringSetAsync(cacheKey, RedisValue.EmptyString, expiry: LockTimeout, when: When.NotExists);
 
 			if (hasLock)
 			{
