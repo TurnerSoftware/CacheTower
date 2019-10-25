@@ -7,6 +7,7 @@ using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.Providers.Memory;
 using EasyCaching.InMemory;
+using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace CacheTower.AlternativesBenchmark
@@ -149,6 +150,32 @@ namespace CacheTower.AlternativesBenchmark
 				await easyCaching.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
 				await easyCaching.GetAsync<int>("TestKey");
 				await easyCaching.GetAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
+			});
+		}
+
+		[Benchmark]
+		public void LazyCache_MemoryProvider()
+		{
+			var lazyCache = new CachingService();
+
+			LoopAction(Iterations, () =>
+			{
+				lazyCache.Add("TestKey", 123, TimeSpan.FromDays(1));
+				lazyCache.Get<int>("TestKey");
+				lazyCache.GetOrAdd("TestKey", () => "Hello World", TimeSpan.FromDays(1));
+			});
+		}
+
+		[Benchmark]
+		public async Task LazyCache_MemoryProviderAsync()
+		{
+			var lazyCache = new CachingService();
+
+			await LoopActionAsync(Iterations, async () =>
+			{
+				lazyCache.Add("TestKey", 123, TimeSpan.FromDays(1));
+				await lazyCache.GetAsync<int>("TestKey");
+				await lazyCache.GetOrAddAsync("TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
 			});
 		}
 	}
