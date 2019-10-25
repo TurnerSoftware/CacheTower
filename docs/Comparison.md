@@ -23,40 +23,34 @@ Job=Core  Runtime=Core
 
 ## Memory Caching
 
-|                                    Method | UnrollFactor | Iterations |               Mean |            Error |           StdDev |             Median |    Ratio | RatioSD |      Gen 0 |      Gen 1 | Gen 2 |  Allocated |
-|------------------------------------------ |------------- |----------- |-------------------:|-----------------:|-----------------:|-------------------:|---------:|--------:|-----------:|-----------:|------:|-----------:|
-|             CacheManager_DictionaryHandle |            1 |          1 |       101,948.9 ns |      7,119.80 ns |     28,876.72 ns |        97,400.0 ns |        ? |       ? |          - |          - |     - |     6936 B |
-|                                           |              |            |                    |                  |                  |                    |          |         |            |            |       |            |
-| CacheTower_MemoryCacheLayer_ViaCacheStack |           16 |          1 |         2,380.7 ns |         47.48 ns |         50.80 ns |         2,350.8 ns |     1.00 |    0.00 |     0.5531 |          - |     - |     1736 B |
-|        CacheTower_MemoryCacheLayer_Direct |           16 |          1 |           747.8 ns |          8.87 ns |          7.86 ns |           748.4 ns |     0.31 |    0.01 |     0.1631 |          - |     - |      512 B |
-|         CacheManager_MicrosoftMemoryCache |           16 |          1 |        17,362.4 ns |         79.21 ns |         70.22 ns |        17,348.6 ns |     7.31 |    0.16 |     2.4719 |     1.2207 |     - |     7848 B |
-|                         Akavache_InMemory |           16 |          1 |     1,279,184.1 ns |     25,094.78 ns |     24,646.43 ns |     1,273,521.5 ns |   536.74 |   16.36 |    19.5313 |     9.7656 |     - |    66211 B |
-|                      EasyCaching_InMemory |           16 |          1 |         9,337.9 ns |        161.75 ns |        151.30 ns |         9,427.1 ns |     3.92 |    0.11 |     1.3580 |          - |     - |     4281 B |
-|                 EasyCaching_InMemoryAsync |           16 |          1 |        22,590.8 ns |        445.59 ns |        495.27 ns |        22,494.1 ns |     9.49 |    0.22 |     2.0142 |          - |     - |     6255 B |
-|                  LazyCache_MemoryProvider |           16 |          1 |         1,708.6 ns |         26.82 ns |         25.09 ns |         1,715.0 ns |     0.72 |    0.02 |     0.4139 |          - |     - |     1304 B |
-|             LazyCache_MemoryProviderAsync |           16 |          1 |         1,932.7 ns |         38.39 ns |         39.43 ns |         1,952.5 ns |     0.81 |    0.03 |     0.4845 |          - |     - |     1520 B |
-|                                           |              |            |                    |                  |                  |                    |          |         |            |            |       |            |
-|             CacheManager_DictionaryHandle |            1 |        100 |       230,153.8 ns |     14,050.08 ns |     57,144.47 ns |       218,250.0 ns |        ? |       ? |          - |          - |     - |    33864 B |
-|                                           |              |            |                    |                  |                  |                    |          |         |            |            |       |            |
-| CacheTower_MemoryCacheLayer_ViaCacheStack |           16 |        100 |        84,846.1 ns |      1,679.18 ns |      1,649.18 ns |        84,110.3 ns |     1.00 |    0.00 |    14.4043 |          - |     - |    45297 B |
-|        CacheTower_MemoryCacheLayer_Direct |           16 |        100 |        37,250.0 ns |        708.67 ns |        787.69 ns |        37,390.3 ns |     0.44 |    0.01 |     1.4038 |          - |     - |     4472 B |
-|         CacheManager_MicrosoftMemoryCache |           16 |        100 |       191,768.1 ns |      3,620.24 ns |      3,386.37 ns |       193,383.7 ns |     2.26 |    0.06 |    10.9863 |     3.6621 |     - |    34789 B |
-|                         Akavache_InMemory |           16 |        100 |   123,695,475.0 ns |  1,600,868.13 ns |  1,497,453.04 ns |   123,656,450.0 ns | 1,460.57 |   32.76 |  2000.0000 |  1000.0000 |     - |  6577278 B |
-|                      EasyCaching_InMemory |           16 |        100 |       426,539.2 ns |      4,349.09 ns |      3,631.69 ns |       425,248.9 ns |     5.04 |    0.12 |    35.6445 |          - |     - |   112806 B |
-|                 EasyCaching_InMemoryAsync |           16 |        100 |       910,037.1 ns |     16,143.48 ns |     15,100.62 ns |       911,232.6 ns |    10.75 |    0.26 |    66.4063 |          - |     - |   210689 B |
-|                  LazyCache_MemoryProvider |           16 |        100 |       159,493.9 ns |      3,010.58 ns |      2,668.80 ns |       160,328.1 ns |     1.89 |    0.04 |    33.9355 |          - |     - |   106640 B |
-|             LazyCache_MemoryProviderAsync |           16 |        100 |       180,006.1 ns |      1,511.01 ns |      1,339.47 ns |       179,538.8 ns |     2.13 |    0.04 |    40.7715 |          - |     - |   128240 B |
-|                                           |              |            |                    |                  |                  |                    |          |         |            |            |       |            |
-|             CacheManager_DictionaryHandle |            1 |       1000 |     1,140,777.8 ns |     51,845.44 ns |    218,383.15 ns |     1,089,150.0 ns |        ? |       ? |          - |          - |     - |   278664 B |
-|                                           |              |            |                    |                  |                  |                    |          |         |            |            |       |            |
-| CacheTower_MemoryCacheLayer_ViaCacheStack |           16 |       1000 |       794,296.9 ns |     15,185.57 ns |     16,248.39 ns |       784,814.0 ns |     1.00 |    0.00 |   140.6250 |          - |     - |   441296 B |
-|        CacheTower_MemoryCacheLayer_Direct |           16 |       1000 |       378,342.7 ns |      4,539.92 ns |      4,024.52 ns |       379,493.7 ns |     0.47 |    0.01 |    12.6953 |          - |     - |    40472 B |
-|         CacheManager_MicrosoftMemoryCache |           16 |       1000 |     1,735,839.3 ns |     21,393.55 ns |     20,011.54 ns |     1,741,060.4 ns |     2.18 |    0.05 |    87.8906 |          - |     - |   279715 B |
-|                         Akavache_InMemory |           16 |       1000 | 1,262,692,113.3 ns | 20,328,759.96 ns | 19,015,534.68 ns | 1,267,469,300.0 ns | 1,585.05 |   31.42 | 20000.0000 | 10000.0000 |     - | 65753224 B |
-|                      EasyCaching_InMemory |           16 |       1000 |     4,312,032.8 ns |     74,329.49 ns |     65,891.16 ns |     4,325,863.3 ns |     5.41 |    0.16 |   343.7500 |          - |     - |  1099399 B |
-|                 EasyCaching_InMemoryAsync |           16 |       1000 |     7,605,286.5 ns |     98,221.00 ns |     91,875.98 ns |     7,596,018.8 ns |     9.55 |    0.26 |   656.2500 |          - |     - |  2068654 B |
-|                  LazyCache_MemoryProvider |           16 |       1000 |     1,582,980.9 ns |     28,400.94 ns |     26,566.25 ns |     1,595,474.2 ns |     1.99 |    0.05 |   337.8906 |          - |     - |  1064243 B |
-|             LazyCache_MemoryProviderAsync |           16 |       1000 |     1,783,911.1 ns |      9,608.12 ns |      8,987.44 ns |     1,784,143.9 ns |     2.24 |    0.04 |   406.2500 |          - |     - |  1280259 B |
+|                                    Method | Iterations |               Mean |           Error |          StdDev |    Ratio | RatioSD |      Gen 0 |      Gen 1 | Gen 2 |  Allocated |
+|------------------------------------------ |----------- |-------------------:|----------------:|----------------:|---------:|--------:|-----------:|-----------:|------:|-----------:|
+|        CacheTower_MemoryCacheLayer_Direct |          1 |           800.4 ns |         4.45 ns |         4.16 ns |     0.31 |    0.00 |     0.1631 |          - |     - |      512 B |
+|                  LazyCache_MemoryProvider |          1 |         1,822.9 ns |        14.96 ns |        12.50 ns |     0.70 |    0.01 |     0.4139 |          - |     - |     1304 B |
+|             LazyCache_MemoryProviderAsync |          1 |         2,183.7 ns |        15.53 ns |        14.53 ns |     0.84 |    0.01 |     0.4845 |          - |     - |     1520 B |
+| CacheTower_MemoryCacheLayer_ViaCacheStack |          1 |         2,609.8 ns |        22.08 ns |        20.65 ns |     1.00 |    0.00 |     0.5531 |          - |     - |     1736 B |
+|                      EasyCaching_InMemory |          1 |        10,078.5 ns |        62.07 ns |        58.06 ns |     3.86 |    0.03 |     1.3580 |          - |     - |     4281 B |
+|         CacheManager_MicrosoftMemoryCache |          1 |        19,198.9 ns |       100.04 ns |        88.68 ns |     7.36 |    0.06 |     2.4719 |     1.2207 |     - |     7848 B |
+|                 EasyCaching_InMemoryAsync |          1 |        25,209.6 ns |       491.28 ns |       638.80 ns |     9.67 |    0.24 |     2.0142 |          - |     - |     6266 B |
+|                         Akavache_InMemory |          1 |     1,346,591.5 ns |     7,072.73 ns |     6,615.83 ns |   516.01 |    5.51 |    19.5313 |     9.7656 |     - |    66169 B |
+|                                           |            |                    |                 |                 |          |         |            |            |       |            |
+|        CacheTower_MemoryCacheLayer_Direct |        100 |        43,656.3 ns |       266.85 ns |       249.61 ns |     0.48 |    0.00 |     1.4038 |          - |     - |     4472 B |
+| CacheTower_MemoryCacheLayer_ViaCacheStack |        100 |        90,679.2 ns |       447.10 ns |       418.22 ns |     1.00 |    0.00 |    14.4043 |          - |     - |    45296 B |
+|                  LazyCache_MemoryProvider |        100 |       176,236.9 ns |     1,424.50 ns |     1,262.78 ns |     1.94 |    0.02 |    33.9355 |          - |     - |   106640 B |
+|             LazyCache_MemoryProviderAsync |        100 |       194,498.3 ns |     1,237.00 ns |     1,096.57 ns |     2.15 |    0.01 |    40.7715 |          - |     - |   128240 B |
+|         CacheManager_MicrosoftMemoryCache |        100 |       213,216.2 ns |     2,130.58 ns |     1,779.13 ns |     2.35 |    0.02 |    10.9863 |     3.6621 |     - |    34789 B |
+|                      EasyCaching_InMemory |        100 |       467,129.9 ns |     3,353.38 ns |     3,136.76 ns |     5.15 |    0.04 |    35.6445 |          - |     - |   112806 B |
+|                 EasyCaching_InMemoryAsync |        100 |       909,292.0 ns |    10,709.25 ns |    10,017.44 ns |    10.03 |    0.13 |    66.4063 |          - |     - |   210692 B |
+|                         Akavache_InMemory |        100 |   126,858,307.1 ns | 2,506,590.77 ns | 4,583,442.95 ns | 1,440.78 |   50.78 |  2000.0000 |  1000.0000 |     - |  6585576 B |
+|                                           |            |                    |                 |                 |          |         |            |            |       |            |
+|        CacheTower_MemoryCacheLayer_Direct |       1000 |       412,113.5 ns |     2,554.85 ns |     2,389.81 ns |     0.47 |    0.00 |    12.6953 |          - |     - |    40472 B |
+| CacheTower_MemoryCacheLayer_ViaCacheStack |       1000 |       881,748.3 ns |     7,727.92 ns |     6,453.17 ns |     1.00 |    0.00 |   140.6250 |          - |     - |   441296 B |
+|                  LazyCache_MemoryProvider |       1000 |     1,787,082.6 ns |     6,151.78 ns |     5,137.02 ns |     2.03 |    0.01 |   337.8906 |          - |     - |  1064241 B |
+|         CacheManager_MicrosoftMemoryCache |       1000 |     1,874,094.6 ns |    15,057.51 ns |    13,348.09 ns |     2.13 |    0.02 |    87.8906 |          - |     - |   279714 B |
+|             LazyCache_MemoryProviderAsync |       1000 |     1,984,201.9 ns |    19,066.82 ns |    17,835.12 ns |     2.25 |    0.03 |   406.2500 |          - |     - |  1280245 B |
+|                      EasyCaching_InMemory |       1000 |     4,670,012.8 ns |    30,198.01 ns |    28,247.23 ns |     5.29 |    0.04 |   343.7500 |          - |     - |  1099405 B |
+|                 EasyCaching_InMemoryAsync |       1000 |     8,388,602.9 ns |   107,537.46 ns |   100,590.60 ns |     9.51 |    0.11 |   656.2500 |          - |     - |  2068652 B |
+|                         Akavache_InMemory |       1000 | 1,385,010,306.7 ns | 6,051,655.26 ns | 5,660,722.08 ns | 1,570.06 |   11.90 | 20000.0000 | 10000.0000 |     - | 65753656 B |
 
 ## File Caching
 

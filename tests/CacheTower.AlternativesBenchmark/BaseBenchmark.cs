@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Order;
 
 namespace CacheTower.AlternativesBenchmark
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser, MaxIterationCount(200)]
+	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser, MaxIterationCount(200), Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	public abstract class BaseBenchmark
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

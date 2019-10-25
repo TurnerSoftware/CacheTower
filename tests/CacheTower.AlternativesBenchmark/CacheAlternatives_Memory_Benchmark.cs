@@ -8,7 +8,6 @@ using CacheManager.Core;
 using CacheTower.Providers.Memory;
 using EasyCaching.InMemory;
 using LazyCache;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace CacheTower.AlternativesBenchmark
 {
@@ -49,36 +48,6 @@ namespace CacheTower.AlternativesBenchmark
 					{
 						layer.Set("GetOrSet_TestKey", new CacheEntry<string>("Hello World", DateTime.UtcNow, TimeSpan.FromDays(1)));
 					}
-				});
-			}
-		}
-
-		[IterationSetup(Target = nameof(CacheManager_DictionaryHandle))]
-		public void CacheManager_DictionaryHandle_Setup()
-		{
-			//Something is very weird with the dictionary handle, seems to be leaking memory
-			//This method (though blank) forces just the CacheManager DictionaryHandle to only have 1 iteration
-			//This should prevent issues and allow it to actually complete a test run
-		}
-
-		[Benchmark]
-		public void CacheManager_DictionaryHandle()
-		{
-			var cacheManager = CacheFactory.Build(b =>
-			{
-				b.WithDictionaryHandle();
-			});
-
-			using (cacheManager)
-			{
-				LoopAction(Iterations, () =>
-				{
-					cacheManager.Add("TestKey", 123);
-					cacheManager.GetCacheItem("TestKey");
-					cacheManager.GetOrAdd("GetOrSet_TestKey", (key) =>
-					{
-						return new CacheItem<string>(key, "Hello World");
-					});
 				});
 			}
 		}
