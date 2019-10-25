@@ -68,7 +68,8 @@ namespace CacheTower.Benchmarks.Providers
 			var cacheLayer = CacheLayerProvider.Invoke();
 			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
 			{
-				syncCacheLayer.Get<int>("GetMiss");
+				syncCacheLayer.Set("GetHit", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				syncCacheLayer.Get<int>("GetHit");
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{

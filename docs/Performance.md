@@ -50,12 +50,12 @@ Job=Core  Runtime=Core
 
 |      Method |   Mean [ns] | Error [ns] | StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |------------ |------------:|-----------:|------------:|-------:|------:|------:|--------------:|
-|    Overhead |    127.9 ns |    2.50 ns |     2.68 ns | 0.0663 |     - |     - |         208 B |
-|     GetMiss |    198.8 ns |    2.61 ns |     2.44 ns | 0.0663 |     - |     - |         208 B |
-|      GetHit |    196.3 ns |    3.15 ns |     2.95 ns | 0.0663 |     - |     - |         208 B |
-|      SetNew |    414.4 ns |    6.25 ns |     5.54 ns | 0.1221 |     - |     - |         384 B |
-| SetExisting |    654.1 ns |    7.35 ns |     6.87 ns | 0.1345 |     - |     - |         424 B |
-|     SetMany | 32,194.4 ns |  522.58 ns |   463.26 ns | 6.9580 |     - |     - |       21920 B |
+|    Overhead |    142.7 ns |    1.15 ns |     1.02 ns | 0.0663 |     - |     - |         208 B |
+|     GetMiss |    208.5 ns |    1.99 ns |     1.77 ns | 0.0663 |     - |     - |         208 B |
+|      GetHit |    533.8 ns |    3.10 ns |     2.90 ns | 0.1221 |     - |     - |         384 B |
+|      SetNew |    448.7 ns |    3.02 ns |     2.83 ns | 0.1221 |     - |     - |         384 B |
+| SetExisting |    709.7 ns |    3.25 ns |     3.04 ns | 0.1345 |     - |     - |         424 B |
+|     SetMany | 34,425.9 ns |  160.00 ns |   149.66 ns | 6.9580 |     - |     - |       21920 B |
 
 ## File System Benchmarks
 
