@@ -56,8 +56,9 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 			
-			foreach (var layer in CacheLayers)
+			for (int i = 0, l = CacheLayers.Length; i < l; i++)
 			{
+				var layer = CacheLayers[i];
 				if (layer is ISyncCacheLayer syncLayer)
 				{
 					syncLayer.Cleanup();
@@ -78,8 +79,9 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheKey));
 			}
 
-			foreach (var layer in CacheLayers)
+			for (int i = 0, l = CacheLayers.Length; i < l; i++)
 			{
+				var layer = CacheLayers[i];
 				if (layer is ISyncCacheLayer syncLayer)
 				{
 					syncLayer.Evict(cacheKey);
@@ -114,11 +116,12 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheEntry));
 			}
 
-			foreach (var layer in CacheLayers)
+			for (int i = 0, l = CacheLayers.Length; i < l; i += 2)
 			{
-				if (layer is ISyncCacheLayer syncLayer)
+				var layer = CacheLayers[i];
+				if (layer is ISyncCacheLayer syncLayerOne)
 				{
-					syncLayer.Set(cacheKey, cacheEntry);
+					syncLayerOne.Set(cacheKey, cacheEntry);
 				}
 				else
 				{
@@ -139,7 +142,6 @@ namespace CacheTower
 			for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
 			{
 				var layer = CacheLayers[layerIndex];
-
 				if (layer is ISyncCacheLayer syncLayer)
 				{
 					if (syncLayer.IsAvailable(cacheKey))
@@ -174,7 +176,6 @@ namespace CacheTower
 			for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
 			{
 				var layer = CacheLayers[layerIndex];
-
 				if (layer is ISyncCacheLayer syncLayer)
 				{
 					if (syncLayer.IsAvailable(cacheKey))
@@ -391,9 +392,11 @@ namespace CacheTower
 				if (WaitingKeyRefresh.TryGetValue(cacheKey, out var waitingTasks))
 				{
 					WaitingKeyRefresh.Remove(cacheKey);
-					foreach (var task in waitingTasks)
+
+					var tasks = waitingTasks.ToArray();
+					for (int i = 0, l = tasks.Length; i < l; i++)
 					{
-						task.TrySetResult(true);
+						tasks[i].TrySetResult(true);
 					}
 				}
 			}
