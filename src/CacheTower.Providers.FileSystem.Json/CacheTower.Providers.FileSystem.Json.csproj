@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>JSON File Provider for Cache Tower</Title>
+    <Description>Use JSON serialized files for caching with Cache Tower</Description>
+    <PackageTags>json;filesystem;$(PackageBaseTags)</PackageTags>
+    <Authors>James Turner</Authors>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,10 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <AssemblyName>CacheTower</AssemblyName>
     <Title>Cache Tower</Title>
     <Description>A multi-layered caching system for .NET</Description>
-    <PackageTags>$(PackageBaseTags)</PackageTags>
+    <PackageTags>inmemory,$(PackageBaseTags)</PackageTags>
     <Authors>James Turner</Authors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
