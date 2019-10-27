@@ -36,13 +36,13 @@ Job=Core  Runtime=Core
 
 ## Cache Layer Comparison Benchmark
 
-|                 Method |         Mean |       Error |       StdDev |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 |   Allocated |
-|----------------------- |-------------:|------------:|-------------:|---------:|--------:|-----------:|------:|------:|------------:|
-|       MemoryCacheLayer |     117.8 us |     2.13 us |      1.77 us |     1.00 |    0.00 |    30.7617 |     - |     - |    94.34 KB |
-|        RedisCacheLayer |  50,325.4 us |   995.02 us |  2,204.89 us |   456.51 |   19.36 |          - |     - |     - |    320.8 KB |
-| ProtobufFileCacheLayer | 208,518.6 us | 4,149.30 us |  5,095.71 us | 1,769.01 |   59.62 |          - |     - |     - |   1574.7 KB |
-|     JsonFileCacheLayer | 260,626.9 us | 5,117.03 us |  7,814.25 us | 2,214.22 |   67.60 |  1000.0000 |     - |     - |  3385.54 KB |
-|      MongoDbCacheLayer | 449,438.9 us | 8,916.56 us | 21,704.14 us | 3,968.43 |  223.46 | 11000.0000 |     - |     - | 33891.22 KB |
+|                 Method |         Mean |       Error |       StdDev |       Median |    Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 |   Allocated |
+|----------------------- |-------------:|------------:|-------------:|-------------:|---------:|--------:|-----------:|------:|------:|------------:|
+|       MemoryCacheLayer |     124.3 us |     1.40 us |      1.17 us |     124.7 us |     1.00 |    0.00 |    30.7617 |     - |     - |    94.34 KB |
+|        RedisCacheLayer |  50,689.9 us | 1,008.28 us |  2,529.59 us |  49,719.1 us |   439.95 |   23.84 |          - |     - |     - |   320.88 KB |
+| ProtobufFileCacheLayer | 214,656.5 us | 4,261.38 us |  7,001.57 us | 214,159.9 us | 1,753.22 |   63.32 |          - |     - |     - |  1585.24 KB |
+|     JsonFileCacheLayer | 262,911.9 us | 5,165.79 us |  9,182.18 us | 261,568.6 us | 2,103.16 |   74.19 |  1000.0000 |     - |     - |  3298.81 KB |
+|      MongoDbCacheLayer | 466,444.2 us | 9,211.19 us | 20,024.37 us | 464,238.5 us | 3,859.08 |  207.18 | 11000.0000 |     - |     - | 33892.99 KB |
 
 ## In-Memory Benchmarks
 
