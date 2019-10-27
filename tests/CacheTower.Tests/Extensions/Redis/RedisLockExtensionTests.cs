@@ -87,6 +87,7 @@ namespace CacheTower.Tests.Extensions.Redis
 					taskCompletionSource.SetResult(true);
 				}
 
+				Assert.Fail($"Unexpected value '{value}'");
 				taskCompletionSource.SetResult(false);
 			});
 
