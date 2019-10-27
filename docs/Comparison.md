@@ -54,22 +54,22 @@ Job=Core  Runtime=Core
 
 ## File Caching
 
-|                            Method | Iterations |         Mean |      Error |     StdDev |       Median | Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 |   Allocated |
-|---------------------------------- |----------- |-------------:|-----------:|-----------:|-------------:|------:|--------:|-----------:|------:|------:|------------:|
-|                  EasyCaching_Disk |          1 |     4.161 ms |  0.1482 ms |  0.6258 ms |     4.098 ms |  0.72 |    0.15 |          - |     - |     - |    38.03 KB |
-| CacheTower_ProtobufFileCacheLayer |          1 |     4.699 ms |  0.1536 ms |  0.6301 ms |     4.663 ms |  0.81 |    0.15 |          - |     - |     - |     24.7 KB |
-|             MonkeyCache_FileStore |          1 |     5.418 ms |  0.1614 ms |  0.6657 ms |     5.364 ms |  0.93 |    0.17 |          - |     - |     - |    65.81 KB |
-|     CacheTower_JsonFileCacheLayer |          1 |     5.907 ms |  0.1843 ms |  0.7560 ms |     5.752 ms |  1.00 |    0.00 |          - |     - |     - |     56.7 KB |
-|                                   |            |              |            |            |              |       |         |            |       |       |             |
-| CacheTower_ProtobufFileCacheLayer |        100 |    91.344 ms |  1.7985 ms |  3.1500 ms |    90.172 ms |  0.69 |    0.04 |          - |     - |     - |  1110.39 KB |
-|                  EasyCaching_Disk |        100 |   100.655 ms |  1.9950 ms |  4.2516 ms |    99.923 ms |  0.76 |    0.05 |          - |     - |     - |  1766.05 KB |
-|     CacheTower_JsonFileCacheLayer |        100 |   131.941 ms |  2.6051 ms |  6.3904 ms |   130.206 ms |  1.00 |    0.00 |          - |     - |     - |  2860.73 KB |
-|             MonkeyCache_FileStore |        100 |   169.378 ms |  3.3031 ms |  3.6714 ms |   168.393 ms |  1.27 |    0.08 |  1000.0000 |     - |     - |  4379.57 KB |
-|                                   |            |              |            |            |              |       |         |            |       |       |             |
-| CacheTower_ProtobufFileCacheLayer |       1000 |   876.082 ms |  8.8316 ms |  8.2611 ms |   877.591 ms |  0.68 |    0.02 |  3000.0000 |     - |     - | 10989.37 KB |
-|                  EasyCaching_Disk |       1000 |   977.346 ms | 15.0591 ms | 14.0863 ms |   980.300 ms |  0.76 |    0.02 |  5000.0000 |     - |     - | 17495.91 KB |
-|     CacheTower_JsonFileCacheLayer |       1000 | 1,286.669 ms | 25.0659 ms | 38.2783 ms | 1,295.780 ms |  1.00 |    0.00 |  9000.0000 |     - |     - | 28370.11 KB |
-|             MonkeyCache_FileStore |       1000 | 1,677.821 ms | 13.4943 ms | 12.6225 ms | 1,676.498 ms |  1.31 |    0.04 | 14000.0000 |     - |     - | 43596.71 KB |
+|                            Method | Iterations |         Mean |      Error |     StdDev | Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 |   Allocated |
+|---------------------------------- |----------- |-------------:|-----------:|-----------:|------:|--------:|-----------:|------:|------:|------------:|
+|                  EasyCaching_Disk |          1 |     4.126 ms |  0.1267 ms |  0.5293 ms |  0.74 |    0.14 |          - |     - |     - |    38.03 KB |
+| CacheTower_ProtobufFileCacheLayer |          1 |     4.672 ms |  0.1726 ms |  0.7136 ms |  0.83 |    0.18 |          - |     - |     - |    24.87 KB |
+|             MonkeyCache_FileStore |          1 |     5.260 ms |  0.1685 ms |  0.6967 ms |  0.94 |    0.18 |          - |     - |     - |    65.81 KB |
+|     CacheTower_JsonFileCacheLayer |          1 |     5.720 ms |  0.1867 ms |  0.7739 ms |  1.00 |    0.00 |          - |     - |     - |    55.33 KB |
+|                                   |            |              |            |            |       |         |            |       |       |             |
+| CacheTower_ProtobufFileCacheLayer |        100 |    91.748 ms |  1.8267 ms |  4.8122 ms |  0.68 |    0.05 |          - |     - |     - |  1109.38 KB |
+|                  EasyCaching_Disk |        100 |   104.024 ms |  2.0761 ms |  5.6834 ms |  0.77 |    0.06 |          - |     - |     - |  1777.06 KB |
+|     CacheTower_JsonFileCacheLayer |        100 |   134.847 ms |  2.6939 ms |  9.1941 ms |  1.00 |    0.00 |          - |     - |     - |  2779.68 KB |
+|             MonkeyCache_FileStore |        100 |   163.990 ms |  3.2145 ms |  4.2913 ms |  1.22 |    0.07 |  1000.0000 |     - |     - |  4379.57 KB |
+|                                   |            |              |            |            |       |         |            |       |       |             |
+| CacheTower_ProtobufFileCacheLayer |       1000 |   873.593 ms | 13.6692 ms | 12.7862 ms |  0.69 |    0.03 |  3000.0000 |     - |     - | 10989.37 KB |
+|                  EasyCaching_Disk |       1000 |   988.631 ms | 19.3658 ms | 19.8873 ms |  0.78 |    0.04 |  5000.0000 |     - |     - | 17495.91 KB |
+|     CacheTower_JsonFileCacheLayer |       1000 | 1,258.498 ms | 24.8712 ms | 49.6706 ms |  1.00 |    0.00 |  9000.0000 |     - |     - | 27564.84 KB |
+|             MonkeyCache_FileStore |       1000 | 1,618.658 ms |  6.0922 ms |  5.6986 ms |  1.28 |    0.05 | 14000.0000 |     - |     - | 43596.76 KB |
 
 ## Redis Caching
 
