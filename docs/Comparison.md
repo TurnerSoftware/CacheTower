@@ -56,33 +56,33 @@ Job=Core  Runtime=Core
 
 |                            Method | Iterations |         Mean |      Error |     StdDev | Ratio | RatioSD |      Gen 0 | Gen 1 | Gen 2 |   Allocated |
 |---------------------------------- |----------- |-------------:|-----------:|-----------:|------:|--------:|-----------:|------:|------:|------------:|
-|                  EasyCaching_Disk |          1 |     4.126 ms |  0.1267 ms |  0.5293 ms |  0.74 |    0.14 |          - |     - |     - |    38.03 KB |
-| CacheTower_ProtobufFileCacheLayer |          1 |     4.672 ms |  0.1726 ms |  0.7136 ms |  0.83 |    0.18 |          - |     - |     - |    24.87 KB |
-|             MonkeyCache_FileStore |          1 |     5.260 ms |  0.1685 ms |  0.6967 ms |  0.94 |    0.18 |          - |     - |     - |    65.81 KB |
-|     CacheTower_JsonFileCacheLayer |          1 |     5.720 ms |  0.1867 ms |  0.7739 ms |  1.00 |    0.00 |          - |     - |     - |    55.33 KB |
+|                  EasyCaching_Disk |          1 |     4.367 ms |  0.1388 ms |  0.5799 ms |  0.73 |    0.13 |          - |     - |     - |    37.96 KB |
+| CacheTower_ProtobufFileCacheLayer |          1 |     4.991 ms |  0.1752 ms |  0.7245 ms |  0.83 |    0.16 |          - |     - |     - |    24.45 KB |
+|             MonkeyCache_FileStore |          1 |     5.743 ms |  0.1617 ms |  0.6669 ms |  0.96 |    0.16 |          - |     - |     - |    65.81 KB |
+|     CacheTower_JsonFileCacheLayer |          1 |     6.071 ms |  0.1727 ms |  0.7181 ms |  1.00 |    0.00 |          - |     - |     - |     55.5 KB |
 |                                   |            |              |            |            |       |         |            |       |       |             |
-| CacheTower_ProtobufFileCacheLayer |        100 |    91.748 ms |  1.8267 ms |  4.8122 ms |  0.68 |    0.05 |          - |     - |     - |  1109.38 KB |
-|                  EasyCaching_Disk |        100 |   104.024 ms |  2.0761 ms |  5.6834 ms |  0.77 |    0.06 |          - |     - |     - |  1777.06 KB |
-|     CacheTower_JsonFileCacheLayer |        100 |   134.847 ms |  2.6939 ms |  9.1941 ms |  1.00 |    0.00 |          - |     - |     - |  2779.68 KB |
-|             MonkeyCache_FileStore |        100 |   163.990 ms |  3.2145 ms |  4.2913 ms |  1.22 |    0.07 |  1000.0000 |     - |     - |  4379.57 KB |
+| CacheTower_ProtobufFileCacheLayer |        100 |    93.950 ms |  1.8486 ms |  3.2859 ms |  0.71 |    0.03 |          - |     - |     - |  1109.38 KB |
+|                  EasyCaching_Disk |        100 |   108.159 ms |  2.1508 ms |  5.4744 ms |  0.83 |    0.04 |          - |     - |     - |  1766.05 KB |
+|     CacheTower_JsonFileCacheLayer |        100 |   131.364 ms |  2.5835 ms |  5.0390 ms |  1.00 |    0.00 |          - |     - |     - |  2779.68 KB |
+|             MonkeyCache_FileStore |        100 |   186.004 ms |  3.4555 ms |  3.0632 ms |  1.40 |    0.05 |  1000.0000 |     - |     - |  4379.57 KB |
 |                                   |            |              |            |            |       |         |            |       |       |             |
-| CacheTower_ProtobufFileCacheLayer |       1000 |   873.593 ms | 13.6692 ms | 12.7862 ms |  0.69 |    0.03 |  3000.0000 |     - |     - | 10989.37 KB |
-|                  EasyCaching_Disk |       1000 |   988.631 ms | 19.3658 ms | 19.8873 ms |  0.78 |    0.04 |  5000.0000 |     - |     - | 17495.91 KB |
-|     CacheTower_JsonFileCacheLayer |       1000 | 1,258.498 ms | 24.8712 ms | 49.6706 ms |  1.00 |    0.00 |  9000.0000 |     - |     - | 27564.84 KB |
-|             MonkeyCache_FileStore |       1000 | 1,618.658 ms |  6.0922 ms |  5.6986 ms |  1.28 |    0.05 | 14000.0000 |     - |     - | 43596.76 KB |
+| CacheTower_ProtobufFileCacheLayer |       1000 |   890.211 ms | 16.0164 ms | 14.9817 ms |  0.72 |    0.01 |  3000.0000 |     - |     - | 10990.64 KB |
+|                  EasyCaching_Disk |       1000 | 1,042.211 ms | 15.8395 ms | 14.8162 ms |  0.84 |    0.01 |  5000.0000 |     - |     - | 17489.97 KB |
+|     CacheTower_JsonFileCacheLayer |       1000 | 1,240.015 ms | 16.4974 ms | 15.4317 ms |  1.00 |    0.00 |  9000.0000 |     - |     - | 27566.44 KB |
+|             MonkeyCache_FileStore |       1000 | 1,831.111 ms | 12.2941 ms | 11.4999 ms |  1.48 |    0.02 | 14000.0000 |     - |     - | 43596.71 KB |
 
 ## Redis Caching
 
-|                     Method | Iterations |       Mean |     Error |    StdDev | Ratio | RatioSD |     Gen 0 | Gen 1 | Gen 2 |  Allocated |
-|--------------------------- |----------- |-----------:|----------:|----------:|------:|--------:|----------:|------:|------:|-----------:|
-| CacheTower_RedisCacheLayer |          1 |   1.613 ms | 0.0718 ms | 0.2954 ms |  1.00 |    0.00 |         - |     - |     - |    8.74 KB |
-|         CacheManager_Redis |          1 |   2.119 ms | 0.0772 ms | 0.3123 ms |  1.37 |    0.33 |         - |     - |     - |   27.34 KB |
-|          EasyCaching_Redis |          1 |   4.264 ms | 0.1397 ms | 0.5821 ms |  2.75 |    0.65 |         - |     - |     - |  508.97 KB |
-|                            |            |            |           |           |       |         |           |       |       |            |
-|          EasyCaching_Redis |        100 |  41.823 ms | 0.8332 ms | 2.1508 ms |  1.05 |    0.04 |         - |     - |     - |  851.62 KB |
-|         CacheManager_Redis |        100 |  42.825 ms | 0.8544 ms | 2.5983 ms |  1.08 |    0.06 |         - |     - |     - |  554.92 KB |
-| CacheTower_RedisCacheLayer |        100 |  42.844 ms | 0.9575 ms | 0.8956 ms |  1.00 |    0.00 |         - |     - |     - |  463.46 KB |
-|                            |            |            |           |           |       |         |           |       |       |            |
-| CacheTower_RedisCacheLayer |       1000 | 374.554 ms | 1.9974 ms | 1.8683 ms |  1.00 |    0.00 | 1000.0000 |     - |     - | 3722.93 KB |
-|          EasyCaching_Redis |       1000 | 376.346 ms | 3.2294 ms | 3.0208 ms |  1.00 |    0.01 | 1000.0000 |     - |     - |  3999.2 KB |
-|         CacheManager_Redis |       1000 | 397.207 ms | 3.7284 ms | 3.3051 ms |  1.06 |    0.01 | 1000.0000 |     - |     - | 5351.55 KB |
+|                     Method | Iterations |       Mean |     Error |    StdDev |     Median | Ratio | RatioSD |     Gen 0 | Gen 1 | Gen 2 |  Allocated |
+|--------------------------- |----------- |-----------:|----------:|----------:|-----------:|------:|--------:|----------:|------:|------:|-----------:|
+| CacheTower_RedisCacheLayer |          1 |   1.556 ms | 0.0737 ms | 0.3032 ms |   1.538 ms |  1.00 |    0.00 |         - |     - |     - |    8.68 KB |
+|         CacheManager_Redis |          1 |   2.671 ms | 0.1258 ms | 0.5229 ms |   2.595 ms |  1.78 |    0.53 |         - |     - |     - |   27.32 KB |
+|          EasyCaching_Redis |          1 |   4.185 ms | 0.1176 ms | 0.4849 ms |   4.137 ms |  2.80 |    0.67 |         - |     - |     - |  508.97 KB |
+|                            |            |            |           |           |            |       |         |           |       |       |            |
+|          EasyCaching_Redis |        100 |  42.269 ms | 0.8360 ms | 2.1280 ms |  41.626 ms |  1.03 |    0.06 |         - |     - |     - |  851.64 KB |
+|         CacheManager_Redis |        100 |  42.639 ms | 0.8600 ms | 2.7176 ms |  41.706 ms |  1.06 |    0.05 |         - |     - |     - |  554.92 KB |
+| CacheTower_RedisCacheLayer |        100 |  43.361 ms | 1.9639 ms | 1.9288 ms |  42.616 ms |  1.00 |    0.00 |         - |     - |     - |  475.92 KB |
+|                            |            |            |           |           |            |       |         |           |       |       |            |
+| CacheTower_RedisCacheLayer |       1000 | 376.746 ms | 4.1325 ms | 3.8655 ms | 377.178 ms |  1.00 |    0.00 | 1000.0000 |     - |     - | 3856.94 KB |
+|          EasyCaching_Redis |       1000 | 379.035 ms | 3.7092 ms | 3.2881 ms | 379.064 ms |  1.01 |    0.01 | 1000.0000 |     - |     - | 3998.33 KB |
+|         CacheManager_Redis |       1000 | 398.433 ms | 4.7762 ms | 4.4676 ms | 398.183 ms |  1.06 |    0.02 | 1000.0000 |     - |     - | 5351.58 KB |
