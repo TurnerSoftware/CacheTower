@@ -134,7 +134,8 @@ namespace CacheTower.Benchmarks
 					return 12;
 				}, new CacheSettings(TimeSpan.FromDays(1)));
 
-				await Task.WhenAll(task1, task2);
+				await task1;
+				await task2;
 			}
 		}
 		[Benchmark]
@@ -164,7 +165,10 @@ namespace CacheTower.Benchmarks
 					return 12;
 				}, new CacheSettings(TimeSpan.FromDays(1)));
 
-				await Task.WhenAll(task1, task2, task3, task4);
+				await task1;
+				await task2;
+				await task3;
+				await task4;
 			}
 		}
 	}

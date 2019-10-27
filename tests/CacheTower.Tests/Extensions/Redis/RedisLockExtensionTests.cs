@@ -97,8 +97,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
 
 			await extension.RefreshValueAsync("TestKey", 
-				() => Task.FromResult(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
-
+				() => new ValueTask<CacheEntry<int>>(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
 
 			var waitTask = taskCompletionSource.Task;
 			await Task.WhenAny(waitTask, Task.Delay(TimeSpan.FromSeconds(10)));
@@ -132,17 +131,17 @@ namespace CacheTower.Tests.Extensions.Redis
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
-				);
+				).AsTask();
 
 			await secondaryTaskKickoff.Task;
 
 			var secondaryTask = extension.RefreshValueAsync("TestKey",
 					() =>
 					{
-						return Task.FromResult(cacheEntry);
+						return new ValueTask<CacheEntry<int>>(cacheEntry);
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
-				);
+				).AsTask();
 
 			var succeedingTask = await Task.WhenAny(primaryTask, secondaryTask);
 			Assert.AreEqual(await primaryTask, await succeedingTask, "Processing task call didn't complete first - something has gone very wrong.");
@@ -178,17 +177,17 @@ namespace CacheTower.Tests.Extensions.Redis
 						return cacheEntry;
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
-				);
+				).AsTask();
 
 			await secondaryTaskKickoff.Task;
 
 			var secondaryTask = extensionTwo.RefreshValueAsync("TestKey",
 					() =>
 					{
-						return Task.FromResult(cacheEntry);
+						return new ValueTask<CacheEntry<int>>(cacheEntry);
 					},
 					new CacheSettings(TimeSpan.FromDays(1))
-				);
+				).AsTask();
 
 			var succeedingTask = await Task.WhenAny(primaryTask, secondaryTask);
 			Assert.AreEqual(await primaryTask, await succeedingTask, "Processing task call didn't complete first - something has gone very wrong.");

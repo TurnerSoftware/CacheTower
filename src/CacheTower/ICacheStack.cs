@@ -7,11 +7,11 @@ namespace CacheTower
 {
 	public interface ICacheStack
 	{
-		Task CleanupAsync();
-		Task EvictAsync(string cacheKey);
-		Task<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive);
-		Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry);
-		Task<CacheEntry<T>> GetAsync<T>(string cacheKey);
-		Task<T> GetOrSetAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings);
+		ValueTask CleanupAsync();
+		ValueTask EvictAsync(string cacheKey);
+		ValueTask<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive);
+		ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry);
+		ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey);
+		ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings);
 	}
 }

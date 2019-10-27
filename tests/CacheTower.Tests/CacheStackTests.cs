@@ -233,7 +233,7 @@ namespace CacheTower.Tests
 			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-3), TimeSpan.FromDays(1));
 			await cacheStack.SetAsync("GetOrSet_ConcurrentStaleCacheHits", cacheEntry);
 
-			Task<int> DoRequest()
+			ValueTask<int> DoRequest()
 			{
 				return cacheStack.GetOrSetAsync<int>("GetOrSet_ConcurrentStaleCacheHits", async (oldValue, context) =>
 				{

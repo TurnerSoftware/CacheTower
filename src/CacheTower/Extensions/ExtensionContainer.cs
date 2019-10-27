@@ -63,7 +63,7 @@ namespace CacheTower.Extensions
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Task<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<Task<CacheEntry<T>>> valueProvider, CacheSettings settings)
+		public ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
 			if (!HasRefreshWrapperExtension)
 			{
@@ -76,7 +76,7 @@ namespace CacheTower.Extensions
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public async Task OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive)
+		public async ValueTask OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive)
 		{
 			if (HasValueRefreshExtensions)
 			{

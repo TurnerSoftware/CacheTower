@@ -12,11 +12,11 @@ namespace CacheTower
 
 	public interface IValueRefreshExtension : ICacheExtension
 	{
-		Task OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive);
+		ValueTask OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive);
 	}
 
 	public interface IRefreshWrapperExtension : ICacheExtension
 	{
-		Task<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<Task<CacheEntry<T>>> valueProvider, CacheSettings settings);
+		ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings);
 	}
 }

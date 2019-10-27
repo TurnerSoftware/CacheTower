@@ -31,7 +31,7 @@ namespace CacheTower.Tests
 					return index;
 				}, new CacheSettings(TimeSpan.FromDays(1)));
 
-				allTasks.Add(iterationTask);
+				allTasks.Add(iterationTask.AsTask());
 			}
 
 			if (stopwatch.Elapsed.TotalSeconds > 10)
@@ -75,7 +75,7 @@ namespace CacheTower.Tests
 					return index + 1;
 				}, new CacheSettings(TimeSpan.FromDays(1)));
 
-				allTasks.Add(iterationTask);
+				allTasks.Add(iterationTask.AsTask());
 			}
 
 			var lastTaskResult = await allTasks[iterations - 1];

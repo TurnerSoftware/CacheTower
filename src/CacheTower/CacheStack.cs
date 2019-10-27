@@ -52,7 +52,7 @@ namespace CacheTower
 			}
 		}
 
-		public async Task CleanupAsync()
+		public async ValueTask CleanupAsync()
 		{
 			ThrowIfDisposed();
 			
@@ -70,7 +70,7 @@ namespace CacheTower
 			}
 		}
 
-		public async Task EvictAsync(string cacheKey)
+		public async ValueTask EvictAsync(string cacheKey)
 		{
 			ThrowIfDisposed();
 
@@ -93,7 +93,7 @@ namespace CacheTower
 			}
 		}
 
-		public async Task<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive)
+		public async ValueTask<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive)
 		{
 			ThrowIfDisposed();
 
@@ -102,7 +102,7 @@ namespace CacheTower
 			return cacheEntry;
 		}
 
-		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			ThrowIfDisposed();
 
@@ -116,7 +116,7 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheEntry));
 			}
 
-			for (int i = 0, l = CacheLayers.Length; i < l; i += 2)
+			for (int i = 0, l = CacheLayers.Length; i < l; i++)
 			{
 				var layer = CacheLayers[i];
 				if (layer is ISyncCacheLayer syncLayerOne)
@@ -130,7 +130,7 @@ namespace CacheTower
 			}
 		}
 
-		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			ThrowIfDisposed();
 
@@ -171,7 +171,7 @@ namespace CacheTower
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private async Task<(int LayerIndex, CacheEntry<T> CacheEntry)> GetWithLayerIndexAsync<T>(string cacheKey)
+		private async ValueTask<(int LayerIndex, CacheEntry<T> CacheEntry)> GetWithLayerIndexAsync<T>(string cacheKey)
 		{
 			for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
 			{
@@ -204,7 +204,7 @@ namespace CacheTower
 			return default;
 		}
 
-		public async Task<T> GetOrSetAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
+		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
 		{
 			ThrowIfDisposed();
 
@@ -256,7 +256,7 @@ namespace CacheTower
 			}
 		}
 
-		private async Task BackPopulateCacheAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
+		private async ValueTask BackPopulateCacheAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			ThrowIfDisposed();
 
@@ -305,7 +305,7 @@ namespace CacheTower
 			}
 		}
 
-		private async Task<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool waitForRefresh)
+		private async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool waitForRefresh)
 		{
 			ThrowIfDisposed();
 
