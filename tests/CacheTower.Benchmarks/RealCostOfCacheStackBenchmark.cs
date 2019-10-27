@@ -12,7 +12,7 @@ namespace CacheTower.Benchmarks
 	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser, Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	public class RealCostOfCacheStackBenchmark
 	{
-		private class ComplexType
+		private class RealCostComplexType
 		{
 			public string ExampleString { get; set; }
 			public int ExampleNumber { get; set; }
@@ -41,7 +41,7 @@ namespace CacheTower.Benchmarks
 				//Set last 100 (complex type)
 				for (var i = 100; i < 200; i++)
 				{
-					cacheLayer.Set("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
+					cacheLayer.Set("Comparison_" + i, new CacheEntry<RealCostComplexType>(new RealCostComplexType
 					{
 						ExampleString = "Hello World",
 						ExampleNumber = 42,
@@ -58,7 +58,7 @@ namespace CacheTower.Benchmarks
 				//Get last 50 (complex type)
 				for (var i = 150; i < 200; i++)
 				{
-					cacheLayer.Get<ComplexType>("Comparison_" + i);
+					cacheLayer.Get<RealCostComplexType>("Comparison_" + i);
 				}
 
 				//Evict middle 100
@@ -93,7 +93,7 @@ namespace CacheTower.Benchmarks
 				//Set last 100 (complex type)
 				for (var i = 100; i < 200; i++)
 				{
-					await cacheStack.SetAsync("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
+					await cacheStack.SetAsync("Comparison_" + i, new CacheEntry<RealCostComplexType>(new RealCostComplexType
 					{
 						ExampleString = "Hello World",
 						ExampleNumber = 42,
@@ -110,7 +110,7 @@ namespace CacheTower.Benchmarks
 				//Get last 50 (complex type)
 				for (var i = 150; i < 200; i++)
 				{
-					await cacheStack.GetAsync<ComplexType>("Comparison_" + i);
+					await cacheStack.GetAsync<RealCostComplexType>("Comparison_" + i);
 				}
 
 				//Evict middle 100
@@ -145,7 +145,7 @@ namespace CacheTower.Benchmarks
 					var result = cacheLayer.Get<int>("Comparison_" + i);
 					if (result == null)
 					{
-						cacheLayer.Set("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
+						cacheLayer.Set("Comparison_" + i, new CacheEntry<RealCostComplexType>(new RealCostComplexType
 						{
 							ExampleString = "Hello World",
 							ExampleNumber = 42,
@@ -174,9 +174,9 @@ namespace CacheTower.Benchmarks
 				//Set last 200 (complex type)
 				for (var i = 200; i < 400; i++)
 				{
-					await cacheStack.GetOrSetAsync<ComplexType>("Comparision_" + i, (old, context) =>
+					await cacheStack.GetOrSetAsync<RealCostComplexType>("Comparision_" + i, (old, context) =>
 					{
-						return Task.FromResult(new ComplexType
+						return Task.FromResult(new RealCostComplexType
 						{
 							ExampleString = "Hello World",
 							ExampleNumber = 42,
