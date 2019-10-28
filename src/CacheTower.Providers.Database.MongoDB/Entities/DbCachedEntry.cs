@@ -14,15 +14,9 @@ namespace CacheTower.Providers.Database.MongoDB.Entities
 
 		[Index(MongoFramework.IndexSortOrder.Ascending)]
 		public string CacheKey { get; set; }
-		public DateTime CachedAt { get; set; }
-		public TimeSpan TimeToLive { get; set; }
 
 		[Index(MongoFramework.IndexSortOrder.Ascending)]
-		public DateTime Expiry
-		{
-			get => CachedAt + TimeToLive;
-			set { }
-		}
+		public DateTime Expiry { get; set; }
 
 		public object Value { get; set; }
 	}

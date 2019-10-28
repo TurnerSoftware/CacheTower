@@ -40,13 +40,13 @@ namespace CacheTower.AlternativesBenchmark
 			{
 				LoopAction(Iterations, () =>
 				{
-					layer.Set("TestKey", new CacheEntry<int>(123, DateTime.UtcNow, TimeSpan.FromDays(1)));
+					layer.Set("TestKey", new CacheEntry<int>(123, DateTime.UtcNow + TimeSpan.FromDays(1)));
 					layer.Get<int>("TestKey");
 
 					var getOrSetResult = layer.Get<string>("GetOrSet_TestKey");
 					if (getOrSetResult == null)
 					{
-						layer.Set("GetOrSet_TestKey", new CacheEntry<string>("Hello World", DateTime.UtcNow, TimeSpan.FromDays(1)));
+						layer.Set("GetOrSet_TestKey", new CacheEntry<string>("Hello World", TimeSpan.FromDays(1)));
 					}
 				});
 			}

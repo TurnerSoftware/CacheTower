@@ -36,7 +36,7 @@ namespace CacheTower.Providers.Redis
 				using (var stream = new MemoryStream(redisValue))
 				{
 					var redisCacheEntry = Serializer.Deserialize<RedisCacheEntry<T>>(stream);
-					return new CacheEntry<T>(redisCacheEntry.Value, redisCacheEntry.CachedAt, redisCacheEntry.TimeToLive);
+					return new CacheEntry<T>(redisCacheEntry.Value, redisCacheEntry.Expiry);
 				}
 			}
 
@@ -63,17 +63,15 @@ namespace CacheTower.Providers.Redis
 
 		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			//Redis doesn't support setting a TTL in the past, let's confirm the expiry date
-			var trueTtl = (cacheEntry.CachedAt + cacheEntry.TimeToLive) - DateTime.UtcNow;
-			if (trueTtl < TimeSpan.Zero)
+			var expiryOffset = cacheEntry.Expiry - DateTime.UtcNow;
+			if (expiryOffset < TimeSpan.Zero)
 			{
 				return;
 			}
 
 			var redisCacheEntry = new RedisCacheEntry<T>
 			{
-				CachedAt = cacheEntry.CachedAt,
-				TimeToLive = cacheEntry.TimeToLive,
+				Expiry = cacheEntry.Expiry,
 				Value = cacheEntry.Value
 			};
 
@@ -83,7 +81,7 @@ namespace CacheTower.Providers.Redis
 				stream.Seek(0, SeekOrigin.Begin);
 
 				var redisValue = RedisValue.CreateFrom(stream);
-				await Database.StringSetAsync(cacheKey, redisValue, cacheEntry.TimeToLive);
+				await Database.StringSetAsync(cacheKey, redisValue, expiryOffset);
 			}
 		}
 	}

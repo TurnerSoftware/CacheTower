@@ -45,7 +45,7 @@ namespace CacheTower.Benchmarks.Providers
 			//Set first 100 (simple type)
 			for (var i = 0; i < 100; i++)
 			{
-				cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i), TimeSpan.FromDays(1)));
+				cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
 			}
 			//Set last 100 (complex type)
 			for (var i = 100; i < 200; i++)
@@ -56,7 +56,7 @@ namespace CacheTower.Benchmarks.Providers
 					ExampleNumber = 42,
 					ExampleDate = new DateTime(2000, 1, 1),
 					DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-				}, startDate.AddDays(i - 100), TimeSpan.FromDays(1)));
+				}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
 			}
 
 			//Get first 50 (simple type)
@@ -92,7 +92,7 @@ namespace CacheTower.Benchmarks.Providers
 			//Set first 100 (simple type)
 			for (var i = 0; i < 100; i++)
 			{
-				await cacheLayer.SetAsync("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i), TimeSpan.FromDays(1)));
+				await cacheLayer.SetAsync("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
 			}
 			//Set last 100 (complex type)
 			for (var i = 100; i < 200; i++)
@@ -103,7 +103,7 @@ namespace CacheTower.Benchmarks.Providers
 					ExampleNumber = 42,
 					ExampleDate = new DateTime(2000, 1, 1),
 					DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-				}, startDate.AddDays(i - 100), TimeSpan.FromDays(1)));
+				}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
 			}
 
 			//Get first 50 (simple type)

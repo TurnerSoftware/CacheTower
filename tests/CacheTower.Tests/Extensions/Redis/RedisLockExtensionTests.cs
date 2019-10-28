@@ -52,7 +52,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			{
 				lockWaiterTask.SetResult(true);
 				await refreshWaiterTask.Task;
-				return new CacheEntry<int>(5, DateTime.UtcNow, TimeSpan.FromDays(1));
+				return new CacheEntry<int>(5, TimeSpan.FromDays(1));
 			}, new CacheSettings(TimeSpan.FromHours(3)));
 
 			await lockWaiterTask.Task;
@@ -95,7 +95,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var extension = new RedisLockExtension(connection);
 			extension.Register(cacheStackMock.Object);
 
-			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 
 			await extension.RefreshValueAsync("TestKey", 
 				() => new ValueTask<CacheEntry<int>>(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
@@ -121,7 +121,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var extension = new RedisLockExtension(connection);
 			extension.Register(cacheStackMock.Object);
 
-			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 			var secondaryTaskKickoff = new TaskCompletionSource<bool>();
 
 			var primaryTask = extension.RefreshValueAsync("TestKey",
@@ -167,7 +167,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var extensionTwo = new RedisLockExtension(connection);
 			extensionTwo.Register(cacheStackMockTwo.Object);
 
-			var cacheEntry = new CacheEntry<int>(13, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 			var secondaryTaskKickoff = new TaskCompletionSource<bool>();
 
 			var primaryTask = extensionOne.RefreshValueAsync("TestKey",

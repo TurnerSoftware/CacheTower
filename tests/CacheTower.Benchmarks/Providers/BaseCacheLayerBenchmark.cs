@@ -68,12 +68,12 @@ namespace CacheTower.Benchmarks.Providers
 			var cacheLayer = CacheLayerProvider.Invoke();
 			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
 			{
-				syncCacheLayer.Set("GetHit", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				syncCacheLayer.Set("GetHit", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 				syncCacheLayer.Get<int>("GetHit");
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{
-				await asyncLayer.SetAsync("GetHit", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				await asyncLayer.SetAsync("GetHit", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 				await asyncLayer.GetAsync<int>("GetHit");
 			}
 			await DisposeOf(cacheLayer);
@@ -85,11 +85,11 @@ namespace CacheTower.Benchmarks.Providers
 			var cacheLayer = CacheLayerProvider.Invoke();
 			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
 			{
-				syncCacheLayer.Set("SetNew", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				syncCacheLayer.Set("SetNew", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{
-				await asyncLayer.SetAsync("SetNew", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				await asyncLayer.SetAsync("SetNew", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 			}
 			await DisposeOf(cacheLayer);
 		}
@@ -99,13 +99,13 @@ namespace CacheTower.Benchmarks.Providers
 			var cacheLayer = CacheLayerProvider.Invoke();
 			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
 			{
-				syncCacheLayer.Set("SetExisting", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
-				syncCacheLayer.Set("SetExisting", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				syncCacheLayer.Set("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				syncCacheLayer.Set("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{
-				await asyncLayer.SetAsync("SetExisting", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
-				await asyncLayer.SetAsync("SetExisting", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+				await asyncLayer.SetAsync("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				await asyncLayer.SetAsync("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 			}
 			await DisposeOf(cacheLayer);
 		}
@@ -118,14 +118,14 @@ namespace CacheTower.Benchmarks.Providers
 			{
 				for (var i = 0; i < 100; i++)
 				{
-					syncCacheLayer.Set("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+					syncCacheLayer.Set("SetMany_" + i, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 				}
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{
 				for (var i = 0; i < 100; i++)
 				{
-					await asyncLayer.SetAsync("SetMany_" + i, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+					await asyncLayer.SetAsync("SetMany_" + i, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 				}
 			}
 			await DisposeOf(cacheLayer);

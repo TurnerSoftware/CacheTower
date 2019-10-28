@@ -36,7 +36,7 @@ namespace CacheTower.Benchmarks
 				//Set first 100 (simple type)
 				for (var i = 0; i < 100; i++)
 				{
-					cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i), TimeSpan.FromDays(1)));
+					cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
 				}
 				//Set last 100 (complex type)
 				for (var i = 100; i < 200; i++)
@@ -47,7 +47,7 @@ namespace CacheTower.Benchmarks
 						ExampleNumber = 42,
 						ExampleDate = new DateTime(2000, 1, 1),
 						DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-					}, startDate.AddDays(i - 100), TimeSpan.FromDays(1)));
+					}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
 				}
 
 				//Get first 50 (simple type)
@@ -88,7 +88,7 @@ namespace CacheTower.Benchmarks
 				//Set first 100 (simple type)
 				for (var i = 0; i < 100; i++)
 				{
-					await cacheStack.SetAsync("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i), TimeSpan.FromDays(1)));
+					await cacheStack.SetAsync("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
 				}
 				//Set last 100 (complex type)
 				for (var i = 100; i < 200; i++)
@@ -99,7 +99,7 @@ namespace CacheTower.Benchmarks
 						ExampleNumber = 42,
 						ExampleDate = new DateTime(2000, 1, 1),
 						DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-					}, startDate.AddDays(i - 100), TimeSpan.FromDays(1)));
+					}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
 				}
 
 				//Get first 50 (simple type)
@@ -135,7 +135,7 @@ namespace CacheTower.Benchmarks
 					var result = cacheLayer.Get<int>("Comparison_" + i);
 					if (result == null)
 					{
-						cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+						cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 					}
 				}
 
@@ -151,7 +151,7 @@ namespace CacheTower.Benchmarks
 							ExampleNumber = 42,
 							ExampleDate = new DateTime(2000, 1, 1),
 							DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-						}, DateTime.UtcNow, TimeSpan.FromDays(1)));
+						}, TimeSpan.FromDays(1)));
 					}
 				}
 			}

@@ -11,8 +11,6 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 		[ProtoMember(1)]
 		public string FileName { get; set; }
 		[ProtoMember(2)]
-		public DateTime CachedAt { get; set; }
-		[ProtoMember(3)]
-		public TimeSpan TimeToLive { get; set; }
+		public DateTime Expiry { get; set; }
 	}
 }

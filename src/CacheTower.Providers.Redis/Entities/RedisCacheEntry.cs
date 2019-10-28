@@ -9,10 +9,8 @@ namespace CacheTower.Providers.Redis.Entities
 	public class RedisCacheEntry<T>
 	{
 		[ProtoMember(1)]
-		public DateTime CachedAt { get; set; }
+		public DateTime Expiry { get; set; }
 		[ProtoMember(2)]
-		public TimeSpan TimeToLive { get; set; }
-		[ProtoMember(3)]
 		public T Value { get; set; }
 	}
 }

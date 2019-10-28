@@ -22,11 +22,12 @@ namespace CacheTower.Providers.Memory
 			{
 				var keysToRemove = ArrayPool<string>.Shared.Rent(Cache.Count);
 				var index = 0;
+				var currentTime = DateTime.UtcNow;
 
 				foreach (var cachePair in Cache)
 				{
 					var cacheEntry = cachePair.Value;
-					if (cacheEntry.HasElapsed(cacheEntry.TimeToLive))
+					if (cacheEntry.Expiry < currentTime)
 					{
 						keysToRemove[index] = cachePair.Key;
 						index++;

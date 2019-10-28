@@ -7,7 +7,6 @@ namespace CacheTower.Providers.FileSystem
 	public interface IManifestEntry
 	{
 		string FileName { get; set; }
-		DateTime CachedAt { get; set; }
-		TimeSpan TimeToLive { get; set; }
+		DateTime Expiry { get; set; }
 	}
 }

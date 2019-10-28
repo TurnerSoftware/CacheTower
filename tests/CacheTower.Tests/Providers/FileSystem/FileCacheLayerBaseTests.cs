@@ -77,7 +77,7 @@ namespace CacheTower.Tests.Providers.FileSystem
 		public async Task NoFileExtension()
 		{
 			var cacheLayer = new TestFileCacheLayer(DirectoryPath, null);
-			await cacheLayer.SetAsync("NoFileExtension", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheLayer.SetAsync("NoFileExtension", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 			await DisposeOf(cacheLayer);
 
 			var md5String = GetMD5String("NoFileExtension");
@@ -88,7 +88,7 @@ namespace CacheTower.Tests.Providers.FileSystem
 		public async Task CustomFileExtension()
 		{
 			var cacheLayer = new TestFileCacheLayer(DirectoryPath, ".mycustomfileextension");
-			await cacheLayer.SetAsync("CustomFileExtension", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheLayer.SetAsync("CustomFileExtension", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 			await DisposeOf(cacheLayer);
 
 			var md5String = GetMD5String("CustomFileExtension");

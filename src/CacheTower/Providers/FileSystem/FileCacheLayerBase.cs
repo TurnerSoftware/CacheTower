@@ -158,11 +158,11 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifestAsync();
 
+			var currentTime = DateTime.UtcNow;
 			foreach (var cachePair in CacheManifest)
 			{
 				var manifestEntry = cachePair.Value;
-				var expiryDate = manifestEntry.CachedAt.Add(manifestEntry.TimeToLive);
-				if (expiryDate < DateTime.UtcNow && CacheManifest.TryRemove(cachePair.Key, out var _))
+				if (manifestEntry.Expiry < currentTime && CacheManifest.TryRemove(cachePair.Key, out var _))
 				{
 					if (FileLock.TryRemove(manifestEntry.FileName, out var lockObj))
 					{
@@ -213,7 +213,7 @@ namespace CacheTower.Providers.FileSystem
 					{
 						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
 						var value = await DeserializeFileAsync<T>(path);
-						return new CacheEntry<T>(value, manifestEntry.CachedAt, manifestEntry.TimeToLive);
+						return new CacheEntry<T>(value, manifestEntry.Expiry);
 					}
 				}
 			}
@@ -248,9 +248,8 @@ namespace CacheTower.Providers.FileSystem
 				FileName = GetFileName(cacheKey)
 			});
 
-			//Update the manifest entry with the new cache entry date/times
-			manifestEntry.CachedAt = cacheEntry.CachedAt;
-			manifestEntry.TimeToLive = cacheEntry.TimeToLive;
+			//Update the manifest entry with the new expiry
+			manifestEntry.Expiry = cacheEntry.Expiry;
 
 			var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, (name) => new AsyncReaderWriterLock());
 

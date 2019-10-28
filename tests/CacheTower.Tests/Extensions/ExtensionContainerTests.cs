@@ -35,7 +35,7 @@ namespace CacheTower.Tests.Extensions
 
 			container.Register(cacheStackMock.Object);
 
-			var cacheEntry = new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(1, TimeSpan.FromDays(1));
 
 			var refreshedValue = await container.RefreshValueAsync("WrapperTestCacheKey", () =>
 			{

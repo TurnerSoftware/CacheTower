@@ -23,8 +23,6 @@ namespace CacheTower.Providers.Database.MongoDB.Commands
 			var filter = Builders<DbCachedEntry>.Filter.Eq(e => e.CacheKey, Entry.CacheKey);
 			var updateDefinition = Builders<DbCachedEntry>.Update
 				.Set(e => e.CacheKey, Entry.CacheKey)
-				.Set(e => e.CachedAt, Entry.CachedAt)
-				.Set(e => e.TimeToLive, Entry.TimeToLive)
 				.Set(e => e.Expiry, Entry.Expiry)
 				.Set(e => e.Value, Entry.Value);
 

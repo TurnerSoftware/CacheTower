@@ -36,7 +36,7 @@ namespace CacheTower.Tests
 			
 			var cacheStack = new CacheStack(null, new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 
-			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow.AddDays(-1));
 			await cacheStack.SetAsync("Cleanup_CleansAllTheLayers", cacheEntry);
 
 			Assert.AreEqual(cacheEntry, layer1.Get<int>("Cleanup_CleansAllTheLayers"));
@@ -88,7 +88,7 @@ namespace CacheTower.Tests
 		public async Task Set_ThrowsOnNullKey()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			await cacheStack.SetAsync(null, new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheStack.SetAsync(null, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
@@ -161,7 +161,7 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_CacheHitBackgroundRefresh()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-1), TimeSpan.FromDays(2));
+			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(1));
 			await cacheStack.SetAsync("GetOrSet_CacheHitBackgroundRefresh", cacheEntry);
 
 			var waitingOnBackgroundTask = new TaskCompletionSource<int>();
@@ -191,7 +191,7 @@ namespace CacheTower.Tests
 			var layer3 = new MemoryCacheLayer();
 
 			var cacheStack = new CacheStack(null, new[] { layer1, layer2, layer3 }, Array.Empty<ICacheExtension>());
-			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
 			layer2.Set("GetOrSet_BackPropagatesToEarlierCacheLayers", cacheEntry);
 
 			var cacheEntryFromStack = await cacheStack.GetOrSetAsync<int>("GetOrSet_BackPropagatesToEarlierCacheLayers", (old, context) =>
@@ -214,7 +214,7 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_CacheHitButAllowedStalePoint()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-1));
 			await cacheStack.SetAsync("GetOrSet_CacheHitButAllowedStalePoint", cacheEntry);
 
 			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheHitButAllowedStalePoint", (oldValue, context) =>
@@ -230,7 +230,7 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_ConcurrentStaleCacheHits()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-3), TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-2));
 			await cacheStack.SetAsync("GetOrSet_ConcurrentStaleCacheHits", cacheEntry);
 
 			ValueTask<int> DoRequest()
