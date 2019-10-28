@@ -49,6 +49,14 @@ namespace CacheTower.Tests
 
 			await DisposeOf(cacheStack);
 		}
+		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+		public async Task Cleanup_ThrowsOnUseAfterDisposal()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null);
+			await DisposeOf(cacheStack);
+
+			await cacheStack.CleanupAsync();
+		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Evict_ThrowsOnNullKey()
@@ -56,7 +64,6 @@ namespace CacheTower.Tests
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.EvictAsync(null);
 		}
-
 		[TestMethod]
 		public async Task Evict_EvictsAllTheLayers()
 		{
@@ -76,12 +83,28 @@ namespace CacheTower.Tests
 
 			await DisposeOf(cacheStack);
 		}
+		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+		public async Task Evict_ThrowsOnUseAfterDisposal()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null);
+			await DisposeOf(cacheStack);
+
+			await cacheStack.EvictAsync("KeyDoesntMatter");
+		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Get_ThrowsOnNullKey()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.GetAsync<int>(null);
+		}
+		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+		public async Task Get_ThrowsOnUseAfterDisposal()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null);
+			await DisposeOf(cacheStack);
+
+			await cacheStack.GetAsync<int>("KeyDoesntMatter");
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
@@ -97,7 +120,22 @@ namespace CacheTower.Tests
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.SetAsync("MyCacheKey", (CacheEntry<int>)null);
 		}
+		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+		public async Task Set_ThrowsOnUseAfterDisposal()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null);
+			await DisposeOf(cacheStack);
 
+			await cacheStack.SetAsync("KeyDoesntMatter", 1, TimeSpan.FromDays(1));
+		}
+		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+		public async Task Set_ThrowsOnUseAfterDisposal_CacheEntry()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null);
+			await DisposeOf(cacheStack);
+
+			await cacheStack.SetAsync("KeyDoesntMatter", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+		}
 		[TestMethod]
 		public async Task Set_SetsAllTheLayers()
 		{
@@ -119,14 +157,12 @@ namespace CacheTower.Tests
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.GetOrSetAsync<int>(null, (old, context) => Task.FromResult(5), new CacheSettings(TimeSpan.FromDays(1)));
 		}
-
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullGetter()
 		{
 			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheSettings(TimeSpan.FromDays(1)));
 		}
-
 		[TestMethod]
 		public async Task GetOrSet_CacheMiss()
 		{
@@ -140,7 +176,6 @@ namespace CacheTower.Tests
 
 			await DisposeOf(cacheStack);
 		}
-
 		[TestMethod]
 		public async Task GetOrSet_CacheHit()
 		{
@@ -156,7 +191,6 @@ namespace CacheTower.Tests
 
 			await DisposeOf(cacheStack);
 		}
-
 		[TestMethod]
 		public async Task GetOrSet_CacheHitBackgroundRefresh()
 		{
@@ -182,7 +216,6 @@ namespace CacheTower.Tests
 
 			await DisposeOf(cacheStack);
 		}
-
 		[TestMethod]
 		public async Task GetOrSet_BackPropagatesToEarlierCacheLayers()
 		{
@@ -209,7 +242,6 @@ namespace CacheTower.Tests
 
 			await DisposeOf(cacheStack);
 		}
-
 		[TestMethod]
 		public async Task GetOrSet_CacheHitButAllowedStalePoint()
 		{
@@ -225,7 +257,6 @@ namespace CacheTower.Tests
 			
 			await DisposeOf(cacheStack);
 		}
-
 		[TestMethod]
 		public async Task GetOrSet_ConcurrentStaleCacheHits()
 		{
@@ -257,6 +288,14 @@ namespace CacheTower.Tests
 			Assert.AreEqual(23, request2Result);
 			
 			await DisposeOf(cacheStack);
+		}
+		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+		public async Task GetOrSet_ThrowsOnUseAfterDisposal()
+		{
+			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null);
+			await DisposeOf(cacheStack);
+
+			await cacheStack.GetOrSetAsync<int>("KeyDoesntMatter", (old, context) => Task.FromResult(1), new CacheSettings(TimeSpan.FromDays(1)));
 		}
 	}
 }
