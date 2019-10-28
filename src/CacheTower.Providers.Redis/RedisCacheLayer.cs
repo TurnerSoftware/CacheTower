@@ -12,7 +12,7 @@ namespace CacheTower.Providers.Redis
 		private IDatabaseAsync Database { get; }
 		private bool? IsCacheAvailable { get; set; }
 
-		public RedisCacheLayer(ConnectionMultiplexer connection, int databaseIndex = -1)
+		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1)
 		{
 			Database = connection.GetDatabase(databaseIndex);
 		}

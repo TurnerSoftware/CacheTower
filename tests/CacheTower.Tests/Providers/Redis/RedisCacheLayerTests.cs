@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CacheTower.Providers.Redis;
 using CacheTower.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using StackExchange.Redis;
 
 namespace CacheTower.Tests.Providers.Redis
@@ -29,6 +30,13 @@ namespace CacheTower.Tests.Providers.Redis
 		public async Task IsCacheAvailable()
 		{
 			await AssertCacheAvailabilityAsync(new RedisCacheLayer(RedisHelper.GetConnection()), true);
+
+			var connectionMock = new Mock<IConnectionMultiplexer>();
+			var databaseMock = new Mock<IDatabase>();
+			connectionMock.Setup(cm => cm.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(databaseMock.Object);
+			databaseMock.Setup(db => db.PingAsync(It.IsAny<CommandFlags>())).Throws<Exception>();
+
+			await AssertCacheAvailabilityAsync(new RedisCacheLayer(connectionMock.Object), false);
 		}
 
 		[TestMethod]
