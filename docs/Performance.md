@@ -8,13 +8,14 @@ Regarding specific tests, it is best to look at the implementations themselves t
 **Test Machine**
 
 ```
-BenchmarkDotNet=v0.11.5, OS=Windows 10.0.18362
+BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18362
 Intel Core i7-6700HQ CPU 2.60GHz (Skylake), 1 CPU, 8 logical and 4 physical cores
 .NET Core SDK=3.0.100
-  [Host] : .NET Core 3.0.0 (CoreCLR 4.700.19.46205, CoreFX 4.700.19.46214), 64bit RyuJIT
-  Core   : .NET Core 3.0.0 (CoreCLR 4.700.19.46205, CoreFX 4.700.19.46214), 64bit RyuJIT
+  [Host]     : .NET Core 3.0.0 (CoreCLR 4.700.19.46205, CoreFX 4.700.19.46214), X64 RyuJIT
+  Job-CQNZSR : .NET Core 3.0.0 (CoreCLR 4.700.19.46205, CoreFX 4.700.19.46214), X64 RyuJIT
 
-Job=Core  Runtime=Core
+Runtime=.NET Core 3.0  MaxIterationCount=200
+UnrollFactor=1
 ```
 
 ## Cache Stack Benchmark
