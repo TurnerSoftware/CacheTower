@@ -110,7 +110,7 @@ namespace CacheTower.Benchmarks
 		{
 			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
-				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
+				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
 				await cacheStack.GetOrSetAsync<int>("GetOrSet", (old, context) =>
 				{
 					return Task.FromResult(12);
@@ -122,7 +122,7 @@ namespace CacheTower.Benchmarks
 		{
 			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
-				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
+				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
 				var task1 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>
 				{
 					await Task.Delay(50);
@@ -143,7 +143,7 @@ namespace CacheTower.Benchmarks
 		{
 			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
-				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1)));
+				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
 				var task1 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>
 				{
 					await Task.Delay(50);

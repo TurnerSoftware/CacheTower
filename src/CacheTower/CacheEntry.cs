@@ -7,27 +7,20 @@ namespace CacheTower
 {
 	public abstract class CacheEntry
 	{
-		public DateTime CachedAt { get; }
+		public DateTime Expiry { get; }
 
-		public TimeSpan TimeToLive { get; }
-
-		protected CacheEntry(DateTime cachedAt, TimeSpan timeToLive)
+		protected CacheEntry(DateTime expiry)
 		{
-			if (timeToLive < TimeSpan.Zero)
-			{
-				throw new ArgumentOutOfRangeException(nameof(timeToLive), "TimeSpan must be greater than or equal to zero");
-			}
-
-			CachedAt = new DateTime(
-				cachedAt.Year, cachedAt.Month, cachedAt.Day, cachedAt.Hour, cachedAt.Minute, cachedAt.Second, DateTimeKind.Utc
+			//Force the resolution of the expiry date to be to the second
+			Expiry = new DateTime(
+				expiry.Year, expiry.Month, expiry.Day, expiry.Hour, expiry.Minute, expiry.Second, DateTimeKind.Utc
 			);
-			TimeToLive = timeToLive;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool HasElapsed(TimeSpan timeSpan)
+		public DateTime GetStaleDate(CacheSettings cacheSettings)
 		{
-			return CachedAt.Add(timeSpan) < DateTime.UtcNow;
+			return Expiry - cacheSettings.TimeToLive + cacheSettings.StaleAfter;
 		}
 	}
 
@@ -35,7 +28,8 @@ namespace CacheTower
 	{
 		public T Value { get; }
 
-		public CacheEntry(T value, DateTime cachedAt, TimeSpan timeToLive) : base(cachedAt, timeToLive)
+		public CacheEntry(T value, TimeSpan timeToLive) : this(value, DateTime.UtcNow + timeToLive) { }
+		public CacheEntry(T value, DateTime expiry) : base(expiry)
 		{
 			Value = value;
 		}
@@ -48,8 +42,7 @@ namespace CacheTower
 			}
 
 			return Equals(Value, other.Value) &&
-				CachedAt == other.CachedAt &&
-				TimeToLive == other.TimeToLive;
+				Expiry == other.Expiry;
 		}
 
 		public override bool Equals(object obj)
@@ -64,7 +57,7 @@ namespace CacheTower
 
 		public override int GetHashCode()
 		{
-			return (Value?.GetHashCode() ?? 1) ^ CachedAt.GetHashCode() ^ TimeToLive.GetHashCode();
+			return (Value?.GetHashCode() ?? 1) ^ Expiry.GetHashCode();
 		}
 	}
 }

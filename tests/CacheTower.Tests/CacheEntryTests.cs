@@ -10,61 +10,43 @@ namespace CacheTower.Tests
 	[TestClass]
 	public class CacheEntryTests
 	{
-		[TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
-		public void ThrowsExceptionOnNegativeTimeSpan()
-		{
-			new CacheEntry<int>(0, DateTime.UtcNow, TimeSpan.FromSeconds(-1));
-		}
-
 		[TestMethod]
-		public void HasElapsed_NoOffset()
+		public void GetStaleDate()
 		{
-			var entryInPast = new CacheEntry<int>(0, DateTime.UtcNow.AddDays(-1), TimeSpan.Zero);
-			Assert.IsTrue(entryInPast.HasElapsed(TimeSpan.Zero));
-
-			var entryInFuture = new CacheEntry<int>(0, DateTime.UtcNow.AddDays(1), TimeSpan.Zero);
-			Assert.IsFalse(entryInFuture.HasElapsed(TimeSpan.Zero));
-		}
-
-		[TestMethod]
-		public void HasElapsed_WithOffset()
-		{
-			var entryInPast1 = new CacheEntry<int>(0, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
-			Assert.IsTrue(entryInPast1.HasElapsed(TimeSpan.FromDays(1)));
-
-			var entryInPast2 = new CacheEntry<int>(0, DateTime.UtcNow.AddDays(-2), TimeSpan.FromDays(1));
-			Assert.IsFalse(entryInPast2.HasElapsed(TimeSpan.FromDays(3)));
+			var expiry = DateTime.UtcNow;
+			var entry = new CacheEntry<int>(0, expiry);
+			Assert.IsTrue(expiry - entry.GetStaleDate(new CacheSettings(TimeSpan.FromDays(3))) < TimeSpan.FromSeconds(1));
+			Assert.IsFalse(expiry - entry.GetStaleDate(new CacheSettings(TimeSpan.FromDays(3), TimeSpan.FromDays(2))) < TimeSpan.FromSeconds(1));
+			Assert.IsTrue(expiry.AddDays(-1) - entry.GetStaleDate(new CacheSettings(TimeSpan.FromDays(3), TimeSpan.FromDays(2))) < TimeSpan.FromSeconds(1));
 		}
 
 		[TestMethod]
 		public void EqualityTests_AreEqual()
 		{
 			var utcNow = DateTime.UtcNow;
-			Assert.AreEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero), new CacheEntry<int>(0, utcNow, TimeSpan.Zero));
-			Assert.AreEqual(new CacheEntry<string>(string.Empty, utcNow, TimeSpan.Zero), new CacheEntry<string>(string.Empty, utcNow, TimeSpan.Zero));
+			Assert.AreEqual(new CacheEntry<int>(0, utcNow), new CacheEntry<int>(0, utcNow));
+			Assert.AreEqual(new CacheEntry<string>(string.Empty, utcNow), new CacheEntry<string>(string.Empty, utcNow));
 		}
 
 		[TestMethod]
 		public void EqualityTests_AreNotEqual()
 		{
 			var utcNow = DateTime.UtcNow;
-			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero), new CacheEntry<int>(0, utcNow, TimeSpan.FromSeconds(1)));
-			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero), new CacheEntry<int>(0, utcNow.AddDays(1), TimeSpan.Zero));
-			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero), new CacheEntry<int>(1, utcNow, TimeSpan.Zero));
+			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow), new CacheEntry<int>(0, utcNow.AddSeconds(1)));
+			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow), new CacheEntry<int>(1, utcNow));
 
-			Assert.IsFalse(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).Equals(null));
-			Assert.IsFalse(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).Equals(string.Empty));
+			Assert.IsFalse(new CacheEntry<int>(0, utcNow).Equals(null));
+			Assert.IsFalse(new CacheEntry<int>(0, utcNow).Equals(string.Empty));
 		}
 
 		[TestMethod]
 		public void EqualityTests_HashCode()
 		{
 			var utcNow = DateTime.UtcNow;
-			Assert.AreEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode());
-			Assert.AreEqual(new CacheEntry<string>(string.Empty, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<string>(string.Empty, utcNow, TimeSpan.Zero).GetHashCode());
-			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<int>(0, utcNow, TimeSpan.FromSeconds(1)).GetHashCode());
-			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<int>(0, utcNow.AddDays(1), TimeSpan.Zero).GetHashCode());
-			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow, TimeSpan.Zero).GetHashCode(), new CacheEntry<int>(1, utcNow, TimeSpan.Zero).GetHashCode());
+			Assert.AreEqual(new CacheEntry<int>(0, utcNow).GetHashCode(), new CacheEntry<int>(0, utcNow).GetHashCode());
+			Assert.AreEqual(new CacheEntry<string>(string.Empty, utcNow).GetHashCode(), new CacheEntry<string>(string.Empty, utcNow).GetHashCode());
+			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow).GetHashCode(), new CacheEntry<int>(0, utcNow.AddSeconds(1)).GetHashCode());
+			Assert.AreNotEqual(new CacheEntry<int>(0, utcNow).GetHashCode(), new CacheEntry<int>(1, utcNow).GetHashCode());
 		}
 	}
 }

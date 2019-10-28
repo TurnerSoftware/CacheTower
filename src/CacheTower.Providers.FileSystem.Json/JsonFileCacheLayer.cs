@@ -14,11 +14,6 @@ namespace CacheTower.Providers.FileSystem.Json
 
 		public JsonFileCacheLayer(string directoryPath) : base(directoryPath, ".json") { }
 
-		private class DataWrapper<T>
-		{
-			public T Value { get; set; }
-		}
-
 		protected override T Deserialize<T>(Stream stream)
 		{
 			using (var streamReader = new StreamReader(stream, Encoding.UTF8, false, 1024))

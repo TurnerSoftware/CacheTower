@@ -60,7 +60,7 @@ namespace CacheTower.Providers.Database.MongoDB
 
 			if (dbEntry != default)
 			{
-				cacheEntry = new CacheEntry<T>((T)dbEntry.Value, dbEntry.CachedAt, dbEntry.TimeToLive);
+				cacheEntry = new CacheEntry<T>((T)dbEntry.Value, dbEntry.Expiry);
 			}
 
 			return cacheEntry;
@@ -72,8 +72,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			var command = new SetCommand(new DbCachedEntry
 			{
 				CacheKey = cacheKey,
-				CachedAt = cacheEntry.CachedAt,
-				TimeToLive = cacheEntry.TimeToLive,
+				Expiry = cacheEntry.Expiry,
 				Value = cacheEntry.Value
 			});
 

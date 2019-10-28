@@ -10,8 +10,10 @@
               <Include>  
                 <ModulePath>.*\.dll$</ModulePath>
               </Include>  
-              <Exclude>  
-                <ModulePath>CacheTower.Tests.dll</ModulePath>  
+              <Exclude>
+                <ModulePath>CacheTower.Tests.dll</ModulePath>
+                <ModulePath>CacheTower.Benchmarks.dll</ModulePath>
+                <ModulePath>CacheTower.AlternativesBenchmark.dll</ModulePath>
               </Exclude>  
             </ModulePaths>  
 

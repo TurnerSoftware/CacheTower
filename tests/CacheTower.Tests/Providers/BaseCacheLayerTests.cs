@@ -13,7 +13,7 @@ namespace CacheTower.Tests.Providers
 	{
 		protected static void AssertGetSetCache(ISyncCacheLayer cacheLayer)
 		{
-			var cacheEntry = new CacheEntry<int>(12, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(12, TimeSpan.FromDays(1));
 			cacheLayer.Set("AssertGetSetCache", cacheEntry);
 			var cacheEntryGet = cacheLayer.Get<int>("AssertGetSetCache");
 
@@ -21,7 +21,7 @@ namespace CacheTower.Tests.Providers
 		}
 		protected static async Task AssertGetSetCacheAsync(IAsyncCacheLayer cacheLayer)
 		{
-			var cacheEntry = new CacheEntry<int>(12, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(12, TimeSpan.FromDays(1));
 			await cacheLayer.SetAsync("AssertGetSetCache", cacheEntry);
 			var cacheEntryGet = await cacheLayer.GetAsync<int>("AssertGetSetCache");
 
@@ -39,7 +39,7 @@ namespace CacheTower.Tests.Providers
 
 		protected static void AssertCacheEviction(ISyncCacheLayer cacheLayer)
 		{
-			var cacheEntry = new CacheEntry<int>(77, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(77, TimeSpan.FromDays(1));
 			cacheLayer.Set("AssertCacheEviction-ToEvict", cacheEntry);
 			cacheLayer.Set("AssertCacheEviction-ToKeep", cacheEntry);
 
@@ -57,7 +57,7 @@ namespace CacheTower.Tests.Providers
 		}
 		protected static async Task AssertCacheEvictionAsync(IAsyncCacheLayer cacheLayer)
 		{
-			var cacheEntry = new CacheEntry<int>(77, DateTime.UtcNow, TimeSpan.FromDays(1));
+			var cacheEntry = new CacheEntry<int>(77, TimeSpan.FromDays(1));
 			await cacheLayer.SetAsync("AssertCacheEviction-ToEvict", cacheEntry);
 			await cacheLayer.SetAsync("AssertCacheEviction-ToKeep", cacheEntry);
 
@@ -80,7 +80,7 @@ namespace CacheTower.Tests.Providers
 			{
 				var cacheKey = $"AssertCacheCleanup-(DateTime:{dateTime})";
 
-				var cacheEntry = new CacheEntry<int>(98, dateTime, TimeSpan.FromDays(1));
+				var cacheEntry = new CacheEntry<int>(98, dateTime);
 				cacheLayer.Set(cacheKey, cacheEntry);
 
 				cacheLayer.Cleanup();
@@ -88,8 +88,8 @@ namespace CacheTower.Tests.Providers
 				return cacheLayer.Get<int>(cacheKey);
 			}
 
-			Assert.IsNotNull(DoCleanupTest(DateTime.UtcNow), "Cleanup removed entry that was still live");
-			Assert.IsNull(DoCleanupTest(DateTime.UtcNow.AddDays(-2)), "Cleanup kept entry past the end of life");
+			Assert.IsNotNull(DoCleanupTest(DateTime.UtcNow.AddDays(1)), "Cleanup removed entry that was still live");
+			Assert.IsNull(DoCleanupTest(DateTime.UtcNow.AddDays(-1)), "Cleanup kept entry past the end of life");
 		}
 		protected static async Task AssertCacheCleanupAsync(IAsyncCacheLayer cacheLayer)
 		{
@@ -97,7 +97,7 @@ namespace CacheTower.Tests.Providers
 			{
 				var cacheKey = $"AssertCacheCleanup-(DateTime:{dateTime})";
 
-				var cacheEntry = new CacheEntry<int>(98, dateTime, TimeSpan.FromDays(1));
+				var cacheEntry = new CacheEntry<int>(98, dateTime);
 				await cacheLayer.SetAsync(cacheKey, cacheEntry);
 
 				await cacheLayer.CleanupAsync();
@@ -105,8 +105,8 @@ namespace CacheTower.Tests.Providers
 				return await cacheLayer.GetAsync<int>(cacheKey);
 			}
 
-			Assert.IsNotNull(await DoCleanupTest(DateTime.UtcNow), "Cleanup removed entry that was still live");
-			Assert.IsNull(await DoCleanupTest(DateTime.UtcNow.AddDays(-2)), "Cleanup kept entry past the end of life");
+			Assert.IsNotNull(await DoCleanupTest(DateTime.UtcNow.AddDays(1)), "Cleanup removed entry that was still live");
+			Assert.IsNull(await DoCleanupTest(DateTime.UtcNow.AddDays(-1)), "Cleanup kept entry past the end of life");
 		}
 
 		protected static void AssertComplexTypeCaching(ISyncCacheLayer cacheLayer)
@@ -116,7 +116,7 @@ namespace CacheTower.Tests.Providers
 				ExampleString = "Hello World",
 				ExampleNumber = 99,
 				ListOfNumbers = new List<int>() { 1, 2, 4, 8 }
-			}, DateTime.UtcNow, TimeSpan.FromDays(1));
+			}, TimeSpan.FromDays(1));
 			cacheLayer.Set("ComplexTypeOne", complexTypeOneEntry);
 			var complexTypeOneEntryGet = cacheLayer.Get<ComplexTypeCaching_TypeOne>("ComplexTypeOne");
 
@@ -127,7 +127,7 @@ namespace CacheTower.Tests.Providers
 				ExampleString = "Hello World",
 				ArrayOfObjects = new[] { complexTypeOneEntry.Value },
 				DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "Z", 26 } }
-			}, DateTime.UtcNow, TimeSpan.FromDays(1));
+			}, TimeSpan.FromDays(1));
 			cacheLayer.Set("ComplexTypeTwo", complexTypeTwoEntry);
 			var complexTypeTwoEntryGet = cacheLayer.Get<ComplexTypeCaching_TypeTwo>("ComplexTypeTwo");
 
@@ -140,7 +140,7 @@ namespace CacheTower.Tests.Providers
 				ExampleString = "Hello World",
 				ExampleNumber = 99,
 				ListOfNumbers = new List<int>() { 1, 2, 4, 8 }
-			}, DateTime.UtcNow, TimeSpan.FromDays(1));
+			}, TimeSpan.FromDays(1));
 			await cacheLayer.SetAsync("ComplexTypeOne", complexTypeOneEntry);
 			var complexTypeOneEntryGet = await cacheLayer.GetAsync<ComplexTypeCaching_TypeOne>("ComplexTypeOne");
 
@@ -151,7 +151,7 @@ namespace CacheTower.Tests.Providers
 				ExampleString = "Hello World",
 				ArrayOfObjects = new[] { complexTypeOneEntry.Value },
 				DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "Z", 26 } }
-			}, DateTime.UtcNow, TimeSpan.FromDays(1));
+			}, TimeSpan.FromDays(1));
 			await cacheLayer.SetAsync("ComplexTypeTwo", complexTypeTwoEntry);
 			var complexTypeTwoEntryGet = await cacheLayer.GetAsync<ComplexTypeCaching_TypeTwo>("ComplexTypeTwo");
 

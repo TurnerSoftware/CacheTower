@@ -13,7 +13,7 @@ namespace CacheTower.Benchmarks.Providers
 		{
 			var cacheLayer = CacheLayerProvider.Invoke() as IAsyncCacheLayer;
 
-			await cacheLayer.SetAsync("GetHitSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheLayer.SetAsync("GetHitSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 
 			var aTask = cacheLayer.GetAsync<int>("GetHitSimultaneous");
 			var bTask = cacheLayer.GetAsync<int>("GetHitSimultaneous");
@@ -29,10 +29,10 @@ namespace CacheTower.Benchmarks.Providers
 		{
 			var cacheLayer = CacheLayerProvider.Invoke() as IAsyncCacheLayer;
 
-			await cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			await cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 
-			var aTask = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
-			var bTask = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, DateTime.UtcNow, TimeSpan.FromDays(1)));
+			var aTask = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+			var bTask = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 
 			await aTask;
 			await bTask;

@@ -97,7 +97,8 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			var cacheEntry = new CacheEntry<T>(value, DateTime.UtcNow, timeToLive);
+			var expiry = DateTime.UtcNow + timeToLive;
+			var cacheEntry = new CacheEntry<T>(value, expiry);
 			await SetAsync(cacheKey, cacheEntry);
 			return cacheEntry;
 		}
@@ -222,10 +223,10 @@ namespace CacheTower
 			if (cacheEntryPoint != default)
 			{
 				var cacheEntry = cacheEntryPoint.CacheEntry;
-
-				if (cacheEntry.HasElapsed(settings.StaleAfter))
+				var currentTime = DateTime.UtcNow;
+				if (cacheEntry.GetStaleDate(settings) < currentTime)
 				{
-					if (cacheEntry.HasElapsed(settings.TimeToLive))
+					if (cacheEntry.Expiry < currentTime)
 					{
 						//Refresh the value in the current thread though short circuit if we're unable to establish a lock
 						//If the lock isn't established, it will instead use the stale cache entry (even if past the allowed stale period)
@@ -369,7 +370,7 @@ namespace CacheTower
 
 				//Last minute check to confirm whether waiting is required
 				var currentEntry = await GetAsync<T>(cacheKey);
-				if (currentEntry != null && !currentEntry.HasElapsed(settings.StaleAfter))
+				if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTime.UtcNow)
 				{
 					UnlockWaitingTasks(cacheKey);
 					return currentEntry;
