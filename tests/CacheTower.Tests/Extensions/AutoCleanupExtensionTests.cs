@@ -26,7 +26,7 @@ namespace CacheTower.Tests.Extensions
 			using (var extension = new AutoCleanupExtension(TimeSpan.FromSeconds(30)))
 			{
 				//Will register as part of the CacheStack constructor
-				var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, new[] { extension });
+				var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, new[] { extension });
 				//Force the second register manually
 				extension.Register(cacheStack);
 			}

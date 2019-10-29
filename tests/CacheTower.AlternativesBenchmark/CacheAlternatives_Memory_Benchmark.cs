@@ -19,7 +19,7 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark(Baseline = true)]
 		public async Task CacheTower_MemoryCacheLayer_ViaCacheStack()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await LoopActionAsync(Iterations, async () =>
 				{

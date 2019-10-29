@@ -26,7 +26,7 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark(Baseline = true)]
 		public async Task CacheTower_RedisCacheLayer()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new RedisCacheLayer(RedisHelper.GetConnection()) }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new RedisCacheLayer(RedisHelper.GetConnection()) }, Array.Empty<ICacheExtension>()))
 			{
 				await LoopActionAsync(Iterations, async () =>
 				{

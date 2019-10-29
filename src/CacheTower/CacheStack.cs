@@ -6,14 +6,13 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
-using Nito.AsyncEx;
 
 namespace CacheTower
 {
 #if NETSTANDARD2_0
-	public class CacheStack : ICacheStack, IDisposable
+	public class CacheStack<TContext> : ICacheStack<TContext>, IDisposable where TContext : ICacheContext
 #elif NETSTANDARD2_1
-	public class CacheStack : ICacheStack, IAsyncDisposable
+	public class CacheStack<TContext> : ICacheStack<TContext>, IAsyncDisposable where TContext : ICacheContext
 #endif
 	{
 		private bool Disposed;
@@ -24,9 +23,9 @@ namespace CacheTower
 
 		private ExtensionContainer Extensions { get; }
 
-		private ICacheContext Context { get; }
+		private TContext Context { get; }
 
-		public CacheStack(ICacheContext context, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
+		public CacheStack(TContext context, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
 			Context = context;
 
@@ -205,7 +204,7 @@ namespace CacheTower
 			return default;
 		}
 
-		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings)
+		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, TContext, Task<T>> getter, CacheSettings settings)
 		{
 			ThrowIfDisposed();
 
@@ -306,7 +305,7 @@ namespace CacheTower
 			}
 		}
 
-		private async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, ICacheContext, Task<T>> getter, CacheSettings settings, bool waitForRefresh)
+		private async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, TContext, Task<T>> getter, CacheSettings settings, bool waitForRefresh)
 		{
 			ThrowIfDisposed();
 

@@ -44,7 +44,7 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark(Baseline = true)]
 		public async Task CacheTower_JsonFileCacheLayer()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new JsonFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new JsonFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>()))
 			{
 				await LoopActionAsync(Iterations, async () =>
 				{
@@ -61,7 +61,7 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark]
 		public async Task CacheTower_ProtobufFileCacheLayer()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new ProtobufFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new ProtobufFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>()))
 			{
 				await LoopActionAsync(Iterations, async () =>
 				{

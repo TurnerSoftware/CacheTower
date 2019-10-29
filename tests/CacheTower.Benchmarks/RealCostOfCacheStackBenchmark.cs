@@ -75,7 +75,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task MemoryCacheLayer_CacheStack()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, null))
 			{
 				//Get 100 misses
 				for (var i = 0; i < 100; i++)
@@ -160,7 +160,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task MemoryCacheLayer_CacheStack_GetOrSet()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, null))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, null))
 			{
 				//Set first 200 (simple type)
 				for (var i = 0; i < 200; i++)
