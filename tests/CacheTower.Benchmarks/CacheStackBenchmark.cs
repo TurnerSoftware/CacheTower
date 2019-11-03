@@ -30,7 +30,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task SetupAndTeardown()
 		{
-			await using (new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 
 			}
@@ -39,7 +39,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Set()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("Set", 15, TimeSpan.FromDays(1));
 			}
@@ -47,7 +47,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Set_TwoLayers()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("Set", 15, TimeSpan.FromDays(1));
 			}
@@ -55,7 +55,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Evict()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("Evict", 15, TimeSpan.FromDays(1));
 				await cacheStack.EvictAsync("Evict");
@@ -64,7 +64,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Evict_TwoLayers()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("Evict", 15, TimeSpan.FromDays(1));
 				await cacheStack.EvictAsync("Evict");
@@ -73,7 +73,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Cleanup()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("Cleanup", 15, TimeSpan.FromDays(1));
 				await cacheStack.CleanupAsync();
@@ -82,7 +82,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Cleanup_TwoLayers()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("Cleanup", 15, TimeSpan.FromDays(1));
 				await cacheStack.CleanupAsync();
@@ -91,7 +91,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetMiss()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.GetAsync<int>("GetMiss");
 			}
@@ -99,7 +99,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetHit()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("GetHit", 15, TimeSpan.FromDays(1));
 				await cacheStack.GetAsync<int>("GetHit");
@@ -108,7 +108,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetOrSet()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
 				await cacheStack.GetOrSetAsync<int>("GetOrSet", (old, context) =>
@@ -120,7 +120,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetOrSet_TwoSimultaneous()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
 				var task1 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>
@@ -141,7 +141,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetOrSet_FourSimultaneous()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
 				var task1 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old, context) =>

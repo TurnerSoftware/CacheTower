@@ -17,7 +17,7 @@ namespace CacheTower.Tests
 		[DataTestMethod]
 		public async Task SimulatenousGetOrSet_CacheMiss(int iterations)
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 
 			var allTasks = new List<Task<int>>(iterations);
 			var stopwatch = new Stopwatch();
@@ -63,7 +63,7 @@ namespace CacheTower.Tests
 		[DataTestMethod]
 		public async Task SimulatenousGetOrSet_CacheMiss_UniqueKeys(int iterations)
 		{
-			var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 
 			var allTasks = new List<Task<int>>(iterations);
 
