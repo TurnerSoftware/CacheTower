@@ -78,13 +78,32 @@ While this can work independently of using `RedisLockExtension` or even the `Red
 
 ## Example Usage
 
-Setup and store a singleton of `CacheStack` (whether that is via Dependency Injection or a static variable).
+### Setup with DI
+```csharp
+
+public void ConfigureServices(IServiceCollection services)
+{
+	services.AddCacheStack<SomeClassThatExtendsICacheContext>(
+		new [] {
+			new MemoryCacheLayer(),
+			new ProtobufFileCacheLayer("directory/where/the/cache/can/write")
+		}, 
+		new [] {
+			new AutoCleanupExtension(TimeSpan.FromMinutes(5))
+		}
+	);
+}
+
+```
+
+### Setup without DI
+Setup and store a singleton of `CacheStack`
 ```csharp
 
 //Context is allowed to be null if you don't need it
 var myContext = new SomeClassThatExtendsICacheContext();
 
-var myCacheStack = new CacheStack(myContext, new [] {
+var myCacheStack = new CacheStack<SomeClassThatExtendsICacheContext>(myContext, new [] {
 	new MemoryCacheLayer(),
 	new ProtobufFileCacheLayer("directory/where/the/cache/can/write")
 }, new [] {
@@ -92,6 +111,8 @@ var myCacheStack = new CacheStack(myContext, new [] {
 });
 
 ```
+
+### Accessing the Cache
 
 Somewhere in your code base where you are wanting to optionally pull data from your cache.
 ```csharp
