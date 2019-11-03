@@ -23,6 +23,9 @@ These various cache layers, configurable by you, are controlled through the `Cac
 - Optional stale-time for a cache entry (serve stale data while a background task refreshes the cache)
 - Remote eviction on refresh ([see details](#remoteevictionextension))
 
+For a comprehensive understanding of why a multi-layered cache is a good idea, have a read [Nick Craver's blog post](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/) about caching.
+Nick's blog post was the inspiration behind Cache Tower and a number of the primary features including stale-time for cache entries.
+
 ## Package Status
 
 | Package | NuGet | Downloads |
@@ -34,7 +37,7 @@ These various cache layers, configurable by you, are controlled through the `Cac
 | [CacheTower.Providers.FileSystem.Protobuf](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/) | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.FileSystem.Protobuf.svg)](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.FileSystem.Protobuf.svg)](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/) |
 | [CacheTower.Providers.Redis](https://www.nuget.org/packages/CacheTower.Providers.Redis/) | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.Redis.svg)](https://www.nuget.org/packages/CacheTower.Providers.Redis/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.Redis.svg)](https://www.nuget.org/packages/CacheTower.Providers.Redis/) |
 
-## Choosing Cache Layers
+## How do I choose what cache layers to use?
 
 There are pros-and-cons to each of the types of cache layers though the idea is to use each layer to your advantage.
 
@@ -44,17 +47,25 @@ There are pros-and-cons to each of the types of cache layers though the idea is 
 - MongoDB caching can be fast and convenient under certain workloads (eg. when you don't have Redis).
 - Redis caching is about as fast as possible while not being in-memory in the same process (or potentially server).
 
-See also: [Performance Figures & Cache Layer Comparisons](/docs/Performance.md)
+For more details: [Performance Figures & Cache Layer Comparisons](/docs/Performance.md)
 
-See also: [Comparisons to Cache Tower Alternatives](/docs/Comparison.md)
+## How does Cache Tower compare to other caching solutions?
+
+Cache Tower has been built from the ground up for high performance and low memory consumption.
+Across a number of benchmarks against other caching solutions, Cache Tower performs similarly or better than the competition.
+
+Where Cache Tower makes up in speed, it may lack a variety of features common amongst other caching solutions.
+It is important to weigh both the feature set and performance when deciding on a caching solution.
+
+For more details: [Comparisons to Cache Tower Alternatives](/docs/Comparison.md)
 
 ## Extension System
 
 To allow more flexibility, Cache Tower uses an extension system to enhance functionality. Some of these extensions rely on third party libraries and software to function correctly.
 
-### CacheTower
+### Built-in
 
-The main library comes with one extension by default but it is an important one: `AutoCleanupExtension`
+Cache Tower comes with one extension by default but it is an important one: `AutoCleanupExtension`
 
 The cache layers themselves, for the most part, don't directly manage the co-ordination of when they need to delete expired data.
 While the `RedisCacheLayer` does handle cache expiration directly, none of the other offical cache layers do.
