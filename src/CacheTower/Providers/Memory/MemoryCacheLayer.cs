@@ -8,83 +8,37 @@ using System.Threading.Tasks;
 
 namespace CacheTower.Providers.Memory
 {
-	public class MemoryCacheLayer : ISyncCacheLayer, IDisposable
+	public class MemoryCacheLayer : ISyncCacheLayer
 	{
-		private bool Disposed;
-		private ReaderWriterLockSlim LockObj { get; } = new ReaderWriterLockSlim();
-		private Dictionary<string, CacheEntry> Cache { get; } = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);
+		private ConcurrentDictionary<string, CacheEntry> Cache { get; } = new ConcurrentDictionary<string, CacheEntry>(StringComparer.Ordinal);
 
 		public void Cleanup()
 		{
-			LockObj.EnterUpgradeableReadLock();
+			var currentTime = DateTime.UtcNow;
 
-			try
+			foreach (var cachePair in Cache)
 			{
-				var keysToRemove = ArrayPool<string>.Shared.Rent(Cache.Count);
-				var index = 0;
-				var currentTime = DateTime.UtcNow;
-
-				foreach (var cachePair in Cache)
+				var cacheEntry = cachePair.Value;
+				if (cacheEntry.Expiry < currentTime)
 				{
-					var cacheEntry = cachePair.Value;
-					if (cacheEntry.Expiry < currentTime)
-					{
-						keysToRemove[index] = cachePair.Key;
-						index++;
-					}
+					Cache.TryRemove(cachePair.Key, out _);
 				}
-
-				LockObj.EnterWriteLock();
-				try
-				{
-					for (var i = index - 1; i >= 0; i--)
-					{
-						Cache.Remove(keysToRemove[i]);
-					}
-				}
-				finally
-				{
-					LockObj.ExitWriteLock();
-				}
-
-				ArrayPool<string>.Shared.Return(keysToRemove);
-			}
-			finally
-			{
-				LockObj.ExitUpgradeableReadLock();
 			}
 		}
 
 		public void Evict(string cacheKey)
 		{
-			LockObj.EnterWriteLock();
-			try
-			{
-				Cache.Remove(cacheKey);
-			}
-			finally
-			{
-				LockObj.ExitWriteLock();
-			}
+			Cache.TryRemove(cacheKey, out _);
 		}
 
 		public CacheEntry<T> Get<T>(string cacheKey)
 		{
-			LockObj.EnterReadLock();
-
-			try
+			if (Cache.TryGetValue(cacheKey, out var cacheEntry))
 			{
-				if (Cache.TryGetValue(cacheKey, out var cacheEntry))
-				{
-					return cacheEntry as CacheEntry<T>;
-				}
+				return cacheEntry as CacheEntry<T>;
+			}
 
-				return default;
-			}
-			finally
-			{
-				LockObj.ExitReadLock();
-			}
+			return default;
 		}
 
 		public bool IsAvailable(string cacheKey)
@@ -94,36 +48,7 @@ namespace CacheTower.Providers.Memory
 
 		public void Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			LockObj.EnterWriteLock();
-
-			try
-			{
-				Cache[cacheKey] = cacheEntry;
-			}
-			finally
-			{
-				LockObj.ExitWriteLock();
-			}
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (Disposed)
-			{
-				return;
-			}
-
-			if (disposing)
-			{
-				LockObj.Dispose();
-			}
-
-			Disposed = true;
+			Cache[cacheKey] = cacheEntry;
 		}
 	}
 }

@@ -39,7 +39,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Providers.Redis"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Extensions.Redis", "src\CacheTower.Extensions.Redis\CacheTower.Extensions.Redis.csproj", "{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.AlternativesBenchmark", "tests\CacheTower.AlternativesBenchmark\CacheTower.AlternativesBenchmark.csproj", "{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.AlternativesBenchmark", "tests\CacheTower.AlternativesBenchmark\CacheTower.AlternativesBenchmark.csproj", "{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

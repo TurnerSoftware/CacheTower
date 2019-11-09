@@ -35,20 +35,18 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark]
 		public void CacheTower_MemoryCacheLayer_Direct()
 		{
-			using (var layer = new MemoryCacheLayer())
+			var layer = new MemoryCacheLayer();
+			LoopAction(Iterations, () =>
 			{
-				LoopAction(Iterations, () =>
-				{
-					layer.Set("TestKey", new CacheEntry<int>(123, DateTime.UtcNow + TimeSpan.FromDays(1)));
-					layer.Get<int>("TestKey");
+				layer.Set("TestKey", new CacheEntry<int>(123, DateTime.UtcNow + TimeSpan.FromDays(1)));
+				layer.Get<int>("TestKey");
 
-					var getOrSetResult = layer.Get<string>("GetOrSet_TestKey");
-					if (getOrSetResult == null)
-					{
-						layer.Set("GetOrSet_TestKey", new CacheEntry<string>("Hello World", TimeSpan.FromDays(1)));
-					}
-				});
-			}
+				var getOrSetResult = layer.Get<string>("GetOrSet_TestKey");
+				if (getOrSetResult == null)
+				{
+					layer.Set("GetOrSet_TestKey", new CacheEntry<string>("Hello World", TimeSpan.FromDays(1)));
+				}
+			});
 		}
 
 		[Benchmark]

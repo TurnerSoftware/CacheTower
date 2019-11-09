@@ -23,53 +23,52 @@ namespace CacheTower.Benchmarks
 		[Benchmark(Baseline = true)]
 		public void MemoryCacheLayer_Independent()
 		{
-			using (var cacheLayer = new MemoryCacheLayer())
+			var cacheLayer = new MemoryCacheLayer();
+
+			//Get 100 misses
+			for (var i = 0; i < 100; i++)
 			{
-				//Get 100 misses
-				for (var i = 0; i < 100; i++)
-				{
-					cacheLayer.Get<int>("GetMiss_" + i);
-				}
-
-				var startDate = DateTime.UtcNow.AddDays(-50);
-
-				//Set first 100 (simple type)
-				for (var i = 0; i < 100; i++)
-				{
-					cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
-				}
-				//Set last 100 (complex type)
-				for (var i = 100; i < 200; i++)
-				{
-					cacheLayer.Set("Comparison_" + i, new CacheEntry<RealCostComplexType>(new RealCostComplexType
-					{
-						ExampleString = "Hello World",
-						ExampleNumber = 42,
-						ExampleDate = new DateTime(2000, 1, 1),
-						DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-					}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
-				}
-
-				//Get first 50 (simple type)
-				for (var i = 0; i < 50; i++)
-				{
-					cacheLayer.Get<int>("Comparison_" + i);
-				}
-				//Get last 50 (complex type)
-				for (var i = 150; i < 200; i++)
-				{
-					cacheLayer.Get<RealCostComplexType>("Comparison_" + i);
-				}
-
-				//Evict middle 100
-				for (var i = 50; i < 150; i++)
-				{
-					cacheLayer.Evict("Comparison_" + i);
-				}
-
-				//Cleanup outer 100
-				cacheLayer.Cleanup();
+				cacheLayer.Get<int>("GetMiss_" + i);
 			}
+
+			var startDate = DateTime.UtcNow.AddDays(-50);
+
+			//Set first 100 (simple type)
+			for (var i = 0; i < 100; i++)
+			{
+				cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
+			}
+			//Set last 100 (complex type)
+			for (var i = 100; i < 200; i++)
+			{
+				cacheLayer.Set("Comparison_" + i, new CacheEntry<RealCostComplexType>(new RealCostComplexType
+				{
+					ExampleString = "Hello World",
+					ExampleNumber = 42,
+					ExampleDate = new DateTime(2000, 1, 1),
+					DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
+				}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
+			}
+
+			//Get first 50 (simple type)
+			for (var i = 0; i < 50; i++)
+			{
+				cacheLayer.Get<int>("Comparison_" + i);
+			}
+			//Get last 50 (complex type)
+			for (var i = 150; i < 200; i++)
+			{
+				cacheLayer.Get<RealCostComplexType>("Comparison_" + i);
+			}
+
+			//Evict middle 100
+			for (var i = 50; i < 150; i++)
+			{
+				cacheLayer.Evict("Comparison_" + i);
+			}
+
+			//Cleanup outer 100
+			cacheLayer.Cleanup();
 		}
 
 		[Benchmark]
@@ -127,32 +126,31 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public void MemoryCacheLayer_Indepedent_GetOrSet()
 		{
-			using (var cacheLayer = new MemoryCacheLayer())
-			{
-				//Set first 100 (simple type)
-				for (var i = 0; i < 100; i++)
-				{
-					var result = cacheLayer.Get<int>("Comparison_" + i);
-					if (result == null)
-					{
-						cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-					}
-				}
+			var cacheLayer = new MemoryCacheLayer();
 
-				//Set last 200 (complex type)
-				for (var i = 100; i < 200; i++)
+			//Set first 100 (simple type)
+			for (var i = 0; i < 100; i++)
+			{
+				var result = cacheLayer.Get<int>("Comparison_" + i);
+				if (result == null)
 				{
-					var result = cacheLayer.Get<int>("Comparison_" + i);
-					if (result == null)
+					cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				}
+			}
+
+			//Set last 200 (complex type)
+			for (var i = 100; i < 200; i++)
+			{
+				var result = cacheLayer.Get<int>("Comparison_" + i);
+				if (result == null)
+				{
+					cacheLayer.Set("Comparison_" + i, new CacheEntry<RealCostComplexType>(new RealCostComplexType
 					{
-						cacheLayer.Set("Comparison_" + i, new CacheEntry<RealCostComplexType>(new RealCostComplexType
-						{
-							ExampleString = "Hello World",
-							ExampleNumber = 42,
-							ExampleDate = new DateTime(2000, 1, 1),
-							DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-						}, TimeSpan.FromDays(1)));
-					}
+						ExampleString = "Hello World",
+						ExampleNumber = 42,
+						ExampleDate = new DateTime(2000, 1, 1),
+						DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
+					}, TimeSpan.FromDays(1)));
 				}
 			}
 		}
