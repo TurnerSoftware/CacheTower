@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Akavache;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.Providers.Memory;
@@ -13,7 +12,7 @@ namespace CacheTower.AlternativesBenchmark
 {
 	public class CacheAlternatives_Memory_Benchmark : BaseBenchmark
 	{
-		[Params(1, 100, 1000)]
+		[Params(1, 1000, 1_000_000)]
 		public int Iterations;
 
 		[Benchmark(Baseline = true)]
@@ -28,7 +27,7 @@ namespace CacheTower.AlternativesBenchmark
 					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old, context) =>
 					{
 						return Task.FromResult("Hello World");
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				});
 			}
 		}
@@ -75,20 +74,6 @@ namespace CacheTower.AlternativesBenchmark
 		}
 
 		[Benchmark]
-		public void Akavache_InMemory()
-		{
-			using (var blobCache = new InMemoryBlobCache())
-			{
-				LoopAction(Iterations, () =>
-				{
-					blobCache.InsertObject("TestKey", 123, TimeSpan.FromDays(1));
-					blobCache.GetObject<int>("TestKey");
-					blobCache.GetOrCreateObject("GetOrSet_TestKey", () => "Hello World");
-				});
-			}
-		}
-
-		[Benchmark]
 		public void EasyCaching_InMemory()
 		{
 			var easyCaching = new DefaultInMemoryCachingProvider(
@@ -109,7 +94,7 @@ namespace CacheTower.AlternativesBenchmark
 		public async Task EasyCaching_InMemoryAsync()
 		{
 			var easyCaching = new DefaultInMemoryCachingProvider(
-				"EasyCaching", 
+				"EasyCaching",
 				new[] { new InMemoryCaching("EasyCaching", new InMemoryCachingOptions()) },
 				new InMemoryOptions()
 			);
