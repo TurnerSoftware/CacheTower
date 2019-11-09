@@ -15,11 +15,15 @@ namespace CacheTower.Benchmarks.Providers
 
 			await cacheLayer.SetAsync("GetHitSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 
-			var aTask = cacheLayer.GetAsync<int>("GetHitSimultaneous");
-			var bTask = cacheLayer.GetAsync<int>("GetHitSimultaneous");
+			var tasks = new List<Task>();
 
-			await aTask;
-			await bTask;
+			for (var i = 0; i < WorkIterations; i++)
+			{
+				var task = cacheLayer.GetAsync<int>("GetHitSimultaneous");
+				tasks.Add(task);
+			}
+
+			await Task.WhenAll(tasks);
 
 			await DisposeOf(cacheLayer);
 		}
@@ -31,11 +35,15 @@ namespace CacheTower.Benchmarks.Providers
 
 			await cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 
-			var aTask = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-			var bTask = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+			var tasks = new List<Task>();
 
-			await aTask;
-			await bTask;
+			for (var i = 0; i < WorkIterations; i++)
+			{
+				var task = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				tasks.Add(task);
+			}
+
+			await Task.WhenAll(tasks);
 
 			await DisposeOf(cacheLayer);
 		}

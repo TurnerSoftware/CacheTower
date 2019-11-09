@@ -19,6 +19,9 @@ namespace CacheTower.Benchmarks.Providers
 	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser, Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	public class CacheLayerComparisonBenchmark
 	{
+		[Params(1, 10)]
+		public int WorkIterations { get; set; }
+
 		[ProtoContract]
 		private class ComplexType
 		{
@@ -32,99 +35,105 @@ namespace CacheTower.Benchmarks.Providers
 			public Dictionary<string, int> DictionaryOfNumbers { get; set; }
 		}
 
-		private void BenchmarkWork(ISyncCacheLayer cacheLayer)
+		protected void BenchmarkWork(ISyncCacheLayer cacheLayer)
 		{
-			//Get 100 misses
-			for (var i = 0; i < 100; i++)
+			for (var iterationCount = 0; iterationCount < WorkIterations; iterationCount++)
 			{
-				cacheLayer.Get<int>("GetMiss_" + i);
-			}
-
-			var startDate = DateTime.UtcNow.AddDays(-50);
-
-			//Set first 100 (simple type)
-			for (var i = 0; i < 100; i++)
-			{
-				cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
-			}
-			//Set last 100 (complex type)
-			for (var i = 100; i < 200; i++)
-			{
-				cacheLayer.Set("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
+				//Get 100 misses
+				for (var i = 0; i < 100; i++)
 				{
-					ExampleString = "Hello World",
-					ExampleNumber = 42,
-					ExampleDate = new DateTime(2000, 1, 1),
-					DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-				}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
-			}
+					cacheLayer.Get<int>("GetMiss_" + i);
+				}
 
-			//Get first 50 (simple type)
-			for (var i = 0; i < 50; i++)
-			{
-				cacheLayer.Get<int>("Comparison_" + i);
-			}
-			//Get last 50 (complex type)
-			for (var i = 150; i < 200; i++)
-			{
-				cacheLayer.Get<ComplexType>("Comparison_" + i);
-			}
+				var startDate = DateTime.UtcNow.AddDays(-50);
 
-			//Evict middle 100
-			for (var i = 50; i < 150; i++)
-			{
-				cacheLayer.Evict("Comparison_" + i);
-			}
+				//Set first 100 (simple type)
+				for (var i = 0; i < 100; i++)
+				{
+					cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
+				}
+				//Set last 100 (complex type)
+				for (var i = 100; i < 200; i++)
+				{
+					cacheLayer.Set("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
+					{
+						ExampleString = "Hello World",
+						ExampleNumber = 42,
+						ExampleDate = new DateTime(2000, 1, 1),
+						DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
+					}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
+				}
 
-			//Cleanup outer 100
-			cacheLayer.Cleanup();
+				//Get first 50 (simple type)
+				for (var i = 0; i < 50; i++)
+				{
+					cacheLayer.Get<int>("Comparison_" + i);
+				}
+				//Get last 50 (complex type)
+				for (var i = 150; i < 200; i++)
+				{
+					cacheLayer.Get<ComplexType>("Comparison_" + i);
+				}
+
+				//Evict middle 100
+				for (var i = 50; i < 150; i++)
+				{
+					cacheLayer.Evict("Comparison_" + i);
+				}
+
+				//Cleanup outer 100
+				cacheLayer.Cleanup();
+			}
 		}
-		private async Task BenchmarkWork(IAsyncCacheLayer cacheLayer)
+		protected async Task BenchmarkWork(IAsyncCacheLayer cacheLayer)
 		{
-			//Get 100 misses
-			for (var i = 0; i < 100; i++)
+			for (var iterationCount = 0; iterationCount < WorkIterations; iterationCount++)
 			{
-				await cacheLayer.GetAsync<int>("GetMiss_" + i);
-			}
-
-			var startDate = DateTime.UtcNow.AddDays(-50);
-
-			//Set first 100 (simple type)
-			for (var i = 0; i < 100; i++)
-			{
-				await cacheLayer.SetAsync("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
-			}
-			//Set last 100 (complex type)
-			for (var i = 100; i < 200; i++)
-			{
-				await cacheLayer.SetAsync("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
+				//Get 100 misses
+				for (var i = 0; i < 100; i++)
 				{
-					ExampleString = "Hello World",
-					ExampleNumber = 42,
-					ExampleDate = new DateTime(2000, 1, 1),
-					DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-				}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
-			}
+					await cacheLayer.GetAsync<int>("GetMiss_" + i);
+				}
 
-			//Get first 50 (simple type)
-			for (var i = 0; i < 50; i++)
-			{
-				await cacheLayer.GetAsync<int>("Comparison_" + i);
-			}
-			//Get last 50 (complex type)
-			for (var i = 150; i < 200; i++)
-			{
-				await cacheLayer.GetAsync<ComplexType>("Comparison_" + i);
-			}
+				var startDate = DateTime.UtcNow.AddDays(-50);
 
-			//Evict middle 100
-			for (var i = 50; i < 150; i++)
-			{
-				await cacheLayer.EvictAsync("Comparison_" + i);
-			}
+				//Set first 100 (simple type)
+				for (var i = 0; i < 100; i++)
+				{
+					await cacheLayer.SetAsync("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
+				}
+				//Set last 100 (complex type)
+				for (var i = 100; i < 200; i++)
+				{
+					await cacheLayer.SetAsync("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
+					{
+						ExampleString = "Hello World",
+						ExampleNumber = 42,
+						ExampleDate = new DateTime(2000, 1, 1),
+						DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
+					}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
+				}
 
-			//Cleanup outer 100
-			await cacheLayer.CleanupAsync();
+				//Get first 50 (simple type)
+				for (var i = 0; i < 50; i++)
+				{
+					await cacheLayer.GetAsync<int>("Comparison_" + i);
+				}
+				//Get last 50 (complex type)
+				for (var i = 150; i < 200; i++)
+				{
+					await cacheLayer.GetAsync<ComplexType>("Comparison_" + i);
+				}
+
+				//Evict middle 100
+				for (var i = 50; i < 150; i++)
+				{
+					await cacheLayer.EvictAsync("Comparison_" + i);
+				}
+
+				//Cleanup outer 100
+				await cacheLayer.CleanupAsync();
+			}
 		}
 
 		[GlobalSetup]

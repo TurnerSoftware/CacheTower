@@ -26,6 +26,10 @@ namespace CacheTower.Benchmarks.Providers
 			}
 
 		}
+
+		[Params(1, 100)]
+		public int WorkIterations { get; set; }
+
 		protected Func<ICacheLayer> CacheLayerProvider { get; set; }
 
 		protected static async Task DisposeOf(ICacheLayer cacheLayer)
@@ -53,11 +57,17 @@ namespace CacheTower.Benchmarks.Providers
 			var cacheLayer = CacheLayerProvider.Invoke();
 			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
 			{
-				syncCacheLayer.Get<int>("GetMiss");
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					syncCacheLayer.Get<int>("GetMiss");
+				}
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{
-				await asyncLayer.GetAsync<int>("GetMiss");
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					await asyncLayer.GetAsync<int>("GetMiss");
+				}
 			}
 			await DisposeOf(cacheLayer);
 		}
@@ -69,30 +79,22 @@ namespace CacheTower.Benchmarks.Providers
 			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
 			{
 				syncCacheLayer.Set("GetHit", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-				syncCacheLayer.Get<int>("GetHit");
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					syncCacheLayer.Get<int>("GetHit");
+				}
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{
 				await asyncLayer.SetAsync("GetHit", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-				await asyncLayer.GetAsync<int>("GetHit");
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					await asyncLayer.GetAsync<int>("GetHit");
+				}
 			}
 			await DisposeOf(cacheLayer);
 		}
 
-		[Benchmark]
-		public async Task SetNew()
-		{
-			var cacheLayer = CacheLayerProvider.Invoke();
-			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
-			{
-				syncCacheLayer.Set("SetNew", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-			}
-			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
-			{
-				await asyncLayer.SetAsync("SetNew", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-			}
-			await DisposeOf(cacheLayer);
-		}
 		[Benchmark]
 		public async Task SetExisting()
 		{
@@ -100,33 +102,88 @@ namespace CacheTower.Benchmarks.Providers
 			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
 			{
 				syncCacheLayer.Set("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-				syncCacheLayer.Set("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					syncCacheLayer.Set("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				}
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{
 				await asyncLayer.SetAsync("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-				await asyncLayer.SetAsync("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					await asyncLayer.SetAsync("SetExisting", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				}
 			}
 			await DisposeOf(cacheLayer);
 		}
 
 		[Benchmark]
-		public async Task SetMany()
+		public async Task EvictMiss()
 		{
 			var cacheLayer = CacheLayerProvider.Invoke();
 			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
 			{
-				for (var i = 0; i < 100; i++)
+				for (var i = 0; i < WorkIterations; i++)
 				{
-					syncCacheLayer.Set("SetMany_" + i, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+					syncCacheLayer.Evict("EvictMiss");
 				}
 			}
 			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
 			{
-				for (var i = 0; i < 100; i++)
+				for (var i = 0; i < WorkIterations; i++)
 				{
-					await asyncLayer.SetAsync("SetMany_" + i, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+					await asyncLayer.EvictAsync("EvictMiss");
 				}
+			}
+			await DisposeOf(cacheLayer);
+		}
+
+		[Benchmark]
+		public async Task EvictHit()
+		{
+			var cacheLayer = CacheLayerProvider.Invoke();
+			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
+			{
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					syncCacheLayer.Set("EvictHit", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+					syncCacheLayer.Evict("EvictHit");
+				}
+			}
+			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
+			{
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					await asyncLayer.SetAsync("EvictHit", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+					await asyncLayer.EvictAsync("EvictHit");
+				}
+			}
+			await DisposeOf(cacheLayer);
+		}
+
+
+
+		[Benchmark]
+		public async Task Cleanup()
+		{
+			var expiredDate = DateTime.UtcNow.AddDays(-1);
+			var cacheLayer = CacheLayerProvider.Invoke();
+			if (cacheLayer is ISyncCacheLayer syncCacheLayer)
+			{
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					syncCacheLayer.Set($"Cleanup_{i}", new CacheEntry<int>(1, expiredDate));
+				}
+				syncCacheLayer.Cleanup();
+			}
+			else if (cacheLayer is IAsyncCacheLayer asyncLayer)
+			{
+				for (var i = 0; i < WorkIterations; i++)
+				{
+					await asyncLayer.SetAsync($"Cleanup_{i}", new CacheEntry<int>(1, expiredDate));
+				}
+				await asyncLayer.CleanupAsync();
 			}
 			await DisposeOf(cacheLayer);
 		}

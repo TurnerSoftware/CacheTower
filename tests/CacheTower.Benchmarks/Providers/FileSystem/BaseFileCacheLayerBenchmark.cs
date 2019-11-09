@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using BenchmarkDotNet.Attributes;
 
 namespace CacheTower.Benchmarks.Providers.FileSystem
@@ -10,19 +11,35 @@ namespace CacheTower.Benchmarks.Providers.FileSystem
 	{
 		protected string DirectoryPath { get; set; }
 
-		[IterationSetup]
-		public void PreIterationDirectoryCleanup()
+		private void CleanupFileSystem()
 		{
 			if (Directory.Exists(DirectoryPath))
 			{
-				Directory.Delete(DirectoryPath, true);
+				try
+				{
+					Directory.Delete(DirectoryPath, true);
+				}
+				catch
+				{
+					Thread.Sleep(100);
+					if (Directory.Exists(DirectoryPath))
+					{
+						Directory.Delete(DirectoryPath, true);
+					}
+				}
 			}
+		}
+
+		[IterationSetup]
+		public void PreIterationDirectoryCleanup()
+		{
+			CleanupFileSystem();
 		}
 
 		[IterationCleanup]
 		public void PostIterationDirectoryCleanup()
 		{
-			Directory.Delete(DirectoryPath, true);
+			CleanupFileSystem();
 		}
 	}
 }
