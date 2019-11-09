@@ -12,7 +12,7 @@ namespace CacheTower
 		public CacheSettings(TimeSpan timeToLive)
 		{
 			TimeToLive = timeToLive;
-			StaleAfter = timeToLive;
+			StaleAfter = TimeSpan.Zero;
 		}
 
 		public CacheSettings(TimeSpan timeToLive, TimeSpan staleAfter)

@@ -230,7 +230,7 @@ namespace CacheTower.Tests
 			var cacheEntryFromStack = await cacheStack.GetOrSetAsync<int>("GetOrSet_BackPropagatesToEarlierCacheLayers", (old, context) =>
 			{
 				return Task.FromResult(14);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromMinutes(1)));
 
 			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack);
 
