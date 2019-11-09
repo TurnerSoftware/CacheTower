@@ -9,11 +9,13 @@ namespace CacheTower.Providers.Redis
 {
 	public class RedisCacheLayer : IAsyncCacheLayer
 	{
+		private IConnectionMultiplexer Connection { get; }
 		private IDatabaseAsync Database { get; }
 		private bool? IsCacheAvailable { get; set; }
 
 		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1)
 		{
+			Connection = connection;
 			Database = connection.GetDatabase(databaseIndex);
 		}
 
@@ -43,22 +45,9 @@ namespace CacheTower.Providers.Redis
 			return default;
 		}
 
-		public async Task<bool> IsAvailableAsync(string cacheKey)
+		public Task<bool> IsAvailableAsync(string cacheKey)
 		{
-			if (IsCacheAvailable == null)
-			{
-				try
-				{
-					await Database.PingAsync();
-					IsCacheAvailable = true;
-				}
-				catch
-				{
-					IsCacheAvailable = false;
-				}
-			}
-
-			return IsCacheAvailable.Value;
+			return Task.FromResult(Connection.IsConnected);
 		}
 
 		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
