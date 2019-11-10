@@ -35,7 +35,7 @@ namespace CacheTower.AlternativesBenchmark
 					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old, context) =>
 					{
 						return Task.FromResult("Hello World");
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				});
 			}
 		}

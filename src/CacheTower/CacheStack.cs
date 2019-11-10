@@ -238,13 +238,13 @@ namespace CacheTower
 					else
 					{
 						//Refresh the value in the background
-						_ = Task.Run(() => RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: false));
+						_ = RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: false);
 					}
 				}
 				else if (cacheEntryPoint.LayerIndex > 0)
 				{
 					//If a lower-level cache is missing the latest data, attempt to set it in the background
-					_ = Task.Run(() => BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry));
+					_ = BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry);
 				}
 
 				return cacheEntry.Value;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
@@ -22,22 +23,38 @@ namespace CacheTower.AlternativesBenchmark
 
 		private const string DirectoryPath = "CacheAlternatives/FileCache";
 
-		[IterationSetup]
-		public void IterationSetup()
+		private void CleanupFileSystem()
 		{
-			if (Directory.Exists(DirectoryPath))
+			var attempts = 0;
+			while (attempts < 5)
 			{
-				Directory.Delete(DirectoryPath, true);
+				try
+				{
+					if (Directory.Exists(DirectoryPath))
+					{
+						Directory.Delete(DirectoryPath, true);
+					}
+
+					break;
+				}
+				catch
+				{
+					Thread.Sleep(200);
+				}
+				attempts++;
 			}
 		}
 
-		[GlobalCleanup]
-		public void GlobalCleanup()
+		[IterationSetup]
+		public void PreIterationDirectoryCleanup()
 		{
-			if (Directory.Exists(DirectoryPath))
-			{
-				Directory.Delete(DirectoryPath, true);
-			}
+			CleanupFileSystem();
+		}
+
+		[IterationCleanup]
+		public void PostIterationDirectoryCleanup()
+		{
+			CleanupFileSystem();
 		}
 
 		[Benchmark(Baseline = true)]
@@ -52,7 +69,7 @@ namespace CacheTower.AlternativesBenchmark
 					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old, context) =>
 					{
 						return Task.FromResult("Hello World");
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				});
 			}
 		}
@@ -69,7 +86,7 @@ namespace CacheTower.AlternativesBenchmark
 					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old, context) =>
 					{
 						return Task.FromResult("Hello World");
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				});
 			}
 		}

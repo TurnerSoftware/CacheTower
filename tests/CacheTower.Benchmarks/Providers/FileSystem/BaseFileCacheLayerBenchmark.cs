@@ -13,20 +13,23 @@ namespace CacheTower.Benchmarks.Providers.FileSystem
 
 		private void CleanupFileSystem()
 		{
-			if (Directory.Exists(DirectoryPath))
+			var attempts = 0;
+			while (attempts < 5)
 			{
 				try
 				{
-					Directory.Delete(DirectoryPath, true);
-				}
-				catch
-				{
-					Thread.Sleep(100);
 					if (Directory.Exists(DirectoryPath))
 					{
 						Directory.Delete(DirectoryPath, true);
 					}
+
+					break;
 				}
+				catch
+				{
+					Thread.Sleep(200);
+				}
+				attempts++;
 			}
 		}
 
