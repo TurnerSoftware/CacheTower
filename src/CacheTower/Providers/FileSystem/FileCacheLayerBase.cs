@@ -124,7 +124,7 @@ namespace CacheTower.Providers.FileSystem
 			var fileExtensionLength = FileExtension?.Length ?? 0;
 
 			//Based on byte conversion implementation in BitConverter (but with the dash stripped)
-			//https://github.com/nchikanov/coreclr/blob/fbc11ea6afdaa2fe7b9377446d6bb0bd447d5cb5/src/mscorlib/shared/System/BitConverter.cs#L409-L440
+			//https://github.com/dotnet/coreclr/blob/fbc11ea6afdaa2fe7b9377446d6bb0bd447d5cb5/src/mscorlib/shared/System/BitConverter.cs#L409-L440
 			static char GetHexValue(int i)
 			{
 				if (i < 10)
