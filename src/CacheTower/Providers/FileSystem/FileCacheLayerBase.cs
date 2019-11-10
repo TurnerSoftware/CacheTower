@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
 
@@ -19,7 +20,7 @@ namespace CacheTower.Providers.FileSystem
 		private string ManifestPath { get; }
 		private string FileExtension { get; }
 
-		private AsyncLock ManifestLock { get; } = new AsyncLock();
+		private SemaphoreSlim ManifestLock { get; } = new SemaphoreSlim(1, 1);
 		private bool? IsManifestAvailable { get; set; }
 
 		private HashAlgorithm FileNameHashAlgorithm { get; } = MD5.Create();
@@ -66,7 +67,8 @@ namespace CacheTower.Providers.FileSystem
 			//Avoid unnecessary lock contention way after manifest is loaded by checking before lock
 			if (CacheManifest == null)
 			{
-				using (await ManifestLock.LockAsync())
+				await ManifestLock.WaitAsync();
+				try
 				{
 					//Check that once we have lock (due to a race condition on the outer check) that we still need to load the manifest
 					if (CacheManifest == null)
@@ -87,12 +89,17 @@ namespace CacheTower.Providers.FileSystem
 						}
 					}
 				}
+				finally
+				{
+					ManifestLock.Release();
+				}
 			}
 		}
 
 		public async Task SaveManifestAsync()
 		{
-			using (await ManifestLock.LockAsync())
+			await ManifestLock.WaitAsync();
+			try
 			{
 				if (!Directory.Exists(DirectoryPath))
 				{
@@ -100,6 +107,10 @@ namespace CacheTower.Providers.FileSystem
 				}
 
 				await SerializeFileAsync(ManifestPath, CacheManifest);
+			}
+			finally
+			{
+				ManifestLock.Release();
 			}
 		}
 
@@ -277,6 +288,7 @@ namespace CacheTower.Providers.FileSystem
 			if (disposing)
 			{
 				SaveManifestAsync().Wait();
+				ManifestLock.Dispose();
 				FileNameHashAlgorithm.Dispose();
 			}
 
@@ -291,6 +303,7 @@ namespace CacheTower.Providers.FileSystem
 			}
 
 			await SaveManifestAsync();
+			ManifestLock.Dispose();
 			FileNameHashAlgorithm.Dispose();
 
 			Disposed = true;
