@@ -340,7 +340,7 @@ namespace CacheTower
 						var value = await getter(oldValue, Context);
 						var refreshedEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
 
-						await Extensions.OnValueRefreshAsync(cacheKey, settings.TimeToLive);
+						_ = Extensions.OnValueRefreshAsync(cacheKey, settings.TimeToLive);
 
 						return refreshedEntry;
 					}, settings);

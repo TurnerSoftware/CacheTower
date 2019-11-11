@@ -22,32 +22,32 @@ UnrollFactor=1
 
 |                    Method | WorkIterations |       Mean [ns] |    Error [ns] |   StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
 |-------------------------- |--------------- |----------------:|--------------:|--------------:|-------:|------:|------:|--------------:|
-|          SetupAndTeardown |              1 |        353.9 ns |       4.00 ns |       3.74 ns | 0.2933 |     - |     - |         920 B |
-|                       Set |              1 |        699.8 ns |      10.20 ns |       9.54 ns | 0.3185 |     - |     - |        1000 B |
-|             Set_TwoLayers |              1 |        961.0 ns |      16.05 ns |      15.01 ns | 0.5636 |     - |     - |        1768 B |
-|                     Evict |              1 |        834.0 ns |       4.56 ns |       4.05 ns | 0.3185 |     - |     - |        1000 B |
-|           Evict_TwoLayers |              1 |      1,166.4 ns |      19.51 ns |      17.29 ns | 0.5627 |     - |     - |        1768 B |
-|                   Cleanup |              1 |      1,199.4 ns |      21.41 ns |      20.03 ns | 0.3586 |     - |     - |        1128 B |
-|         Cleanup_TwoLayers |              1 |      1,614.6 ns |      20.99 ns |      19.63 ns | 0.6027 |     - |     - |        1896 B |
-|                   GetMiss |              1 |        436.9 ns |       6.22 ns |       5.82 ns | 0.2933 |     - |     - |         920 B |
-|                    GetHit |              1 |        805.5 ns |       5.12 ns |       4.79 ns | 0.3185 |     - |     - |        1000 B |
-|       GetOrSet_NeverStale |              1 |      1,495.5 ns |      29.54 ns |      27.63 ns | 0.4215 |     - |     - |        1328 B |
-|      GetOrSet_AlwaysStale |              1 |      1,457.2 ns |      27.44 ns |      24.33 ns | 0.4215 |     - |     - |        1328 B |
-|  GetOrSet_TwoSimultaneous |              1 | 31,346,744.6 ns | 598,244.55 ns | 559,598.32 ns |      - |     - |     - |        2480 B |
-| GetOrSet_FourSimultaneous |              1 | 31,258,072.1 ns | 153,846.76 ns | 128,469.01 ns |      - |     - |     - |        2624 B |
-|          SetupAndTeardown |            100 |        349.6 ns |       7.02 ns |       7.51 ns | 0.2933 |     - |     - |         920 B |
-|                       Set |            100 |     32,588.7 ns |     604.38 ns |     565.34 ns | 1.2817 |     - |     - |        4168 B |
-|             Set_TwoLayers |            100 |     40,097.6 ns |     665.69 ns |     622.69 ns | 1.5259 |     - |     - |        4936 B |
-|                     Evict |            100 |     44,254.2 ns |     344.25 ns |     305.17 ns | 2.8076 |     - |     - |        8920 B |
-|           Evict_TwoLayers |            100 |     59,628.7 ns |     885.55 ns |     828.34 ns | 4.5776 |     - |     - |       14440 B |
-|                   Cleanup |            100 |     57,804.4 ns |     869.59 ns |     813.41 ns | 8.7280 |     - |     - |       27392 B |
-|         Cleanup_TwoLayers |            100 |    100,884.8 ns |   1,327.72 ns |   1,241.95 ns | 5.6152 |     - |     - |       17737 B |
-|                   GetMiss |            100 |      7,537.8 ns |     113.13 ns |     105.82 ns | 0.2899 |     - |     - |         920 B |
-|                    GetHit |            100 |      8,244.5 ns |      78.43 ns |      73.37 ns | 0.3052 |     - |     - |        1000 B |
-|       GetOrSet_NeverStale |            100 |     28,245.1 ns |     296.85 ns |     277.68 ns | 0.3967 |     - |     - |        1328 B |
-|      GetOrSet_AlwaysStale |            100 |    110,610.1 ns |   2,073.24 ns |   2,036.20 ns | 7.4463 |     - |     - |       23505 B |
-|  GetOrSet_TwoSimultaneous |            100 | 31,468,026.8 ns | 613,462.46 ns | 629,980.78 ns |      - |     - |     - |       17136 B |
-| GetOrSet_FourSimultaneous |            100 | 32,123,283.3 ns | 469,766.65 ns | 439,420.02 ns |      - |     - |     - |       28360 B |
+|          SetupAndTeardown |              1 |        351.6 ns |       2.94 ns |       2.75 ns | 0.2933 |     - |     - |         920 B |
+|                       Set |              1 |        726.5 ns |       6.33 ns |       5.61 ns | 0.3185 |     - |     - |        1000 B |
+|             Set_TwoLayers |              1 |      1,003.6 ns |       7.58 ns |       7.09 ns | 0.5627 |     - |     - |        1768 B |
+|                     Evict |              1 |        846.2 ns |       6.08 ns |       5.69 ns | 0.3185 |     - |     - |        1000 B |
+|           Evict_TwoLayers |              1 |      1,185.8 ns |      10.07 ns |       8.93 ns | 0.5627 |     - |     - |        1768 B |
+|                   Cleanup |              1 |      1,231.8 ns |      15.87 ns |      14.07 ns | 0.3586 |     - |     - |        1128 B |
+|         Cleanup_TwoLayers |              1 |      1,675.8 ns |      16.53 ns |      15.46 ns | 0.6027 |     - |     - |        1896 B |
+|                   GetMiss |              1 |        450.3 ns |       3.77 ns |       3.53 ns | 0.2933 |     - |     - |         920 B |
+|                    GetHit |              1 |        847.1 ns |       4.87 ns |       4.31 ns | 0.3185 |     - |     - |        1000 B |
+|       GetOrSet_NeverStale |              1 |      1,535.0 ns |      13.80 ns |      12.91 ns | 0.4215 |     - |     - |        1328 B |
+|      GetOrSet_AlwaysStale |              1 |      1,520.2 ns |      15.95 ns |      14.92 ns | 0.4215 |     - |     - |        1328 B |
+|  GetOrSet_TwoSimultaneous |              1 | 31,351,330.8 ns | 355,621.61 ns | 332,648.68 ns |      - |     - |     - |        2456 B |
+| GetOrSet_FourSimultaneous |              1 | 31,516,912.2 ns | 623,711.44 ns | 765,973.66 ns |      - |     - |     - |        2600 B |
+|          SetupAndTeardown |            100 |        358.5 ns |       1.92 ns |       1.60 ns | 0.2933 |     - |     - |         920 B |
+|                       Set |            100 |     34,208.9 ns |     378.14 ns |     353.71 ns | 1.2817 |     - |     - |        4168 B |
+|             Set_TwoLayers |            100 |     41,915.1 ns |     369.91 ns |     346.01 ns | 1.5259 |     - |     - |        4936 B |
+|                     Evict |            100 |     45,399.9 ns |     415.31 ns |     388.48 ns | 2.8076 |     - |     - |        8920 B |
+|           Evict_TwoLayers |            100 |     59,663.5 ns |     560.85 ns |     524.62 ns | 4.5776 |     - |     - |       14440 B |
+|                   Cleanup |            100 |     59,699.5 ns |     523.00 ns |     436.73 ns | 8.9111 |     - |     - |       28112 B |
+|         Cleanup_TwoLayers |            100 |    102,450.6 ns |   1,011.53 ns |     946.18 ns | 5.6152 |     - |     - |       17736 B |
+|                   GetMiss |            100 |      7,621.4 ns |      84.16 ns |      78.72 ns | 0.2899 |     - |     - |         920 B |
+|                    GetHit |            100 |      8,347.6 ns |      55.77 ns |      49.44 ns | 0.3052 |     - |     - |        1000 B |
+|       GetOrSet_NeverStale |            100 |     28,985.6 ns |     142.29 ns |     133.10 ns | 0.3967 |     - |     - |        1328 B |
+|      GetOrSet_AlwaysStale |            100 |    112,913.5 ns |     965.52 ns |     855.91 ns | 7.4463 |     - |     - |       23504 B |
+|  GetOrSet_TwoSimultaneous |            100 | 31,343,604.2 ns | 439,636.97 ns | 389,726.73 ns |      - |     - |     - |       17080 B |
+| GetOrSet_FourSimultaneous |            100 | 31,423,357.8 ns | 588,223.86 ns | 577,714.48 ns |      - |     - |     - |       28312 B |
 
 ## Cache Layer Comparison Benchmark
 
