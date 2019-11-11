@@ -7,7 +7,7 @@ services:
 install:
   - choco install opencover.portable codecov
   - ps: .\build\dotnet-install.ps1 -Version 3.0.100
-  - msiexec /i C:\projects\cachetower\build\memurai-techpreview-v1.0.8-x64.msi /qn
+  - msiexec /i C:\projects\cachetower\build\memurai-techpreview-v1.0.10-x64.msi /qn
   
 build_script:
   - ps: .\build.appveyor.ps1
