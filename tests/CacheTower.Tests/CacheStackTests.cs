@@ -264,24 +264,29 @@ namespace CacheTower.Tests
 			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-2));
 			await cacheStack.SetAsync("GetOrSet_ConcurrentStaleCacheHits", cacheEntry);
 
-			ValueTask<int> DoRequest()
+			var request1LockSource = new TaskCompletionSource<bool>();
+			var request2StartLockSource = new TaskCompletionSource<bool>();
+
+			//Request 1 gets the lock on the refresh and ends up being tied up due to the TaskCompletionSource
+			var request1Task = cacheStack.GetOrSetAsync<int>("GetOrSet_ConcurrentStaleCacheHits", async (oldValue, context) =>
 			{
-				return cacheStack.GetOrSetAsync<int>("GetOrSet_ConcurrentStaleCacheHits", async (oldValue, context) =>
-				{
-					await Task.Delay(2000);
-					return 99;
-				}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
-			}
+				request2StartLockSource.SetResult(true);
+				await request1LockSource.Task;
+				return 99;
+			}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
 
-			//Request 1 gets the lock on the refresh and ends up being tied up due to the Task.Delay(1000) above
-			var request1Task = DoRequest();
-
-			await Task.Delay(1000);
+			await request2StartLockSource.Task;
 
 			//Request 2 sees there is a lock already and because we still at least have old data, rather than wait
 			//it is given the old cache data even though we are past the point where even stale data should be removed
-			var request2Result = await DoRequest();
-			//We wait for Request 1 to complete so we can confirm it gets the newer data
+			var request2Result = await cacheStack.GetOrSetAsync<int>("GetOrSet_ConcurrentStaleCacheHits", (oldValue, context) =>
+			{
+				return Task.FromResult(99);
+			}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
+
+			//Unlock Request 1 to to continue
+			request1LockSource.SetResult(true);
+			//Wait for Request 1 to complete so we get the new data
 			var request1Result = await request1Task;
 
 			Assert.AreEqual(99, request1Result);
@@ -296,6 +301,42 @@ namespace CacheTower.Tests
 			await DisposeOf(cacheStack);
 
 			await cacheStack.GetOrSetAsync<int>("KeyDoesntMatter", (old, context) => Task.FromResult(1), new CacheSettings(TimeSpan.FromDays(1)));
+		}
+		[TestMethod]
+		public async Task GetOrSet_WaitingForRefresh()
+		{
+			var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, null);
+			var gettingLockSource = new TaskCompletionSource<bool>();
+			var continueRefreshSource = new TaskCompletionSource<bool>();
+ 
+			var cacheGetThatLocksOnRefresh = cacheStack.GetOrSetAsync<int>("GetOrSet_WaitingForRefresh", async (old, context) =>
+			{
+				gettingLockSource.SetResult(true);
+				await continueRefreshSource.Task;
+				return 42;
+			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+
+			await gettingLockSource.Task;
+
+			var awaitingTasks = new List<Task<int>>();
+
+			for (var i = 0; i < 3; i++)
+			{
+				var task = cacheStack.GetOrSetAsync<int>("GetOrSet_WaitingForRefresh", (old, context) =>
+				{
+					return Task.FromResult(99);
+				}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+				awaitingTasks.Add(task.AsTask());
+			}
+
+			continueRefreshSource.SetResult(true);
+
+			Assert.AreEqual(42, await cacheGetThatLocksOnRefresh);
+			Assert.AreEqual(42, await awaitingTasks[0]);
+			Assert.AreEqual(42, await awaitingTasks[1]);
+			Assert.AreEqual(42, await awaitingTasks[2]);
+
+			await DisposeOf(cacheStack);
 		}
 	}
 }
