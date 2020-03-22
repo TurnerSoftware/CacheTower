@@ -29,7 +29,7 @@ namespace CacheTower.Benchmarks.Extensions
 		}
 		protected Func<ICacheExtension> CacheExtensionProvider { get; set; }
 
-		protected static ICacheStack CacheStack { get; } = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+		protected static ICacheStack CacheStack { get; } = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 
 		protected static async Task DisposeOf(ICacheExtension cacheExtension)
 		{
