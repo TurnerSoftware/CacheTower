@@ -11,7 +11,7 @@ namespace CacheTower.Tests
 	[TestClass]
 	public class CacheStackContextTests : TestBase
 	{
-		[TestMethod, ExpectedException(typeof(ArgumentException))]
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ConstructorThrowsOnNullContextFactory()
 		{
 			new CacheStack<object>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
