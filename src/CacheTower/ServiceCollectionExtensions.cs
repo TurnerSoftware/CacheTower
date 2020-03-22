@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using CacheTower;
 using CacheTower.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -15,21 +12,39 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// <param name="services"></param>
 		/// <param name="layers"></param>
 		/// <param name="cleanupFrequency"></param>
-		public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheLayer[] layers, TimeSpan cleanupFrequency) where TContext : ICacheContext
+		public static void AddCacheStack(this IServiceCollection services, ICacheLayer[] layers, TimeSpan cleanupFrequency)
 		{
-			services.AddCacheStack<TContext>(layers, new[] { new AutoCleanupExtension(cleanupFrequency) });
+			services.AddSingleton<ICacheStack>(new CacheStack(layers, new[] { new AutoCleanupExtension(cleanupFrequency) }));
 		}
 
 		/// <summary>
-		/// Adds a <see cref="CacheStack"/> singleton to the specified <see cref="IServiceCollection"/> with the specified <typeparamref name="TContext"/>, layers and extensions.
+		/// Adds a <see cref="CacheStack"/> singleton to the specified <see cref="IServiceCollection"/> with the specified layers and extensions.
+		/// An implementation factory of <typeparamref name="TContext"/> is built using the <see cref="IServiceProvider"/> established when instantiating the <see cref="CacheStack{TContext}"/>.
 		/// </summary>
 		/// <param name="services"></param>
 		/// <param name="context"></param>
 		/// <param name="layers"></param>
 		/// <param name="extensions"></param>
-		public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheLayer[] layers, ICacheExtension[] extensions) where TContext : ICacheContext
+		public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheLayer[] layers, ICacheExtension[] extensions)
 		{
-			services.AddSingleton<ICacheStack<TContext>, CacheStack<TContext>>(sp => new CacheStack<TContext>(sp.GetRequiredService<TContext>(), layers, extensions));
+			services.AddSingleton<ICacheStack<TContext>, CacheStack<TContext>>(sp => {
+				TContext contextFactory() => sp.GetRequiredService<TContext>();
+				return new CacheStack<TContext>(contextFactory, layers, extensions);
+			});
+		}
+
+		/// <summary>
+		/// Adds a <see cref="CacheStack"/> singleton to the specified <see cref="IServiceCollection"/> with the specified <paramref name="contextFactory"/>, layers and extensions.
+		/// </summary>
+		/// <param name="services"></param>
+		/// <param name="context"></param>
+		/// <param name="layers"></param>
+		/// <param name="extensions"></param>
+		public static void AddCacheStack<TContext>(this IServiceCollection services, Func<TContext> contextFactory, ICacheLayer[] layers, ICacheExtension[] extensions)
+		{
+			services.AddSingleton<ICacheStack<TContext>, CacheStack<TContext>>(sp => {
+				return new CacheStack<TContext>(contextFactory, layers, extensions);
+			});
 		}
 	}
 }
