@@ -11,7 +11,7 @@ namespace CacheTower.Benchmarks
 	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser]
 	public class CacheStackRefreshWaitingBenchmark
 	{
-		private readonly static CacheStack<ICacheContext> CacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+		private readonly static CacheStack CacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 
 		[Params(10, 10000)]
 		public int WorkIterations { get; set; }
@@ -22,7 +22,7 @@ namespace CacheTower.Benchmarks
 			var gettingLockSource = new TaskCompletionSource<bool>();
 			var continueRefreshSource = new TaskCompletionSource<bool>();
 
-			_ = CacheStack.GetOrSetAsync<int>("RefreshWaiting", async (old, context) =>
+			_ = CacheStack.GetOrSetAsync<int>("RefreshWaiting", async (old) =>
 			{
 				gettingLockSource.SetResult(true);
 				await continueRefreshSource.Task;
@@ -35,7 +35,7 @@ namespace CacheTower.Benchmarks
 
 			for (var i = 0; i < WorkIterations; i++)
 			{
-				var task = CacheStack.GetOrSetAsync<int>("RefreshWaiting", (old, context) =>
+				var task = CacheStack.GetOrSetAsync<int>("RefreshWaiting", (old) =>
 				{
 					return Task.FromResult(99);
 				}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
