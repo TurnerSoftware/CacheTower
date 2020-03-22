@@ -74,7 +74,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task MemoryCacheLayer_CacheStack()
 		{
-			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, null))
+			await using (var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null))
 			{
 				//Get 100 misses
 				for (var i = 0; i < 100; i++)
@@ -158,12 +158,12 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task MemoryCacheLayer_CacheStack_GetOrSet()
 		{
-			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new MemoryCacheLayer() }, null))
+			await using (var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null))
 			{
 				//Set first 200 (simple type)
 				for (var i = 0; i < 200; i++)
 				{
-					await cacheStack.GetOrSetAsync<int>("Comparision_" + i, (old, context) =>
+					await cacheStack.GetOrSetAsync<int>("Comparision_" + i, (old) =>
 					{
 						return Task.FromResult(1);
 					}, new CacheSettings(TimeSpan.FromDays(1)));
@@ -172,7 +172,7 @@ namespace CacheTower.Benchmarks
 				//Set last 200 (complex type)
 				for (var i = 200; i < 400; i++)
 				{
-					await cacheStack.GetOrSetAsync<RealCostComplexType>("Comparision_" + i, (old, context) =>
+					await cacheStack.GetOrSetAsync<RealCostComplexType>("Comparision_" + i, (old) =>
 					{
 						return Task.FromResult(new RealCostComplexType
 						{

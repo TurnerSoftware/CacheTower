@@ -6,13 +6,14 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CacheTower
 {
 #if NETSTANDARD2_0
-	public class CacheStack<TContext> : ICacheStack<TContext>, IDisposable where TContext : ICacheContext
+	public class CacheStack : ICacheStack, IDisposable
 #elif NETSTANDARD2_1
-	public class CacheStack<TContext> : ICacheStack<TContext>, IAsyncDisposable where TContext : ICacheContext
+	public class CacheStack : ICacheStack, IAsyncDisposable
 #endif
 	{
 		private bool Disposed;
@@ -23,12 +24,8 @@ namespace CacheTower
 
 		private ExtensionContainer Extensions { get; }
 
-		private TContext Context { get; }
-
-		public CacheStack(TContext context, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
+		public CacheStack(ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
-			Context = context;
-
 			if (cacheLayers == null || cacheLayers.Length == 0)
 			{
 				throw new ArgumentException("There must be at least one cache layer", nameof(cacheLayers));
@@ -43,7 +40,7 @@ namespace CacheTower
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void ThrowIfDisposed()
+		protected void ThrowIfDisposed()
 		{
 			if (Disposed)
 			{
@@ -204,7 +201,7 @@ namespace CacheTower
 			return default;
 		}
 
-		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, TContext, Task<T>> getter, CacheSettings settings)
+		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings)
 		{
 			ThrowIfDisposed();
 
@@ -305,7 +302,7 @@ namespace CacheTower
 			}
 		}
 
-		private async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, TContext, Task<T>> getter, CacheSettings settings, bool waitForRefresh)
+		private async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings, bool waitForRefresh)
 		{
 			ThrowIfDisposed();
 
@@ -337,7 +334,7 @@ namespace CacheTower
 							oldValue = previousEntry.Value;
 						}
 
-						var value = await getter(oldValue, Context);
+						var value = await getter(oldValue);
 						var refreshedEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
 
 						_ = Extensions.OnValueRefreshAsync(cacheKey, settings.TimeToLive);

@@ -60,13 +60,13 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark(Baseline = true)]
 		public async Task CacheTower_JsonFileCacheLayer()
 		{
-			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new JsonFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(new[] { new JsonFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>()))
 			{
 				await LoopActionAsync(Iterations, async () =>
 				{
 					await cacheStack.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
 					await cacheStack.GetAsync<int>("TestKey");
-					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old, context) =>
+					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
 					{
 						return Task.FromResult("Hello World");
 					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
@@ -77,13 +77,13 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark]
 		public async Task CacheTower_ProtobufFileCacheLayer()
 		{
-			await using (var cacheStack = new CacheStack<ICacheContext>(null, new[] { new ProtobufFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(new[] { new ProtobufFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>()))
 			{
 				await LoopActionAsync(Iterations, async () =>
 				{
 					await cacheStack.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
 					await cacheStack.GetAsync<int>("TestKey");
-					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old, context) =>
+					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
 					{
 						return Task.FromResult("Hello World");
 					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
