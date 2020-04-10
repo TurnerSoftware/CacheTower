@@ -7,7 +7,10 @@ An efficient multi-layered caching system for .NET
 
 ## Overview
 
-Cache Tower isn't a single type of cache, it allows control of various layers of caching on top of each other.
+Computers have multiple layers of caching from L1/L2/L3 CPU caches to RAM or even disk caches, each with a different purpose and performance profile.
+Why don't we do this with our code?
+
+Cache Tower isn't a single type of cache, its a multi-layer solution to caching with each layer on top of another.
 
 Officially supported cache layers include:
 - MemoryCacheLayer (built-in)
