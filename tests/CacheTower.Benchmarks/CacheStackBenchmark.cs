@@ -7,9 +7,9 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
 using CacheTower.Providers.Memory;
+using Perfolizer.Horology;
 
 namespace CacheTower.Benchmarks
 {
@@ -23,10 +23,10 @@ namespace CacheTower.Benchmarks
 		{
 			public ConfigSettings()
 			{
-				Add(Job.Default.With(CoreRuntime.Core30).WithMaxIterationCount(50));
-				Add(MemoryDiagnoser.Default);
+				AddJob(Job.Default.WithRuntime(CoreRuntime.Core30).WithMaxIterationCount(50));
+				AddDiagnoser(MemoryDiagnoser.Default);
 
-				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(true, SizeUnit.B, TimeUnit.Nanosecond);
+				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(CultureInfo, true, SizeUnit.B, TimeUnit.Nanosecond);
 			}
 		}
 
