@@ -59,7 +59,7 @@ namespace CacheTower.Extensions.Redis
 			RegisteredStack = cacheStack;
 		}
 
-		public async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
+		public async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheEntryLifetime settings)
 		{
 			var hasLock = await Database.StringSetAsync(cacheKey, RedisValue.EmptyString, expiry: LockTimeout, when: When.NotExists);
 
@@ -82,7 +82,7 @@ namespace CacheTower.Extensions.Redis
 			}
 		}
 
-		private async Task<CacheEntry<T>> WaitForResult<T>(string cacheKey, CacheSettings settings)
+		private async Task<CacheEntry<T>> WaitForResult<T>(string cacheKey, CacheEntryLifetime settings)
 		{
 			var delayedResultSource = new TaskCompletionSource<bool>();
 			var waitList = new[] { delayedResultSource };

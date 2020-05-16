@@ -17,6 +17,6 @@ namespace CacheTower
 
 	public interface IRefreshWrapperExtension : ICacheExtension
 	{
-		ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings);
+		ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheEntryLifetime settings);
 	}
 }

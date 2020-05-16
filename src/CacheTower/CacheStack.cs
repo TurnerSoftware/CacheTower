@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
+using CacheTower.Providers.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CacheTower
@@ -89,17 +90,17 @@ namespace CacheTower
 			}
 		}
 
-		public async ValueTask<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive)
+		public async ValueTask<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive, CacheSettings settings = default)
 		{
 			ThrowIfDisposed();
 
 			var expiry = DateTime.UtcNow + timeToLive;
 			var cacheEntry = new CacheEntry<T>(value, expiry);
-			await SetAsync(cacheKey, cacheEntry);
+			await SetAsync(cacheKey, cacheEntry, settings);
 			return cacheEntry;
 		}
 
-		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry, CacheSettings settings = default)
 		{
 			ThrowIfDisposed();
 
@@ -113,16 +114,23 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheEntry));
 			}
 
-			for (int i = 0, l = CacheLayers.Length; i < l; i++)
+			if (settings.ForwardPropagateAfterXCacheHits > 0 && CacheLayers[0] is MemoryCacheLayer memoryCacheLayer)
 			{
-				var layer = CacheLayers[i];
-				if (layer is ISyncCacheLayer syncLayerOne)
+				memoryCacheLayer.Set(cacheKey, cacheEntry);
+			}
+			else
+			{
+				for (int i = 0, l = CacheLayers.Length; i < l; i++)
 				{
-					syncLayerOne.Set(cacheKey, cacheEntry);
-				}
-				else
-				{
-					await (layer as IAsyncCacheLayer).SetAsync(cacheKey, cacheEntry);
+					var layer = CacheLayers[i];
+					if (layer is ISyncCacheLayer syncLayerOne)
+					{
+						syncLayerOne.Set(cacheKey, cacheEntry);
+					}
+					else
+					{
+						await (layer as IAsyncCacheLayer).SetAsync(cacheKey, cacheEntry);
+					}
 				}
 			}
 		}
@@ -201,7 +209,7 @@ namespace CacheTower
 			return default;
 		}
 
-		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings)
+		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheEntryLifetime entryLifetime, CacheSettings settings = default)
 		{
 			ThrowIfDisposed();
 
@@ -220,13 +228,14 @@ namespace CacheTower
 			{
 				var cacheEntry = cacheEntryPoint.CacheEntry;
 				var currentTime = DateTime.UtcNow;
-				if (cacheEntry.GetStaleDate(settings) < currentTime)
+				var isStale = cacheEntry.GetStaleDate(entryLifetime) < currentTime;
+				if (isStale)
 				{
 					if (cacheEntry.Expiry < currentTime)
 					{
 						//Refresh the value in the current thread though short circuit if we're unable to establish a lock
 						//If the lock isn't established, it will instead use the stale cache entry (even if past the allowed stale period)
-						var refreshedCacheEntry = await RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: false);
+						var refreshedCacheEntry = await RefreshValueAsync(cacheKey, getter, entryLifetime, settings, waitForRefresh: false);
 						if (refreshedCacheEntry != default)
 						{
 							cacheEntry = refreshedCacheEntry;
@@ -235,13 +244,21 @@ namespace CacheTower
 					else
 					{
 						//Refresh the value in the background
-						_ = RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: false);
+						_ = RefreshValueAsync(cacheKey, getter, entryLifetime, settings, waitForRefresh: false);
 					}
 				}
-				else if (cacheEntryPoint.LayerIndex > 0)
+				else
 				{
-					//If a lower-level cache is missing the latest data, attempt to set it in the background
-					_ = BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry);
+					if (cacheEntryPoint.LayerIndex > 0)
+					{
+						//If a lower-level cache (eg. a memory cache) is missing the latest data, attempt to set it in the background
+						_ = BackPropagateCacheEntryAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry);
+					}
+					else if (!cacheEntry._HasBeenForwardPropagated && settings.ForwardPropagateAfterXCacheHits > 0 && cacheEntry.CacheHitCount >= settings.ForwardPropagateAfterXCacheHits)
+					{
+						//If enabled, we push the local cache entry to higher-level caches, doing so in the background
+						_ = ForwardPropagateCacheEntryAsync(cacheEntryPoint.LayerIndex + 1, cacheKey, cacheEntry);
+					}
 				}
 
 				return cacheEntry.Value;
@@ -249,48 +266,34 @@ namespace CacheTower
 			else
 			{
 				//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
-				return (await RefreshValueAsync(cacheKey, getter, settings, waitForRefresh: true)).Value;
+				return (await RefreshValueAsync(cacheKey, getter, entryLifetime, settings, waitForRefresh: true)).Value;
 			}
 		}
 
-		private async ValueTask BackPopulateCacheAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
+		private async ValueTask BackPropagateCacheEntryAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			ThrowIfDisposed();
 
-			var hasLock = false;
-			lock (WaitingKeyRefresh)
-			{
-#if NETSTANDARD2_0
-				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
-				if (hasLock)
-				{
-					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<object>>();
-				}
-#elif NETSTANDARD2_1
-				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<object>>());
-#endif
-			}
-
-			if (hasLock)
+			if (TryGetKeyRefreshLock(cacheKey))
 			{
 				try
 				{
 					for (; --fromIndexExclusive >= 0;)
 					{
-						var previousLayer = CacheLayers[fromIndexExclusive];
-						if (previousLayer is ISyncCacheLayer prevSyncLayer)
+						var cacheLayer = CacheLayers[fromIndexExclusive];
+						if (cacheLayer is ISyncCacheLayer syncLayer)
 						{
-							if (prevSyncLayer.IsAvailable(cacheKey))
+							if (syncLayer.IsAvailable(cacheKey))
 							{
-								prevSyncLayer.Set(cacheKey, cacheEntry);
+								syncLayer.Set(cacheKey, cacheEntry);
 							}
 						}
 						else
 						{
-							var prevAsyncLayer = previousLayer as IAsyncCacheLayer;
-							if (await prevAsyncLayer.IsAvailableAsync(cacheKey))
+							var asyncCacheLayer = cacheLayer as IAsyncCacheLayer;
+							if (await asyncCacheLayer.IsAvailableAsync(cacheKey))
 							{
-								await prevAsyncLayer.SetAsync(cacheKey, cacheEntry);
+								await asyncCacheLayer.SetAsync(cacheKey, cacheEntry);
 							}
 						}
 					}
@@ -302,25 +305,48 @@ namespace CacheTower
 			}
 		}
 
-		private async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings, bool waitForRefresh)
+		private async ValueTask ForwardPropagateCacheEntryAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			ThrowIfDisposed();
 
-			var hasLock = false;
-			lock (WaitingKeyRefresh)
+			if (TryGetKeyRefreshLock(cacheKey) && cacheEntry._HasBeenForwardPropagated)
 			{
-#if NETSTANDARD2_0
-				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
-				if (hasLock)
+				try
 				{
-					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<object>>();
-				}
-#elif NETSTANDARD2_1
-				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<object>>());
-#endif
-			}
+					for (; ++fromIndexExclusive < CacheLayers.Length;)
+					{
+						var cacheLayer = CacheLayers[fromIndexExclusive];
+						if (cacheLayer is ISyncCacheLayer syncLayer)
+						{
+							if (syncLayer.IsAvailable(cacheKey))
+							{
+								syncLayer.Set(cacheKey, cacheEntry);
+							}
+						}
+						else
+						{
+							var asyncCacheLayer = cacheLayer as IAsyncCacheLayer;
+							if (await asyncCacheLayer.IsAvailableAsync(cacheKey))
+							{
+								await asyncCacheLayer.SetAsync(cacheKey, cacheEntry);
+							}
+						}
+					}
 
-			if (hasLock)
+					cacheEntry._HasBeenForwardPropagated = true;
+				}
+				finally
+				{
+					UnlockWaitingTasks(cacheKey, cacheEntry);
+				}
+			}
+		}
+
+		private async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheEntryLifetime entryLifetime, CacheSettings settings, bool waitForRefresh)
+		{
+			ThrowIfDisposed();
+
+			if (TryGetKeyRefreshLock(cacheKey))
 			{
 				try
 				{
@@ -335,14 +361,14 @@ namespace CacheTower
 						}
 
 						var value = await getter(oldValue);
-						var refreshedEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
+						var refreshedEntry = await SetAsync(cacheKey, value, entryLifetime.TimeToLive, settings);
 
-						_ = Extensions.OnValueRefreshAsync(cacheKey, settings.TimeToLive);
+						_ = Extensions.OnValueRefreshAsync(cacheKey, entryLifetime.TimeToLive);
 
 						UnlockWaitingTasks(cacheKey, refreshedEntry);
 
 						return refreshedEntry;
-					}, settings);
+					}, entryLifetime);
 				}
 				catch
 				{
@@ -369,7 +395,7 @@ namespace CacheTower
 
 				//Last minute check to confirm whether waiting is required
 				var currentEntry = await GetAsync<T>(cacheKey);
-				if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTime.UtcNow)
+				if (currentEntry != null && currentEntry.GetStaleDate(entryLifetime) > DateTime.UtcNow)
 				{
 					UnlockWaitingTasks(cacheKey, currentEntry);
 					return currentEntry;
@@ -398,6 +424,25 @@ namespace CacheTower
 					}
 				}
 			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private bool TryGetKeyRefreshLock(string cacheKey)
+		{
+			var hasLock = false;
+			lock (WaitingKeyRefresh)
+			{
+#if NETSTANDARD2_0
+				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
+				if (hasLock)
+				{
+					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<object>>();
+				}
+#elif NETSTANDARD2_1
+				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<object>>());
+#endif
+			}
+			return hasLock;
 		}
 
 #if NETSTANDARD2_0

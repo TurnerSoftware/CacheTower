@@ -16,7 +16,7 @@ namespace CacheTower.Benchmarks.Extensions
 			await extension.RefreshValueAsync<int>("RefreshValue", () =>
 			{
 				return new ValueTask<CacheEntry<int>>(new CacheEntry<int>(5, TimeSpan.FromDays(1)));
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 			await DisposeOf(extension);
 		}
 	}

@@ -21,13 +21,13 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_ThrowsOnNullKey()
 		{
 			var cacheStack = new CacheStack<object>(() => null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			await cacheStack.GetOrSetAsync<int>(null, (old, context) => Task.FromResult(5), new CacheSettings(TimeSpan.FromDays(1)));
+			await cacheStack.GetOrSetAsync<int>(null, (old, context) => Task.FromResult(5), new CacheEntryLifetime(TimeSpan.FromDays(1)));
 		}
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullGetter()
 		{
 			var cacheStack = new CacheStack<object>(() => null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheSettings(TimeSpan.FromDays(1)));
+			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheMiss_ContextHasValue()
@@ -37,7 +37,7 @@ namespace CacheTower.Tests
 			{
 				Assert.AreEqual(123, context);
 				return Task.FromResult(5);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 
 			Assert.AreEqual(5, result);
 
@@ -53,14 +53,14 @@ namespace CacheTower.Tests
 			{
 				Assert.AreEqual(0, context);
 				return Task.FromResult(5);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 			Assert.AreEqual(5, result1);
 
 			var result2 = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheMiss_ContextFactoryCalledEachTime_2", (oldValue, context) =>
 			{
 				Assert.AreEqual(1, context);
 				return Task.FromResult(5);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 			Assert.AreEqual(5, result2);
 
 			await DisposeOf(cacheStack);

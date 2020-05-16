@@ -166,7 +166,7 @@ namespace CacheTower.Benchmarks
 					await cacheStack.GetOrSetAsync<int>("Comparision_" + i, (old) =>
 					{
 						return Task.FromResult(1);
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 				}
 
 				//Set last 200 (complex type)
@@ -181,7 +181,7 @@ namespace CacheTower.Benchmarks
 							ExampleDate = new DateTime(2000, 1, 1),
 							DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
 						});
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 				}
 			}
 		}
