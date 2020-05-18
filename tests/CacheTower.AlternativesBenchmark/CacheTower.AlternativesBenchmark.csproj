@@ -14,7 +14,7 @@
     <PackageReference Include="CacheManager.StackExchange.Redis" Version="1.2.0" />
     <PackageReference Include="EasyCaching.Disk" Version="0.8.8" />
     <PackageReference Include="EasyCaching.InMemory" Version="0.8.8" />
-    <PackageReference Include="EasyCaching.Redis" Version="0.8.8" />
+    <PackageReference Include="EasyCaching.Redis" Version="0.8.9" />
     <PackageReference Include="EasyCaching.Serialization.Protobuf" Version="0.8.8" />
     <PackageReference Include="LazyCache" Version="2.0.4" />
     <PackageReference Include="MonkeyCache.FileStore" Version="1.3.0" />
