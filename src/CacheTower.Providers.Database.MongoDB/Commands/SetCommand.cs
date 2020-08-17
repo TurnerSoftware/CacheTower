@@ -1,17 +1,16 @@
 ﻿using CacheTower.Providers.Database.MongoDB.Entities;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using MongoDB.Driver;
 using MongoFramework.Infrastructure.Commands;
-using MongoFramework.Infrastructure.Mapping;
-using MongoDB.Bson.Serialization;
 
 namespace CacheTower.Providers.Database.MongoDB.Commands
 {
 	public class SetCommand : IWriteCommand<DbCachedEntry>
 	{
 		public DbCachedEntry Entry { get; }
+
+		public Type EntityType => typeof(DbCachedEntry);
 
 		public SetCommand(DbCachedEntry dbCachedEntry)
 		{

@@ -8,6 +8,7 @@ using CacheTower.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MongoDB.Driver;
 using MongoFramework;
+using MongoFramework.Infrastructure.Indexing;
 using Moq;
 
 namespace CacheTower.Tests.Providers.Database.MongoDB
@@ -36,10 +37,13 @@ namespace CacheTower.Tests.Providers.Database.MongoDB
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
+			EntityIndexWriter.ClearCache();
+
 			await AssertCacheAvailabilityAsync(new MongoDbCacheLayer(MongoDbHelper.GetConnection()), true);
 
 			var connectionMock = new Mock<IMongoDbConnection>();
 			connectionMock.Setup(c => c.GetDatabase()).Throws<Exception>();
+			EntityIndexWriter.ClearCache();
 
 			await AssertCacheAvailabilityAsync(new MongoDbCacheLayer(connectionMock.Object), false);
 		}

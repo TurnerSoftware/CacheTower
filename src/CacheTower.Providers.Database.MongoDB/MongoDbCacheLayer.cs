@@ -1,61 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using CacheTower.Providers.Database.MongoDB.Commands;
 using CacheTower.Providers.Database.MongoDB.Entities;
 using MongoFramework;
 using MongoFramework.Infrastructure;
-using MongoFramework.Infrastructure.Commands;
 using MongoFramework.Infrastructure.Indexing;
-using MongoFramework.Infrastructure.Mapping;
+using MongoFramework.Infrastructure.Linq;
 
 namespace CacheTower.Providers.Database.MongoDB
 {
 	public class MongoDbCacheLayer : IAsyncCacheLayer
 	{
 		private bool? IsDatabaseAvailable { get; set; }
-		private IEntityReader<DbCachedEntry> EntityReader { get; }
-		private ICommandWriter<DbCachedEntry> CommandWriter { get; }
-		private IEntityIndexWriter<DbCachedEntry> IndexWriter { get; }
+
+		private IMongoDbConnection Connection { get; }
 
 		private bool HasSetIndexes = false;
 
 		public MongoDbCacheLayer(IMongoDbConnection connection)
 		{
-			EntityReader = new EntityReader<DbCachedEntry>(connection);
-			CommandWriter = new CommandWriter<DbCachedEntry>(connection);
-			IndexWriter = new EntityIndexWriter<DbCachedEntry>(connection);
+			Connection = connection;
 		}
 
-		private Task TryConfigureIndexes()
+		private async Task TryConfigureIndexes()
 		{
 			if (!HasSetIndexes)
 			{
 				HasSetIndexes = true;
-				return IndexWriter.ApplyIndexingAsync();
+				await EntityIndexWriter.ApplyIndexingAsync<DbCachedEntry>(Connection);
 			}
-
-			return Task.CompletedTask;
 		}
 
 		public async Task CleanupAsync()
 		{
 			await TryConfigureIndexes();
-			await CommandWriter.WriteAsync(new[] { new CleanupCommand() });
+			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new CleanupCommand() }, default);
 		}
 
 		public async Task EvictAsync(string cacheKey)
 		{
 			await TryConfigureIndexes();
-			await CommandWriter.WriteAsync(new[] { new EvictCommand(cacheKey) });
+			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new EvictCommand(cacheKey) }, default);
 		}
 
 		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			await TryConfigureIndexes();
 
-			var dbEntry = EntityReader.AsQueryable().Where(e => e.CacheKey == cacheKey).FirstOrDefault();
+			var provider = new MongoFrameworkQueryProvider<DbCachedEntry>(Connection);
+			var queryable = new MongoFrameworkQueryable<DbCachedEntry>(provider);
+
+			var dbEntry = queryable.Where(e => e.CacheKey == cacheKey).FirstOrDefault();
 			var cacheEntry = default(CacheEntry<T>);
 
 			if (dbEntry != default)
@@ -76,7 +71,7 @@ namespace CacheTower.Providers.Database.MongoDB
 				Value = cacheEntry.Value
 			});
 
-			await CommandWriter.WriteAsync(new[] { command });
+			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { command }, default);
 		}
 
 		public async Task<bool> IsAvailableAsync(string cacheKey)
