@@ -155,13 +155,13 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_ThrowsOnNullKey()
 		{
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			await cacheStack.GetOrSetAsync<int>(null, (old) => Task.FromResult(5), new CacheSettings(TimeSpan.FromDays(1)));
+			await cacheStack.GetOrSetAsync<int>(null, (old) => Task.FromResult(5), new CacheEntryLifetime(TimeSpan.FromDays(1)));
 		}
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullGetter()
 		{
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
-			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheSettings(TimeSpan.FromDays(1)));
+			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheMiss()
@@ -170,7 +170,7 @@ namespace CacheTower.Tests
    			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheMiss", (oldValue) =>
 			{
 				return Task.FromResult(5);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 
 			Assert.AreEqual(5, result);
 
@@ -185,7 +185,7 @@ namespace CacheTower.Tests
 			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheHit", (oldValue) =>
 			{
 				return Task.FromResult(27);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 
 			Assert.AreEqual(17, result);
 
@@ -204,7 +204,7 @@ namespace CacheTower.Tests
 			{
 				waitingOnBackgroundTask.TrySetResult(27);
 				return Task.FromResult(27);
-			}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(2), TimeSpan.Zero));
 			Assert.AreEqual(17, result);
 
 			await waitingOnBackgroundTask.Task;
@@ -230,7 +230,7 @@ namespace CacheTower.Tests
 			var cacheEntryFromStack = await cacheStack.GetOrSetAsync<int>("GetOrSet_BackPropagatesToEarlierCacheLayers", (old) =>
 			{
 				return Task.FromResult(14);
-			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromMinutes(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.FromMinutes(1)));
 
 			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack);
 
@@ -252,7 +252,7 @@ namespace CacheTower.Tests
 			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheHitButAllowedStalePoint", (oldValue) =>
 			{
 				return Task.FromResult(27);
-			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.Zero));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.Zero));
 			Assert.AreEqual(27, result);
 			
 			await DisposeOf(cacheStack);
@@ -273,7 +273,7 @@ namespace CacheTower.Tests
 				request2StartLockSource.SetResult(true);
 				await request1LockSource.Task;
 				return 99;
-			}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(2), TimeSpan.Zero));
 
 			await request2StartLockSource.Task;
 
@@ -282,7 +282,7 @@ namespace CacheTower.Tests
 			var request2Result = await cacheStack.GetOrSetAsync<int>("GetOrSet_ConcurrentStaleCacheHits", (oldValue) =>
 			{
 				return Task.FromResult(99);
-			}, new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(2), TimeSpan.Zero));
 
 			//Unlock Request 1 to to continue
 			request1LockSource.SetResult(true);
@@ -300,7 +300,7 @@ namespace CacheTower.Tests
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
 			await DisposeOf(cacheStack);
 
-			await cacheStack.GetOrSetAsync<int>("KeyDoesntMatter", (old) => Task.FromResult(1), new CacheSettings(TimeSpan.FromDays(1)));
+			await cacheStack.GetOrSetAsync<int>("KeyDoesntMatter", (old) => Task.FromResult(1), new CacheEntryLifetime(TimeSpan.FromDays(1)));
 		}
 		[TestMethod]
 		public async Task GetOrSet_WaitingForRefresh()
@@ -314,7 +314,7 @@ namespace CacheTower.Tests
 				gettingLockSource.SetResult(true);
 				await continueRefreshSource.Task;
 				return 42;
-			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 
 			await gettingLockSource.Task;
 
@@ -325,7 +325,7 @@ namespace CacheTower.Tests
 				var task = cacheStack.GetOrSetAsync<int>("GetOrSet_WaitingForRefresh", (old) =>
 				{
 					return Task.FromResult(99);
-				}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+				}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				awaitingTasks.Add(task.AsTask());
 			}
 

@@ -53,7 +53,7 @@ namespace CacheTower.Tests.Extensions.Redis
 				lockWaiterTask.SetResult(true);
 				await refreshWaiterTask.Task;
 				return new CacheEntry<int>(5, TimeSpan.FromDays(1));
-			}, new CacheSettings(TimeSpan.FromHours(3)));
+			}, new CacheEntryLifetime(TimeSpan.FromHours(3)));
 
 			await lockWaiterTask.Task;
 
@@ -98,7 +98,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 
 			await extension.RefreshValueAsync("TestKey", 
-				() => new ValueTask<CacheEntry<int>>(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
+				() => new ValueTask<CacheEntry<int>>(cacheEntry), new CacheEntryLifetime(TimeSpan.FromDays(1)));
 
 			var waitTask = taskCompletionSource.Task;
 			await Task.WhenAny(waitTask, Task.Delay(TimeSpan.FromSeconds(10)));
@@ -131,7 +131,7 @@ namespace CacheTower.Tests.Extensions.Redis
 						await Task.Delay(3000);
 						return cacheEntry;
 					},
-					new CacheSettings(TimeSpan.FromDays(1))
+					new CacheEntryLifetime(TimeSpan.FromDays(1))
 				).AsTask();
 
 			await secondaryTaskKickoff.Task;
@@ -141,7 +141,7 @@ namespace CacheTower.Tests.Extensions.Redis
 					{
 						return new ValueTask<CacheEntry<int>>(cacheEntry);
 					},
-					new CacheSettings(TimeSpan.FromDays(1))
+					new CacheEntryLifetime(TimeSpan.FromDays(1))
 				).AsTask();
 
 			var succeedingTask = await Task.WhenAny(primaryTask, secondaryTask);
@@ -177,7 +177,7 @@ namespace CacheTower.Tests.Extensions.Redis
 						await Task.Delay(3000);
 						return cacheEntry;
 					},
-					new CacheSettings(TimeSpan.FromDays(1))
+					new CacheEntryLifetime(TimeSpan.FromDays(1))
 				).AsTask();
 
 			await secondaryTaskKickoff.Task;
@@ -187,7 +187,7 @@ namespace CacheTower.Tests.Extensions.Redis
 					{
 						return new ValueTask<CacheEntry<int>>(cacheEntry);
 					},
-					new CacheSettings(TimeSpan.FromDays(1))
+					new CacheEntryLifetime(TimeSpan.FromDays(1))
 				).AsTask();
 
 			var succeedingTask = await Task.WhenAny(primaryTask, secondaryTask);

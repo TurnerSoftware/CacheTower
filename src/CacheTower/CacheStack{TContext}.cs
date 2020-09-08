@@ -16,7 +16,7 @@ namespace CacheTower
 			ContextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 		}
 
-		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, TContext, Task<T>> getter, CacheSettings settings)
+		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, TContext, Task<T>> getter, CacheEntryLifetime settings, CacheSettings storageSettings = default)
 		{
 			ThrowIfDisposed();
 
@@ -34,7 +34,7 @@ namespace CacheTower
 			{
 				var context = ContextFactory();
 				return await getter(old, context);
-			}, settings);
+			}, settings, storageSettings);
 		}
 	}
 }

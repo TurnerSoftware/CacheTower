@@ -1,24 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CacheTower.Providers.Memory;
 
 namespace CacheTower
 {
 	public struct CacheSettings
 	{
-		public TimeSpan TimeToLive { get; }
-		public TimeSpan StaleAfter { get; }
-
-		public CacheSettings(TimeSpan timeToLive)
-		{
-			TimeToLive = timeToLive;
-			StaleAfter = TimeSpan.Zero;
-		}
-
-		public CacheSettings(TimeSpan timeToLive, TimeSpan staleAfter)
-		{
-			TimeToLive = timeToLive;
-			StaleAfter = staleAfter;
-		}
+		/// <summary>
+		/// The number of cache hits before forward propagating from a <see cref="MemoryCacheLayer" /> to higher level caches.
+		/// </summary>
+		public uint ForwardPropagateAfterXCacheHits { get; set; }
 	}
 }

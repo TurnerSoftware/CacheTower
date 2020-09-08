@@ -35,6 +35,7 @@ namespace CacheTower.Providers.Memory
 		{
 			if (Cache.TryGetValue(cacheKey, out var cacheEntry))
 			{
+				Interlocked.Increment(ref cacheEntry._CacheHitCount);
 				return cacheEntry as CacheEntry<T>;
 			}
 

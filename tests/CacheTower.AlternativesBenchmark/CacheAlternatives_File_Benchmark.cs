@@ -69,7 +69,7 @@ namespace CacheTower.AlternativesBenchmark
 					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
 					{
 						return Task.FromResult("Hello World");
-					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				});
 			}
 		}
@@ -86,7 +86,7 @@ namespace CacheTower.AlternativesBenchmark
 					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
 					{
 						return Task.FromResult("Hello World");
-					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				});
 			}
 		}

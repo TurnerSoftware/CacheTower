@@ -27,7 +27,7 @@ namespace CacheTower.Benchmarks
 				gettingLockSource.SetResult(true);
 				await continueRefreshSource.Task;
 				return 42;
-			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+			}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 
 			await gettingLockSource.Task;
 
@@ -38,7 +38,7 @@ namespace CacheTower.Benchmarks
 				var task = CacheStack.GetOrSetAsync<int>("RefreshWaiting", (old) =>
 				{
 					return Task.FromResult(99);
-				}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+				}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				awaitingTasks.Add(task.AsTask());
 			}
 

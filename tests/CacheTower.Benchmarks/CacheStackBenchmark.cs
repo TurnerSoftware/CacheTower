@@ -144,7 +144,7 @@ namespace CacheTower.Benchmarks
 					await cacheStack.GetOrSetAsync<int>("GetOrSet", (old) =>
 					{
 						return Task.FromResult(12);
-					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				}
 			}
 		}
@@ -158,7 +158,7 @@ namespace CacheTower.Benchmarks
 					await cacheStack.GetOrSetAsync<int>("GetOrSet", (old) =>
 					{
 						return Task.FromResult(12);
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 				}
 			}
 		}
@@ -175,12 +175,12 @@ namespace CacheTower.Benchmarks
 					{
 						await Task.Delay(30);
 						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 					var task2 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
 					{
 						await Task.Delay(30);
 						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 
 					await task1;
 					await task2;
@@ -200,22 +200,22 @@ namespace CacheTower.Benchmarks
 					{
 						await Task.Delay(30);
 						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 					var task2 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
 					{
 						await Task.Delay(30);
 						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 					var task3 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
 					{
 						await Task.Delay(30);
 						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 					var task4 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
 					{
 						await Task.Delay(30);
 						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
+					}, new CacheEntryLifetime(TimeSpan.FromDays(1)));
 
 					await task1;
 					await task2;

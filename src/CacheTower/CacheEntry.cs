@@ -7,7 +7,17 @@ namespace CacheTower
 {
 	public abstract class CacheEntry
 	{
+		/// <summary>
+		/// The absolute expiry date of the <see cref="CacheEntry"/>.
+		/// </summary>
 		public DateTime Expiry { get; }
+		/// <summary>
+		/// The number of in-memory cache hits the <see cref="CacheEntry"/> has had.
+		/// </summary>
+		public int CacheHitCount => _CacheHitCount;
+
+		internal int _CacheHitCount;
+		internal bool _HasBeenForwardPropagated;
 
 		protected CacheEntry(DateTime expiry)
 		{
@@ -18,9 +28,9 @@ namespace CacheTower
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public DateTime GetStaleDate(CacheSettings cacheSettings)
+		public DateTime GetStaleDate(CacheEntryLifetime entryLifetime)
 		{
-			return Expiry - cacheSettings.TimeToLive + cacheSettings.StaleAfter;
+			return Expiry - entryLifetime.TimeToLive + entryLifetime.StaleAfter;
 		}
 	}
 
