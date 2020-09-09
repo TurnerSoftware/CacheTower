@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoFramework" Version="0.21.1" />
+    <PackageReference Include="MongoFramework" Version="0.21.2" />
   </ItemGroup>
 
   <ItemGroup>
