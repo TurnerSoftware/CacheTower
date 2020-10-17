@@ -46,6 +46,10 @@ namespace CacheTower.Tests.Extensions.Redis
 				{
 					completionSource.SetResult(true);
 				}
+				else
+				{
+					Assert.Fail($"Unexpected response from server: {value}");
+				}
 			});
 
 			var cacheStackMock = new Mock<ICacheStack>();
