@@ -21,7 +21,7 @@ namespace CacheTower.Tests.Utils
 					AllowAdmin = true
 				};
 				config.EndPoints.Add(Endpoint);
-				Connection = ConnectionMultiplexer.Connect(config);
+				Connection = ConnectionMultiplexer.Connect(config, Console.Out);
 			}
 			return Connection;
 		}
