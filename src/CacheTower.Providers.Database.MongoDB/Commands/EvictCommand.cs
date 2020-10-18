@@ -17,7 +17,7 @@ namespace CacheTower.Providers.Database.MongoDB.Commands
 			CacheKey = cacheKey;
 		}
 
-		public IEnumerable<WriteModel<DbCachedEntry>> GetModel()
+		public IEnumerable<WriteModel<DbCachedEntry>> GetModel(WriteModelOptions options)
 		{
 			var filter = Builders<DbCachedEntry>.Filter.Eq(e => e.CacheKey, CacheKey);
 			yield return new DeleteManyModel<DbCachedEntry>(filter);

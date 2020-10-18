@@ -10,7 +10,7 @@ namespace CacheTower.Providers.Database.MongoDB.Commands
 	{
 		public Type EntityType => typeof(DbCachedEntry);
 
-		public IEnumerable<WriteModel<DbCachedEntry>> GetModel()
+		public IEnumerable<WriteModel<DbCachedEntry>> GetModel(WriteModelOptions options)
 		{
 			var filter = Builders<DbCachedEntry>.Filter.Lt(e => e.Expiry, DateTime.UtcNow);
 			yield return new DeleteManyModel<DbCachedEntry>(filter);
