@@ -67,10 +67,10 @@ jobs:
       run: choco install Memurai-Developer --version 2.0.0
     - name: Configure Ubuntu
       if: matrix.os == 'ubuntu-latest'
-      run: sudo systemctl start mongod ; sudo apt-get install redis-server
+      run: sudo systemctl start mongod && sudo apt-get install redis-server
     - name: Configure MacOS
       if: matrix.os == 'macOS-latest'
-      run: brew services start mongodb-community ; brew install redis
+      run: brew services start mongodb-community && brew install redis && brew services start redis
 
     - name: Checkout
       uses: actions/checkout@v2
