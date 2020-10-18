@@ -68,12 +68,12 @@ namespace CacheTower.Extensions.Redis
 				try
 				{
 					var cacheEntry = await valueProvider();
-					await Subscriber.PublishAsync(RedisChannel, cacheKey, CommandFlags.FireAndForget);
+					await Subscriber.PublishAsync(RedisChannel, cacheKey);
 					return cacheEntry;
 				}
 				finally
 				{
-					await Database.KeyDeleteAsync(cacheKey, CommandFlags.FireAndForget);
+					await Database.KeyDeleteAsync(cacheKey);
 				}
 			}
 			else
