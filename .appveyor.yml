@@ -5,9 +5,7 @@ skip_branch_with_pr: true
 services:
   - mongodb
 install:
-  - choco install opencover.portable codecov
   - choco install Memurai-Developer --version 2.0.0
-  - ps: .\build\dotnet-install.ps1 -Version 3.0.100
   
 build_script:
   - ps: .\build.appveyor.ps1
