@@ -64,7 +64,7 @@ jobs:
     steps:
     - name: Configure Windows
       if: matrix.os == 'windows-latest'
-      run: choco install Memurai-Developer --version 2.0.0
+      run: choco install Memurai-Developer
     - name: Configure Ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: sudo systemctl start mongod && sudo apt-get install redis-server
@@ -76,7 +76,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install dependencies
-      run: dotnet nuget --version && dotnet nuget list source && dotnet restore -v normal
+      run: dotnet restore
     - name: Build
       run: dotnet build -c Release --no-restore /p:Version=${{env.BUILD_VERSION}}
     - name: Test with Coverage
