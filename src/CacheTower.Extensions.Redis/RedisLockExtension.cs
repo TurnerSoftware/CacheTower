@@ -21,7 +21,7 @@ namespace CacheTower.Extensions.Redis
 
 		private ICacheStack RegisteredStack { get; set; }
 		
-		private ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
+		internal ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
 
 		public RedisLockExtension(ConnectionMultiplexer connection, int databaseIndex = -1, string channelPrefix = "CacheTower", TimeSpan? lockTimeout = default)
 		{
@@ -68,12 +68,12 @@ namespace CacheTower.Extensions.Redis
 				try
 				{
 					var cacheEntry = await valueProvider();
-					await Subscriber.PublishAsync(RedisChannel, cacheKey);
+					await Subscriber.PublishAsync(RedisChannel, cacheKey, CommandFlags.FireAndForget);
 					return cacheEntry;
 				}
 				finally
 				{
-					await Database.KeyDeleteAsync(cacheKey);
+					await Database.KeyDeleteAsync(cacheKey, CommandFlags.FireAndForget);
 				}
 			}
 			else
@@ -82,7 +82,7 @@ namespace CacheTower.Extensions.Redis
 			}
 		}
 
-		private async Task<CacheEntry<T>> WaitForResult<T>(string cacheKey, CacheSettings settings)
+		private async ValueTask<CacheEntry<T>> WaitForResult<T>(string cacheKey, CacheSettings settings)
 		{
 			var delayedResultSource = new TaskCompletionSource<bool>();
 			var waitList = new[] { delayedResultSource };

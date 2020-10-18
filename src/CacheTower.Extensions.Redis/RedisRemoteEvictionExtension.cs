@@ -41,7 +41,7 @@ namespace CacheTower.Extensions.Redis
 				FlaggedRefreshes.Add(cacheKey);
 			}
 
-			await Subscriber.PublishAsync(RedisChannel, cacheKey);
+			await Subscriber.PublishAsync(RedisChannel, cacheKey, CommandFlags.FireAndForget);
 		}
 
 		public void Register(ICacheStack cacheStack)
