@@ -15,7 +15,7 @@ namespace CacheTower.Tests
 		}
 
 
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
 		protected static async Task DisposeOf(IAsyncDisposable disposable)
 		{
 			await disposable.DisposeAsync();

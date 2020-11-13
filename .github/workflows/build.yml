@@ -1,0 +1,114 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request: 
+
+env:
+  # Disable the .NET logo in the console output.
+  DOTNET_NOLOGO: true
+  # Disable the .NET first time experience to skip caching NuGet packages and speed up the build.
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  # Disable sending .NET CLI telemetry to Microsoft.
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+  BUILD_ARTIFACT_PATH: ${{github.workspace}}/build-artifacts
+
+jobs:
+
+  version:
+    name: Identify build version
+    runs-on: ubuntu-latest
+    outputs:
+      BuildVersion: ${{steps.configureBuildVersion.outputs.BUILD_VERSION}}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Fetch all Git tags
+      run: git fetch --prune --unshallow --tags
+    - name: Configure build version
+      id: configureBuildVersion
+      run: |
+        $githubRunId = $env:GITHUB_RUN_ID;
+        $prNumber = $env:PR_NUMBER;
+        $gitSourceVersion = git describe --tags --abbrev=7 --always 2>$1;
+        $gitSourceVersionSplit = [regex]::split($gitSourceVersion, "-(?=\d+-\w+)");
+        $version = $(if($gitSourceVersionSplit.length -eq 1){"0.0.0"}else{$gitSourceVersionSplit[0]});
+        $commitsSinceTag = '0';
+        $commitHash = $gitSourceVersionSplit[0];
+        if ($gitSourceVersionSplit.length -eq 2) {
+            $gitMetadata = $gitSourceVersionSplit[1].split("-");
+            $commitsSinceTag = $gitMetadata[0];
+            $commitHash = $gitMetadata[1];
+        }
+        $buildMetadata = "$($commitHash)-$($githubRunId)";
+        $customSuffix = $(if($prNumber -ne ''){"-PR$($prNumber)"}elseif($commitsSinceTag -ne '0'){"-dev"});
+        echo "::set-output name=BUILD_VERSION::$($version)$($customSuffix)+$($buildMetadata)";
+      shell: pwsh
+      env:
+        PR_NUMBER: ${{github.event.number}}
+    - name: Print build version
+      run: echo ${{steps.configureBuildVersion.outputs.BUILD_VERSION}}
+
+
+  build:
+    name: Build ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+    needs: version
+    env:
+      BUILD_VERSION: ${{needs.version.outputs.BuildVersion}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    steps:
+    - name: Configure Windows
+      if: matrix.os == 'windows-latest'
+      run: choco install Memurai-Developer
+    - name: Configure Ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo systemctl start mongod && sudo apt-get install redis-server
+    - name: Configure MacOS
+      if: matrix.os == 'macOS-latest'
+      run: brew services start mongodb-community && brew install redis && brew services start redis
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: dotnet --version && dotnet nuget list source && dotnet restore --verbosity normal
+    - name: Build
+      run: dotnet build -c Release --no-restore /p:Version=${{env.BUILD_VERSION}}
+    - name: Test with Coverage
+      run: dotnet test --logger trx --results-directory ${{env.BUILD_ARTIFACT_PATH}}/coverage --collect "XPlat Code Coverage" --settings CodeCoverage.runsettings
+    - name: Pack
+      run: dotnet pack -c Release --no-build /p:Version=${{env.BUILD_VERSION}} /p:PackageOutputPath=${{env.BUILD_ARTIFACT_PATH}}
+    - name: Publish artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{matrix.os}}
+        path: ${{env.BUILD_ARTIFACT_PATH}}
+
+  coverage:
+    name: Process code coverage
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Download coverage reports
+      uses: actions/download-artifact@v2
+    - name: Install ReportGenerator tool
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+    - name: Prepare coverage reports
+      run: reportgenerator -reports:*/coverage/*/coverage.cobertura.xml -targetdir:./ -reporttypes:Cobertura
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v1.0.13
+      with:
+        file: Cobertura.xml
+        fail_ci_if_error: false
+    - name: Save combined coverage report as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: Cobertura.xml

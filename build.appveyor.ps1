@@ -29,7 +29,7 @@ if ($isTagBuild) {
 	.\build.ps1 -CreatePackages $True -BuildVersion $buildVersion
 }
 else {
-	.\build.ps1 -CheckCoverage $True -BuildVersion $buildVersion
+	.\build.ps1 -BuildVersion $buildVersion
 }
 
 Exit $LastExitCode
