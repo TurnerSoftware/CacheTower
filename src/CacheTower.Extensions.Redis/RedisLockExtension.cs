@@ -21,7 +21,7 @@ namespace CacheTower.Extensions.Redis
 
 		private ICacheStack RegisteredStack { get; set; }
 		
-		private ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
+		internal ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
 
 		public RedisLockExtension(ConnectionMultiplexer connection, int databaseIndex = -1, string channelPrefix = "CacheTower", TimeSpan? lockTimeout = default)
 		{

@@ -37,7 +37,14 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task EvictsFromChannelButNotFromRegisteredCacheStack()
 		{
+			RedisHelper.FlushDatabase();
+
 			var connection = RedisHelper.GetConnection();
+
+			var cacheStackMock = new Mock<ICacheStack>();
+			var extension = new RedisRemoteEvictionExtension(connection);
+			extension.Register(cacheStackMock.Object);
+
 			var completionSource = new TaskCompletionSource<bool>();
 
 			await connection.GetSubscriber().SubscribeAsync("CacheTower.RemoteEviction", (channel, value) =>
@@ -46,17 +53,17 @@ namespace CacheTower.Tests.Extensions.Redis
 				{
 					completionSource.SetResult(true);
 				}
+				else
+				{
+					completionSource.SetResult(false);
+				}
 			});
-
-			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisRemoteEvictionExtension(connection);
-			extension.Register(cacheStackMock.Object);
 
 			await extension.OnValueRefreshAsync("TestKey", TimeSpan.FromDays(1));
 
-			var completedTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(30)));
-
-			Assert.AreEqual(completionSource.Task, completedTask, "Subscribers were not notified about the refreshed value within the time limit");
+			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
+			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the refreshed value");
 			cacheStackMock.Verify(c => c.EvictAsync("TestKey"), Times.Never, "The CacheStack that published the refresh was told to evict its own cache");
 		}
 	}
