@@ -52,20 +52,21 @@ namespace CacheTower.Extensions.Redis
 			}
 			IsRegistered = true;
 
-			Subscriber.Subscribe(RedisChannel, async (channel, value) =>
-			{
-				string cacheKey = value;
-				var shouldEvictLocally = false;
-				lock (FlaggedRefreshesLockObj)
+			Subscriber.Subscribe(RedisChannel, CommandFlags.FireAndForget)
+				.OnMessage(async (channelMessage) =>
 				{
-					shouldEvictLocally = FlaggedRefreshes.Remove(cacheKey) == false;
-				}
+					string cacheKey = channelMessage.Message;
+					var shouldEvictLocally = false;
+					lock (FlaggedRefreshesLockObj)
+					{
+						shouldEvictLocally = FlaggedRefreshes.Remove(cacheKey) == false;
+					}
 
-				if (shouldEvictLocally)
-				{
-					await cacheStack.EvictAsync(cacheKey);
-				}
-			}, CommandFlags.FireAndForget);
+					if (shouldEvictLocally)
+					{
+						await cacheStack.EvictAsync(cacheKey);
+					}
+				});
 		}
 	}
 }
