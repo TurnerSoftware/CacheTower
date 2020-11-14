@@ -11,7 +11,7 @@ namespace CacheTower.Benchmarks.Providers
 		[Benchmark]
 		public async Task GetHitSimultaneous()
 		{
-			var cacheLayer = CacheLayerProvider.Invoke() as IAsyncCacheLayer;
+			var cacheLayer = CacheLayerProvider.Invoke() as ICacheLayer;
 
 			await cacheLayer.SetAsync("GetHitSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 
@@ -31,7 +31,7 @@ namespace CacheTower.Benchmarks.Providers
 		[Benchmark]
 		public async Task SetExistingSimultaneous()
 		{
-			var cacheLayer = CacheLayerProvider.Invoke() as IAsyncCacheLayer;
+			var cacheLayer = CacheLayerProvider.Invoke() as ICacheLayer;
 
 			await cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 

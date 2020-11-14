@@ -7,7 +7,7 @@ using StackExchange.Redis;
 
 namespace CacheTower.Providers.Redis
 {
-	public class RedisCacheLayer : IAsyncCacheLayer
+	public class RedisCacheLayer : ICacheLayer
 	{
 		private IConnectionMultiplexer Connection { get; }
 		private IDatabaseAsync Database { get; }

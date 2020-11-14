@@ -9,7 +9,7 @@ using MongoFramework.Infrastructure.Linq;
 
 namespace CacheTower.Providers.Database.MongoDB
 {
-	public class MongoDbCacheLayer : IAsyncCacheLayer
+	public class MongoDbCacheLayer : ICacheLayer
 	{
 		private bool? IsDatabaseAvailable { get; set; }
 
