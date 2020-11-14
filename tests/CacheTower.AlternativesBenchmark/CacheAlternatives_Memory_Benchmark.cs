@@ -33,18 +33,18 @@ namespace CacheTower.AlternativesBenchmark
 		}
 
 		[Benchmark]
-		public void CacheTower_MemoryCacheLayer_Direct()
+		public async ValueTask CacheTower_MemoryCacheLayer_Direct()
 		{
 			var layer = new MemoryCacheLayer();
-			LoopAction(Iterations, () =>
+			await LoopActionAsync(Iterations, async () =>
 			{
-				layer.Set("TestKey", new CacheEntry<int>(123, DateTime.UtcNow + TimeSpan.FromDays(1)));
-				layer.Get<int>("TestKey");
+				await layer.SetAsync("TestKey", new CacheEntry<int>(123, DateTime.UtcNow + TimeSpan.FromDays(1)));
+				await layer.GetAsync<int>("TestKey");
 
-				var getOrSetResult = layer.Get<string>("GetOrSet_TestKey");
+				var getOrSetResult = await layer.GetAsync<string>("GetOrSet_TestKey");
 				if (getOrSetResult == null)
 				{
-					layer.Set("GetOrSet_TestKey", new CacheEntry<string>("Hello World", TimeSpan.FromDays(1)));
+					await layer.SetAsync("GetOrSet_TestKey", new CacheEntry<string>("Hello World", TimeSpan.FromDays(1)));
 				}
 			});
 		}

@@ -8,33 +8,33 @@ namespace CacheTower.Tests.Providers.Memory
 	public class MemoryCacheLayerTests : BaseCacheLayerTests
 	{
 		[TestMethod]
-		public void GetSetCache()
+		public async Task GetSetCache()
 		{
-			AssertGetSetCache(new MemoryCacheLayer());
+			await AssertGetSetCacheAsync(new MemoryCacheLayer());
 		}
 
 		[TestMethod]
-		public void IsCacheAvailable()
+		public async Task IsCacheAvailable()
 		{
-			AssertCacheAvailability(new MemoryCacheLayer(), true);
+			await AssertCacheAvailabilityAsync(new MemoryCacheLayer(), true);
 		}
 
 		[TestMethod]
-		public void EvictFromCache()
+		public async Task EvictFromCache()
 		{
-			AssertCacheEviction(new MemoryCacheLayer());
+			await AssertCacheEvictionAsync(new MemoryCacheLayer());
 		}
 
 		[TestMethod]
-		public void CacheCleanup()
+		public async Task CacheCleanup()
 		{
-			AssertCacheCleanup(new MemoryCacheLayer());
+			await AssertCacheCleanupAsync(new MemoryCacheLayer());
 		}
 
 		[TestMethod]
-		public void CachingComplexTypes()
+		public async Task CachingComplexTypes()
 		{
-			AssertComplexTypeCaching(new MemoryCacheLayer());
+			await AssertComplexTypeCachingAsync(new MemoryCacheLayer());
 		}
 	}
 }

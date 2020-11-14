@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace CacheTower.Providers.Memory
 {
-	public class MemoryCacheLayer : ISyncCacheLayer
+	public class MemoryCacheLayer : ICacheLayer
 	{
 		private ConcurrentDictionary<string, CacheEntry> Cache { get; } = new ConcurrentDictionary<string, CacheEntry>(StringComparer.Ordinal);
 
-		public void Cleanup()
+		public ValueTask CleanupAsync()
 		{
 			var currentTime = DateTime.UtcNow;
 
@@ -24,31 +20,35 @@ namespace CacheTower.Providers.Memory
 					Cache.TryRemove(cachePair.Key, out _);
 				}
 			}
+
+			return new ValueTask();
 		}
 
-		public void Evict(string cacheKey)
+		public ValueTask EvictAsync(string cacheKey)
 		{
 			Cache.TryRemove(cacheKey, out _);
+			return new ValueTask();
 		}
 
-		public CacheEntry<T> Get<T>(string cacheKey)
+		public ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			if (Cache.TryGetValue(cacheKey, out var cacheEntry))
 			{
-				return cacheEntry as CacheEntry<T>;
+				return new ValueTask<CacheEntry<T>>(cacheEntry as CacheEntry<T>);
 			}
 
-			return default;
+			return new ValueTask<CacheEntry<T>>(default(CacheEntry<T>));
 		}
 
-		public bool IsAvailable(string cacheKey)
+		public ValueTask<bool> IsAvailableAsync(string cacheKey)
 		{
-			return true;
+			return new ValueTask<bool>(true);
 		}
 
-		public void Set<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			Cache[cacheKey] = cacheEntry;
+			return new ValueTask();
 		}
 	}
 }
