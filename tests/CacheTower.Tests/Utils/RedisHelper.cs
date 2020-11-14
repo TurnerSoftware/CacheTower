@@ -10,20 +10,14 @@ namespace CacheTower.Tests.Utils
 	{
 		public static string Endpoint => Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? "localhost:6379";
 
-		private static ConnectionMultiplexer Connection { get; set; }
-
 		public static ConnectionMultiplexer GetConnection()
 		{
-			if (Connection == null)
+			var config = new ConfigurationOptions
 			{
-				var config = new ConfigurationOptions
-				{
-					AllowAdmin = true
-				};
-				config.EndPoints.Add(Endpoint);
-				Connection = ConnectionMultiplexer.Connect(config);
-			}
-			return Connection;
+				AllowAdmin = true
+			};
+			config.EndPoints.Add(Endpoint);
+			return ConnectionMultiplexer.Connect(config);
 		}
 
 		public static void FlushDatabase()
