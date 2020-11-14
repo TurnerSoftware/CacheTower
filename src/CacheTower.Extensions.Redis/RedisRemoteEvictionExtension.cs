@@ -59,7 +59,7 @@ namespace CacheTower.Extensions.Redis
 			}
 			IsRegistered = true;
 
-			Subscriber.Subscribe(RedisChannel, CommandFlags.FireAndForget)
+			Subscriber.Subscribe(RedisChannel)
 				.OnMessage(async (channelMessage) =>
 				{
 					string cacheKey = channelMessage.Message;
