@@ -75,6 +75,8 @@ namespace CacheTower.Tests.Extensions.Redis
 			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
 			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the refreshed value");
 
+			await Task.Delay(500);
+
 			cacheLayerOne.Verify(c => c.EvictAsync("TestKey"), Times.Never, "Eviction took place locally where it should have been skipped");
 			cacheLayerTwo.Verify(c => c.EvictAsync("TestKey"), Times.Once, "Eviction was skipped where it should have taken place locally");
 		}
