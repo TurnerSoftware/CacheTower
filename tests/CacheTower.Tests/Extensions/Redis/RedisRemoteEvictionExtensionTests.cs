@@ -46,18 +46,20 @@ namespace CacheTower.Tests.Extensions.Redis
 		{
 			RedisHelper.FlushDatabase();
 
+			var connection = RedisHelper.GetConnection();
+
 			var cacheStackMockOne = new Mock<ICacheStack>();
 			var cacheLayerOne = new Mock<ICacheLayer>();
-			var extensionOne = new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { cacheLayerOne.Object });
+			var extensionOne = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerOne.Object });
 			extensionOne.Register(cacheStackMockOne.Object);
 
 			var cacheStackMockTwo = new Mock<ICacheStack>();
 			var cacheLayerTwo = new Mock<ICacheLayer>();
-			var extensionTwo = new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { cacheLayerTwo.Object });
+			var extensionTwo = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerTwo.Object });
 			extensionTwo.Register(cacheStackMockTwo.Object);
 
 			var completionSource = new TaskCompletionSource<bool>();
-			RedisHelper.GetConnection().GetSubscriber().Subscribe("CacheTower.RemoteEviction").OnMessage(channelMessage =>
+			connection.GetSubscriber().Subscribe("CacheTower.RemoteEviction").OnMessage(channelMessage =>
 			{
 				if (channelMessage.Message == "TestKey")
 				{
@@ -74,8 +76,6 @@ namespace CacheTower.Tests.Extensions.Redis
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
 			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
 			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the refreshed value");
-
-			await Task.Delay(500);
 
 			cacheLayerOne.Verify(c => c.EvictAsync("TestKey"), Times.Never, "Eviction took place locally where it should have been skipped");
 			cacheLayerTwo.Verify(c => c.EvictAsync("TestKey"), Times.Once, "Eviction was skipped where it should have taken place locally");
