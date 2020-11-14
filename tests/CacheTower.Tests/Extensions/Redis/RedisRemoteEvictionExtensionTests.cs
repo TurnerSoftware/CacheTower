@@ -46,22 +46,20 @@ namespace CacheTower.Tests.Extensions.Redis
 		{
 			RedisHelper.FlushDatabase();
 
-			var connection = RedisHelper.GetConnection();
-
 			var cacheStackMockOne = new Mock<ICacheStack>();
 			var cacheLayerOne = new Mock<ICacheLayer>();
-			var extensionOne = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerOne.Object });
+			var extensionOne = new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { cacheLayerOne.Object });
 			extensionOne.Register(cacheStackMockOne.Object);
 
 			var cacheStackMockTwo = new Mock<ICacheStack>();
 			var cacheLayerTwo = new Mock<ICacheLayer>();
-			var extensionTwo = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerTwo.Object });
+			var extensionTwo = new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { cacheLayerTwo.Object });
 			extensionTwo.Register(cacheStackMockTwo.Object);
 
 			var completionSource = new TaskCompletionSource<bool>();
-			connection.GetSubscriber().Subscribe("CacheTower.RemoteEviction", (channel, value) =>
+			RedisHelper.GetConnection().GetSubscriber().Subscribe("CacheTower.RemoteEviction").OnMessage(channelMessage =>
 			{
-				if (value == "TestKey")
+				if (channelMessage.Message == "TestKey")
 				{
 					completionSource.SetResult(true);
 				}
