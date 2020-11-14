@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CacheTower.Extensions.Redis;
+using CacheTower.Providers.Memory;
 using CacheTower.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -16,7 +17,13 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullConnection()
 		{
-			new RedisRemoteEvictionExtension(null);
+			new RedisRemoteEvictionExtension(null, new ICacheLayer[] { new MemoryCacheLayer() });
+		}
+
+		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
+		public void ThrowForNullCacheEvictionLayers()
+		{
+			new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), null);
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
@@ -28,7 +35,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod, ExpectedException(typeof(InvalidOperationException))]
 		public void ThrowForRegisteringMoreThanOneCacheStack()
 		{
-			var extension = new RedisRemoteEvictionExtension(RedisHelper.GetConnection());
+			var extension = new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { new MemoryCacheLayer() });
 			var cacheStackMock = new Mock<ICacheStack>();
 			extension.Register(cacheStackMock.Object);
 			extension.Register(cacheStackMock.Object);
@@ -42,7 +49,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisRemoteEvictionExtension(connection);
+			var extension = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { new MemoryCacheLayer() });
 			extension.Register(cacheStackMock.Object);
 
 			var completionSource = new TaskCompletionSource<bool>();

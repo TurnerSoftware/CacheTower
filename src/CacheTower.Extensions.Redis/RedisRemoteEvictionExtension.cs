@@ -16,12 +16,18 @@ namespace CacheTower.Extensions.Redis
 
 		private readonly object FlaggedRefreshesLockObj = new object();
 		private HashSet<string> FlaggedRefreshes { get; }
+		private ICacheLayer[] EvictFromLayers { get; }
 
-		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, string channelPrefix = "CacheTower")
+		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, ICacheLayer[] evictFromLayers, string channelPrefix = "CacheTower")
 		{
 			if (connection == null)
 			{
 				throw new ArgumentNullException(nameof(connection));
+			}
+
+			if (evictFromLayers == null)
+			{
+				throw new ArgumentNullException(nameof(evictFromLayers));
 			}
 
 			if (channelPrefix == null)
@@ -32,6 +38,7 @@ namespace CacheTower.Extensions.Redis
 			Subscriber = connection.GetSubscriber();
 			RedisChannel = $"{channelPrefix}.RemoteEviction";
 			FlaggedRefreshes = new HashSet<string>(StringComparer.Ordinal);
+			EvictFromLayers = evictFromLayers;
 		}
 
 		public async ValueTask OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive)
