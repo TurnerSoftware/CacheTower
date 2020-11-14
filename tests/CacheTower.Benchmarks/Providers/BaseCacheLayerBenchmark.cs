@@ -19,7 +19,7 @@ namespace CacheTower.Benchmarks.Providers
 		{
 			public ConfigSettings()
 			{
-				AddJob(Job.Default.WithRuntime(CoreRuntime.Core30).WithMaxIterationCount(200));
+				AddJob(Job.Default.WithRuntime(CoreRuntime.Core31).WithMaxIterationCount(200));
 				AddDiagnoser(MemoryDiagnoser.Default);
 
 				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(CultureInfo, true, SizeUnit.B, TimeUnit.Nanosecond);

@@ -9,7 +9,7 @@ using BenchmarkDotNet.Order;
 
 namespace CacheTower.AlternativesBenchmark
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser, MaxIterationCount(200), Orderer(SummaryOrderPolicy.FastestToSlowest)]
+	[SimpleJob(RuntimeMoniker.NetCoreApp31), MemoryDiagnoser, MaxIterationCount(200), Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	public abstract class BaseBenchmark
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -9,7 +9,7 @@ using CacheTower.Providers.Memory;
 
 namespace CacheTower.Benchmarks.Providers.Memory
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser]
+	[SimpleJob(RuntimeMoniker.NetCoreApp31), MemoryDiagnoser]
 	public class MemoryCacheImplementationBenchmarks
 	{
 		private static readonly ConcurrentDictionary<string, object> _concurrent = new ConcurrentDictionary<string, object>();
