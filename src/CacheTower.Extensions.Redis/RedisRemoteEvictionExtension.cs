@@ -71,7 +71,10 @@ namespace CacheTower.Extensions.Redis
 
 					if (shouldEvictLocally)
 					{
-						await cacheStack.EvictAsync(cacheKey);
+						for (var i = 0; i < EvictFromLayers.Length; i++)
+						{
+							await EvictFromLayers[i].EvictAsync(cacheKey);
+						}
 					}
 				});
 		}

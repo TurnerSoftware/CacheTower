@@ -42,19 +42,24 @@ namespace CacheTower.Tests.Extensions.Redis
 		}
 
 		[TestMethod]
-		public async Task EvictsFromChannelButNotFromRegisteredCacheStack()
+		public async Task EvictionOccursOnRefresh()
 		{
 			RedisHelper.FlushDatabase();
 
 			var connection = RedisHelper.GetConnection();
 
-			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { new MemoryCacheLayer() });
-			extension.Register(cacheStackMock.Object);
+			var cacheStackMockOne = new Mock<ICacheStack>();
+			var cacheLayerOne = new Mock<ICacheLayer>();
+			var extensionOne = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerOne.Object });
+			extensionOne.Register(cacheStackMockOne.Object);
+
+			var cacheStackMockTwo = new Mock<ICacheStack>();
+			var cacheLayerTwo = new Mock<ICacheLayer>();
+			var extensionTwo = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerTwo.Object });
+			extensionTwo.Register(cacheStackMockTwo.Object);
 
 			var completionSource = new TaskCompletionSource<bool>();
-
-			await connection.GetSubscriber().SubscribeAsync("CacheTower.RemoteEviction", (channel, value) =>
+			connection.GetSubscriber().Subscribe("CacheTower.RemoteEviction", (channel, value) =>
 			{
 				if (value == "TestKey")
 				{
@@ -66,12 +71,14 @@ namespace CacheTower.Tests.Extensions.Redis
 				}
 			});
 
-			await extension.OnValueRefreshAsync("TestKey", TimeSpan.FromDays(1));
+			await extensionOne.OnValueRefreshAsync("TestKey", TimeSpan.FromDays(1));
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
 			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
 			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the refreshed value");
-			cacheStackMock.Verify(c => c.EvictAsync("TestKey"), Times.Never, "The CacheStack that published the refresh was told to evict its own cache");
+
+			cacheLayerOne.Verify(c => c.EvictAsync("TestKey"), Times.Never, "Eviction took place locally where it should have been skipped");
+			cacheLayerTwo.Verify(c => c.EvictAsync("TestKey"), Times.Once, "Eviction was skipped where it should have taken place locally");
 		}
 	}
 }
