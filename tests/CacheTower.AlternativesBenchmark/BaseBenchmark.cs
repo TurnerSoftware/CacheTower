@@ -21,7 +21,7 @@ namespace CacheTower.AlternativesBenchmark
 			}
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		protected async Task LoopActionAsync(int iterations, Func<Task> action)
+		protected async ValueTask LoopActionAsync(int iterations, Func<ValueTask> action)
 		{
 			for (var i = 0; i < iterations; i++)
 			{

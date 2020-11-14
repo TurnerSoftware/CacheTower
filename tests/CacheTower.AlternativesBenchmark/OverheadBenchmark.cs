@@ -20,7 +20,7 @@ namespace CacheTower.AlternativesBenchmark
 		[Benchmark]
 		public async Task OverheadAsync()
 		{
-			await LoopActionAsync(Iterations, () => Task.CompletedTask);
+			await LoopActionAsync(Iterations, () => new ValueTask());
 		}
 	}
 }

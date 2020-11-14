@@ -11,7 +11,6 @@ namespace CacheTower.Providers.Redis
 	{
 		private IConnectionMultiplexer Connection { get; }
 		private IDatabaseAsync Database { get; }
-		private bool? IsCacheAvailable { get; set; }
 
 		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1)
 		{
@@ -19,18 +18,18 @@ namespace CacheTower.Providers.Redis
 			Database = connection.GetDatabase(databaseIndex);
 		}
 
-		public Task CleanupAsync()
+		public ValueTask CleanupAsync()
 		{
 			//Noop as Redis handles this directly
-			return Task.CompletedTask;
+			return new ValueTask();
 		}
 
-		public Task EvictAsync(string cacheKey)
+		public async ValueTask EvictAsync(string cacheKey)
 		{
-			return Database.KeyDeleteAsync(cacheKey);
+			await Database.KeyDeleteAsync(cacheKey);
 		}
 
-		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			var redisValue = await Database.StringGetAsync(cacheKey);
 			if (redisValue != RedisValue.Null)
@@ -45,12 +44,12 @@ namespace CacheTower.Providers.Redis
 			return default;
 		}
 
-		public Task<bool> IsAvailableAsync(string cacheKey)
+		public ValueTask<bool> IsAvailableAsync(string cacheKey)
 		{
-			return Task.FromResult(Connection.IsConnected);
+			return new ValueTask<bool>(Connection.IsConnected);
 		}
 
-		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			var expiryOffset = cacheEntry.Expiry - DateTime.UtcNow;
 			if (expiryOffset < TimeSpan.Zero)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
@@ -35,57 +34,7 @@ namespace CacheTower.Benchmarks.Providers
 			public Dictionary<string, int> DictionaryOfNumbers { get; set; }
 		}
 
-		protected void BenchmarkWork(ISyncCacheLayer cacheLayer)
-		{
-			for (var iterationCount = 0; iterationCount < WorkIterations; iterationCount++)
-			{
-				//Get 100 misses
-				for (var i = 0; i < 100; i++)
-				{
-					cacheLayer.Get<int>("GetMiss_" + i);
-				}
-
-				var startDate = DateTime.UtcNow.AddDays(-50);
-
-				//Set first 100 (simple type)
-				for (var i = 0; i < 100; i++)
-				{
-					cacheLayer.Set("Comparison_" + i, new CacheEntry<int>(1, startDate.AddDays(i) + TimeSpan.FromDays(1)));
-				}
-				//Set last 100 (complex type)
-				for (var i = 100; i < 200; i++)
-				{
-					cacheLayer.Set("Comparison_" + i, new CacheEntry<ComplexType>(new ComplexType
-					{
-						ExampleString = "Hello World",
-						ExampleNumber = 42,
-						ExampleDate = new DateTime(2000, 1, 1),
-						DictionaryOfNumbers = new Dictionary<string, int>() { { "A", 1 }, { "B", 2 }, { "C", 3 } }
-					}, startDate.AddDays(i - 100) + TimeSpan.FromDays(1)));
-				}
-
-				//Get first 50 (simple type)
-				for (var i = 0; i < 50; i++)
-				{
-					cacheLayer.Get<int>("Comparison_" + i);
-				}
-				//Get last 50 (complex type)
-				for (var i = 150; i < 200; i++)
-				{
-					cacheLayer.Get<ComplexType>("Comparison_" + i);
-				}
-
-				//Evict middle 100
-				for (var i = 50; i < 150; i++)
-				{
-					cacheLayer.Evict("Comparison_" + i);
-				}
-
-				//Cleanup outer 100
-				cacheLayer.Cleanup();
-			}
-		}
-		protected async Task BenchmarkWork(IAsyncCacheLayer cacheLayer)
+		protected async ValueTask BenchmarkWork(ICacheLayer cacheLayer)
 		{
 			for (var iterationCount = 0; iterationCount < WorkIterations; iterationCount++)
 			{
@@ -143,14 +92,14 @@ namespace CacheTower.Benchmarks.Providers
 		}
 
 		[Benchmark(Baseline = true)]
-		public void MemoryCacheLayer()
+		public async ValueTask MemoryCacheLayer()
 		{
 			var cacheLayer = new MemoryCacheLayer();
-			BenchmarkWork(cacheLayer);
+			await BenchmarkWork(cacheLayer);
 		}
 
 		[Benchmark]
-		public async Task JsonFileCacheLayer()
+		public async ValueTask JsonFileCacheLayer()
 		{
 			var directoryPath = "CacheLayerComparison/JsonFileCacheLayer";
 			await using (var cacheLayer = new JsonFileCacheLayer(directoryPath))
@@ -161,7 +110,7 @@ namespace CacheTower.Benchmarks.Providers
 		}
 
 		[Benchmark]
-		public async Task ProtobufFileCacheLayer()
+		public async ValueTask ProtobufFileCacheLayer()
 		{
 			var directoryPath = "CacheLayerComparison/ProtobufFileCacheLayer";
 			await using (var cacheLayer = new ProtobufFileCacheLayer(directoryPath))
@@ -172,7 +121,7 @@ namespace CacheTower.Benchmarks.Providers
 		}
 
 		[Benchmark]
-		public async Task MongoDbCacheLayer()
+		public async ValueTask MongoDbCacheLayer()
 		{
 			var cacheLayer = new MongoDbCacheLayer(MongoDbHelper.GetConnection());
 			await BenchmarkWork(cacheLayer);
@@ -180,7 +129,7 @@ namespace CacheTower.Benchmarks.Providers
 		}
 
 		[Benchmark]
-		public async Task RedisCacheLayer()
+		public async ValueTask RedisCacheLayer()
 		{
 			var cacheLayer = new RedisCacheLayer(RedisHelper.GetConnection());
 			await BenchmarkWork(cacheLayer);

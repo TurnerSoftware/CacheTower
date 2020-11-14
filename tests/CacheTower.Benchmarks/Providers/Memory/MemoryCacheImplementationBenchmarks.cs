@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using CacheTower.Providers.Memory;
@@ -29,7 +29,7 @@ namespace CacheTower.Benchmarks.Providers.Memory
 				var val = i.ToString();
 				_concurrent[val] = val;
 				_regular[val] = val;
-				_memoryCacheLayer.Set(val, new CacheEntry<string>(val, DateTime.UtcNow));
+				_memoryCacheLayer.SetAsync(val, new CacheEntry<string>(val, DateTime.UtcNow));
 			}
 		}
 
@@ -39,9 +39,9 @@ namespace CacheTower.Benchmarks.Providers.Memory
 		/// </summary>
 		/// <returns></returns>
 		[Benchmark]
-		public object MemoryCacheLayer()
+		public async ValueTask<object> MemoryCacheLayer()
 		{
-			return _memoryCacheLayer.Get<string>(Rand.Next(0, MemberCount).ToString());
+			return await _memoryCacheLayer.GetAsync<string>(Rand.Next(0, MemberCount).ToString());
 		}
 
 		[Benchmark]

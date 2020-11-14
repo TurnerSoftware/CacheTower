@@ -165,7 +165,7 @@ namespace CacheTower.Providers.FileSystem
 			return new string(charArrayPtr, 0, charArrayLength);
 		}
 
-		public async Task CleanupAsync()
+		public async ValueTask CleanupAsync()
 		{
 			await TryLoadManifestAsync();
 
@@ -190,7 +190,7 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
-		public async Task EvictAsync(string cacheKey)
+		public async ValueTask EvictAsync(string cacheKey)
 		{
 			await TryLoadManifestAsync();
 
@@ -210,7 +210,7 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
-		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			await TryLoadManifestAsync();
 
@@ -232,7 +232,7 @@ namespace CacheTower.Providers.FileSystem
 			return default;
 		}
 
-		public async Task<bool> IsAvailableAsync(string cacheKey)
+		public async ValueTask<bool> IsAvailableAsync(string cacheKey)
 		{
 			if (IsManifestAvailable == null)
 			{
@@ -250,7 +250,7 @@ namespace CacheTower.Providers.FileSystem
 			return IsManifestAvailable.Value;
 		}
 
-		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			await TryLoadManifestAsync();
 

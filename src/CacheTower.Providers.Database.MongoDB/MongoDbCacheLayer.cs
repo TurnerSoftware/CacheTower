@@ -22,7 +22,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			Connection = connection;
 		}
 
-		private async Task TryConfigureIndexes()
+		private async ValueTask TryConfigureIndexes()
 		{
 			if (!HasSetIndexes)
 			{
@@ -31,19 +31,19 @@ namespace CacheTower.Providers.Database.MongoDB
 			}
 		}
 
-		public async Task CleanupAsync()
+		public async ValueTask CleanupAsync()
 		{
 			await TryConfigureIndexes();
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new CleanupCommand() }, default);
 		}
 
-		public async Task EvictAsync(string cacheKey)
+		public async ValueTask EvictAsync(string cacheKey)
 		{
 			await TryConfigureIndexes();
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new EvictCommand(cacheKey) }, default);
 		}
 
-		public async Task<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			await TryConfigureIndexes();
 
@@ -61,7 +61,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			return cacheEntry;
 		}
 
-		public async Task SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
+		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			await TryConfigureIndexes();
 			var command = new SetCommand(new DbCachedEntry
@@ -74,7 +74,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { command }, default);
 		}
 
-		public async Task<bool> IsAvailableAsync(string cacheKey)
+		public async ValueTask<bool> IsAvailableAsync(string cacheKey)
 		{
 			if (IsDatabaseAvailable == null)
 			{

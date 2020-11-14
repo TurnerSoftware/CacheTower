@@ -20,7 +20,7 @@ namespace CacheTower.Benchmarks.Providers
 			for (var i = 0; i < WorkIterations; i++)
 			{
 				var task = cacheLayer.GetAsync<int>("GetHitSimultaneous");
-				tasks.Add(task);
+				tasks.Add(task.AsTask());
 			}
 
 			await Task.WhenAll(tasks);
@@ -40,7 +40,7 @@ namespace CacheTower.Benchmarks.Providers
 			for (var i = 0; i < WorkIterations; i++)
 			{
 				var task = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-				tasks.Add(task);
+				tasks.Add(task.AsTask());
 			}
 
 			await Task.WhenAll(tasks);
