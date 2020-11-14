@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="protobuf-net" Version="3.0.52" />
+    <PackageReference Include="protobuf-net" Version="3.0.62" />
     <PackageReference Include="StackExchange.Redis" Version="2.1.58" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
   </ItemGroup>
