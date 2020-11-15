@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
@@ -16,37 +15,28 @@ namespace CacheTower.Extensions.Redis
 	{
 		private ISubscriber Subscriber { get; }
 		private IDatabaseAsync Database { get; }
-		private string RedisChannel { get; }
-		private TimeSpan LockTimeout { get; } = TimeSpan.FromMinutes(1);
+		private RedisLockOptions Options { get; }
 
 		private ICacheStack RegisteredStack { get; set; }
 		
 		internal ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
 
-		public RedisLockExtension(ConnectionMultiplexer connection, int databaseIndex = -1, string channelPrefix = "CacheTower", TimeSpan? lockTimeout = default)
+		public RedisLockExtension(ConnectionMultiplexer connection) : this(connection, RedisLockOptions.Default) { }
+
+		public RedisLockExtension(ConnectionMultiplexer connection, RedisLockOptions options)
 		{
 			if (connection == null)
 			{
 				throw new ArgumentNullException(nameof(connection));
 			}
 
-			if (channelPrefix == null)
-			{
-				throw new ArgumentNullException(nameof(channelPrefix));
-			}
-			
-			Database = connection.GetDatabase(databaseIndex);
+			Options = options;
+			Database = connection.GetDatabase(options.DatabaseIndex);
 			Subscriber = connection.GetSubscriber();
-			RedisChannel = $"{channelPrefix}.CacheLock";
-
-			if (lockTimeout.HasValue)
-			{
-				LockTimeout = lockTimeout.Value;
-			}
 
 			LockedOnKeyRefresh = new ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>>(StringComparer.Ordinal);
 
-			Subscriber.Subscribe(RedisChannel, (channel, value) => UnlockWaitingTasks(value));
+			Subscriber.Subscribe(options.RedisChannel, (channel, value) => UnlockWaitingTasks(value));
 		}
 
 		public void Register(ICacheStack cacheStack)
@@ -61,19 +51,20 @@ namespace CacheTower.Extensions.Redis
 
 		public async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
-			var hasLock = await Database.StringSetAsync(cacheKey, RedisValue.EmptyString, expiry: LockTimeout, when: When.NotExists);
+			var lockKey = string.Format(Options.KeyFormat, cacheKey);
+			var hasLock = await Database.StringSetAsync(lockKey, RedisValue.EmptyString, expiry: Options.LockTimeout, when: When.NotExists);
 
 			if (hasLock)
 			{
 				try
 				{
 					var cacheEntry = await valueProvider();
-					await Subscriber.PublishAsync(RedisChannel, cacheKey, CommandFlags.FireAndForget);
+					await Subscriber.PublishAsync(Options.RedisChannel, cacheKey, CommandFlags.FireAndForget);
 					return cacheEntry;
 				}
 				finally
 				{
-					await Database.KeyDeleteAsync(cacheKey, CommandFlags.FireAndForget);
+					await Database.KeyDeleteAsync(lockKey, CommandFlags.FireAndForget);
 				}
 			}
 			else

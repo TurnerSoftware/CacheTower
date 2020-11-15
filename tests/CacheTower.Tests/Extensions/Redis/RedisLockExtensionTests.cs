@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using CacheTower.Extensions.Redis;
 using CacheTower.Tests.Utils;
@@ -24,13 +20,13 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
 		public void ThrowForInvalidDatabaseIndex()
 		{
-			new RedisLockExtension(RedisHelper.GetConnection(), -10);
+			new RedisLockExtension(RedisHelper.GetConnection(), new RedisLockOptions(databaseIndex: -10));
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullChannel()
 		{
-			new RedisLockExtension(RedisHelper.GetConnection(), channelPrefix: null);
+			new RedisLockExtension(RedisHelper.GetConnection(), new RedisLockOptions(redisChannel: null));
 		}
 
 		[TestMethod, ExpectedException(typeof(InvalidOperationException))]
@@ -47,7 +43,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		{
 			RedisHelper.FlushDatabase();
 
-			var extension = new RedisLockExtension(RedisHelper.GetConnection(), lockTimeout: TimeSpan.FromDays(1));
+			var extension = new RedisLockExtension(RedisHelper.GetConnection(), new RedisLockOptions(lockTimeout: TimeSpan.FromDays(1)));
 			var refreshWaiterTask = new TaskCompletionSource<bool>();
 			var lockWaiterTask = new TaskCompletionSource<bool>();
 
@@ -61,7 +57,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			await lockWaiterTask.Task;
 
 			var database = RedisHelper.GetConnection().GetDatabase();
-			var keyWithExpiry = await database.StringGetWithExpiryAsync("TestLock");
+			var keyWithExpiry = await database.StringGetWithExpiryAsync("Lock:TestLock");
 
 			refreshWaiterTask.SetResult(true);
 
@@ -85,7 +81,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisLockExtension(connection);
+			var extension = new RedisLockExtension(connection, RedisLockOptions.Default);
 			extension.Register(cacheStackMock.Object);
 
 			var completionSource = new TaskCompletionSource<bool>();
@@ -121,13 +117,13 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisLockExtension(connection);
+			var extension = new RedisLockExtension(connection, RedisLockOptions.Default);
 			extension.Register(cacheStackMock.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 
 			//Establish lock
-			await connection.GetDatabase().StringSetAsync("TestKey", RedisValue.EmptyString);
+			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
 			var refreshTask = extension.RefreshValueAsync("TestKey",
 					() =>
@@ -159,13 +155,13 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisLockExtension(connection);
+			var extension = new RedisLockExtension(connection, RedisLockOptions.Default);
 			extension.Register(cacheStackMock.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 
 			//Establish lock
-			await connection.GetDatabase().StringSetAsync("TestKey", RedisValue.EmptyString);
+			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
 			var refreshTask1 = extension.RefreshValueAsync("TestKey",
 					() =>
