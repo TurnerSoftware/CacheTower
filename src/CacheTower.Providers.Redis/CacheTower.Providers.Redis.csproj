@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="protobuf-net" Version="3.0.62" />
-    <PackageReference Include="StackExchange.Redis" Version="2.1.58" />
+    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
   </ItemGroup>
 
