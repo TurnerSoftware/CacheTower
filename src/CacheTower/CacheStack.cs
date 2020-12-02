@@ -41,6 +41,17 @@ namespace CacheTower
 			}
 		}
 
+		public async ValueTask FlushAsync()
+		{
+			ThrowIfDisposed();
+
+			for (int i = 0, l = CacheLayers.Length; i < l; i++)
+			{
+				var layer = CacheLayers[i];
+				await layer.FlushAsync();
+			}
+		}
+
 		public async ValueTask CleanupAsync()
 		{
 			ThrowIfDisposed();

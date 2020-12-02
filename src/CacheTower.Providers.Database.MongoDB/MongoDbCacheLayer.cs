@@ -43,6 +43,11 @@ namespace CacheTower.Providers.Database.MongoDB
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new EvictCommand(cacheKey) }, default);
 		}
 
+		public async ValueTask FlushAsync()
+		{
+			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new FlushCommand() }, default);
+		}
+
 		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			await TryConfigureIndexes();
