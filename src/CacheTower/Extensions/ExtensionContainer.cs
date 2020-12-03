@@ -34,6 +34,12 @@ namespace CacheTower.Extensions
 						HasCacheChangeExtensions = true;
 						cacheChangeExtensions.Add(cacheChangeExtension);
 					}
+
+					if (extension is ICacheFlushExtension cacheFlushExtension)
+					{
+						HasCacheFlushExtensions = true;
+						cacheFlushExtensions.Add(cacheFlushExtension);
+					}
 				}
 
 				CacheChangeExtensions = cacheChangeExtensions.ToArray();
