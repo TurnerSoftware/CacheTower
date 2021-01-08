@@ -7,12 +7,13 @@ using CacheManager.Core;
 using CacheTower.Providers.Memory;
 using EasyCaching.InMemory;
 using LazyCache;
+using ZiggyCreatures.FusionCaching;
 
 namespace CacheTower.AlternativesBenchmark
 {
 	public class CacheAlternatives_Memory_Benchmark : BaseBenchmark
 	{
-		[Params(1, 1000, 1_000_000)]
+		[Params(1, 1000)]
 		public int Iterations;
 
 		[Benchmark(Baseline = true)]
@@ -128,6 +129,32 @@ namespace CacheTower.AlternativesBenchmark
 				lazyCache.Add("TestKey", 123, TimeSpan.FromDays(1));
 				await lazyCache.GetAsync<int>("TestKey");
 				await lazyCache.GetOrAddAsync("TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
+			});
+		}
+
+		[Benchmark]
+		public void FusionCache_MemoryProvider()
+		{
+			var fusionCache = new FusionCache(new FusionCacheOptions());
+
+			LoopAction(Iterations, async () =>
+			{
+				fusionCache.Set("TestKey", 123, TimeSpan.FromDays(1));
+				fusionCache.GetOrDefault<int>("TestKey");
+				fusionCache.GetOrSet("TestKey", (cancellationToken) => "Hello World", TimeSpan.FromDays(1));
+			});
+		}
+
+		[Benchmark]
+		public async Task FusionCache_MemoryProviderAsync()
+		{
+			var fusionCache = new FusionCache(new FusionCacheOptions());
+
+			await LoopActionAsync(Iterations, async () =>
+			{
+				await fusionCache.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
+				await fusionCache.GetOrDefaultAsync<int>("TestKey");
+				await fusionCache.GetOrSetAsync("TestKey", (cancellationToken) => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
 			});
 		}
 	}
