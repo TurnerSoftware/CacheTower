@@ -47,7 +47,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var refreshWaiterTask = new TaskCompletionSource<bool>();
 			var lockWaiterTask = new TaskCompletionSource<bool>();
 
-			var refreshTask = extension.RefreshValueAsync("TestLock", async () =>
+			var refreshTask = extension.WithRefreshAsync("TestLock", async () =>
 			{
 				lockWaiterTask.SetResult(true);
 				await refreshWaiterTask.Task;
@@ -100,7 +100,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 
-			await extension.RefreshValueAsync("TestKey",
+			await extension.WithRefreshAsync("TestKey",
 				() => new ValueTask<CacheEntry<int>>(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
@@ -125,7 +125,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask = extension.RefreshValueAsync("TestKey",
+			var refreshTask = extension.WithRefreshAsync("TestKey",
 					() =>
 					{
 						return new ValueTask<CacheEntry<int>>(cacheEntry);
@@ -163,7 +163,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask1 = extension.RefreshValueAsync("TestKey",
+			var refreshTask1 = extension.WithRefreshAsync("TestKey",
 					() =>
 					{
 						return new ValueTask<CacheEntry<int>>(cacheEntry);
@@ -171,7 +171,7 @@ namespace CacheTower.Tests.Extensions.Redis
 					new CacheSettings(TimeSpan.FromDays(1))
 				).AsTask();
 
-			var refreshTask2 = extension.RefreshValueAsync("TestKey",
+			var refreshTask2 = extension.WithRefreshAsync("TestKey",
 					() =>
 					{
 						return new ValueTask<CacheEntry<int>>(cacheEntry);

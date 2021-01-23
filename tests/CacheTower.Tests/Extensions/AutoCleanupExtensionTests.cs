@@ -21,12 +21,12 @@ namespace CacheTower.Tests.Extensions
 		}
 
 		[TestMethod, ExpectedException(typeof(InvalidOperationException))]
-		public void ThrowForRegisteringTwoCacheStacks()
+		public async Task ThrowForRegisteringTwoCacheStacks()
 		{
 			using (var extension = new AutoCleanupExtension(TimeSpan.FromSeconds(30)))
 			{
 				//Will register as part of the CacheStack constructor
-				var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, new[] { extension });
+				await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, new[] { extension });
 				//Force the second register manually
 				extension.Register(cacheStack);
 			}

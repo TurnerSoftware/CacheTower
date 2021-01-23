@@ -1,54 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CacheTower.Extensions
 {
-	public class ExtensionContainer : ICacheExtension, IValueRefreshExtension, IRefreshWrapperExtension,
-#if NETSTANDARD2_0
-		IDisposable
-#elif NETSTANDARD2_1
-		IAsyncDisposable
-#endif
+	public class ExtensionContainer : ICacheExtension, ICacheChangeExtension, ICacheRefreshCallSiteWrapperExtension, IAsyncDisposable
 	{
 		private bool Disposed;
 
-		private bool HasRefreshWrapperExtension { get; }
-		private IRefreshWrapperExtension RefreshWrapperExtension { get; }
-		private bool HasValueRefreshExtensions { get; }
-		private IValueRefreshExtension[] ValueRefreshExtensions { get; }
+		private bool HasCacheRefreshCallSiteWrapperExtension { get; }
+		private ICacheRefreshCallSiteWrapperExtension CacheRefreshCallSiteWrapperExtension { get; }
+		private bool HasCacheChangeExtensions { get; }
+		private ICacheChangeExtension[] CacheChangeExtensions { get; }
 		private ICacheExtension[] AllExtensions { get; }
 
 		public ExtensionContainer(ICacheExtension[] extensions)
 		{
 			if (extensions != null && extensions.Length > 0)
 			{
-				var valueRefreshExtensions = new List<IValueRefreshExtension>();
+				var cacheChangeExtensions = new List<ICacheChangeExtension>();
 
 				foreach (var extension in extensions)
 				{
-					if (RefreshWrapperExtension == null && extension is IRefreshWrapperExtension refreshWrapperExtension)
+					if (CacheRefreshCallSiteWrapperExtension == null && extension is ICacheRefreshCallSiteWrapperExtension remoteLockExtension)
 					{
-						HasRefreshWrapperExtension = true;
-						RefreshWrapperExtension = refreshWrapperExtension;
+						HasCacheRefreshCallSiteWrapperExtension = true;
+						CacheRefreshCallSiteWrapperExtension = remoteLockExtension;
 					}
 
-					if (extension is IValueRefreshExtension valueRefreshExtension)
+					if (extension is ICacheChangeExtension cacheChangeExtension)
 					{
-						HasValueRefreshExtensions = true;
-						valueRefreshExtensions.Add(valueRefreshExtension);
+						HasCacheChangeExtensions = true;
+						cacheChangeExtensions.Add(cacheChangeExtension);
 					}
 				}
 
-				ValueRefreshExtensions = valueRefreshExtensions.ToArray();
+				CacheChangeExtensions = cacheChangeExtensions.ToArray();
 				AllExtensions = extensions;
 			}
 			else
 			{
-				ValueRefreshExtensions = Array.Empty<IValueRefreshExtension>();
-				AllExtensions = ValueRefreshExtensions;
+				CacheChangeExtensions = Array.Empty<ICacheChangeExtension>();
+				AllExtensions = CacheChangeExtensions;
 			}
 		}
 
@@ -63,58 +57,42 @@ namespace CacheTower.Extensions
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
+		public ValueTask<CacheEntry<T>> WithRefreshAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
-			if (!HasRefreshWrapperExtension)
+			if (!HasCacheRefreshCallSiteWrapperExtension)
 			{
 				return valueProvider();
 			}
 			else
 			{
-				return RefreshWrapperExtension.RefreshValueAsync(cacheKey, valueProvider, settings);
+				return CacheRefreshCallSiteWrapperExtension.WithRefreshAsync(cacheKey, valueProvider, settings);
 			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public async ValueTask OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive)
+		public async ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry)
 		{
-			if (HasValueRefreshExtensions)
+			if (HasCacheChangeExtensions)
 			{
-				foreach (var extension in ValueRefreshExtensions)
+				foreach (var extension in CacheChangeExtensions)
 				{
-					await extension.OnValueRefreshAsync(cacheKey, timeToLive);
+					await extension.OnCacheUpdateAsync(cacheKey, expiry);
 				}
 			}
 		}
 
-#if NETSTANDARD2_0
-		public void Dispose()
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public async ValueTask OnCacheEvictionAsync(string cacheKey)
 		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (Disposed)
+			if (HasCacheChangeExtensions)
 			{
-				return;
-			}
-
-			if (disposing)
-			{
-				foreach (var extension in AllExtensions)
+				foreach (var extension in CacheChangeExtensions)
 				{
-					if (extension is IDisposable disposable)
-					{
-						disposable.Dispose();
-					}
+					await extension.OnCacheEvictionAsync(cacheKey);
 				}
 			}
-
-			Disposed = true;
 		}
-#elif NETSTANDARD2_1
+
 		public async ValueTask DisposeAsync()
 		{
 			if (Disposed)
@@ -136,6 +114,5 @@ namespace CacheTower.Extensions
 
 			Disposed = true;
 		}
-#endif
 	}
 }

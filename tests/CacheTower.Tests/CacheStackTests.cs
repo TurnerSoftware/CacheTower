@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace CacheTower.Tests
 {
@@ -24,8 +25,7 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task ConstructorAllowsNullExtensions()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
-			await DisposeOf(cacheStack);
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
 		}
 
 		[TestMethod]
@@ -34,7 +34,7 @@ namespace CacheTower.Tests
 			var layer1 = new MemoryCacheLayer();
 			var layer2 = new MemoryCacheLayer();
 			
-			var cacheStack = new CacheStack(new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 
 			var cacheEntry = new CacheEntry<int>(42, DateTime.UtcNow.AddDays(-1));
 			await cacheStack.SetAsync("Cleanup_CleansAllTheLayers", cacheEntry);
@@ -46,14 +46,12 @@ namespace CacheTower.Tests
 
 			Assert.IsNull(await layer1.GetAsync<int>("Cleanup_CleansAllTheLayers"));
 			Assert.IsNull(await layer2.GetAsync<int>("Cleanup_CleansAllTheLayers"));
-
-			await DisposeOf(cacheStack);
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
 		public async Task Cleanup_ThrowsOnUseAfterDisposal()
 		{
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
-			await DisposeOf(cacheStack);
+			await using (cacheStack) { }
 
 			await cacheStack.CleanupAsync();
 		}
@@ -61,7 +59,7 @@ namespace CacheTower.Tests
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Evict_ThrowsOnNullKey()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.EvictAsync(null);
 		}
 		[TestMethod]
@@ -70,7 +68,7 @@ namespace CacheTower.Tests
 			var layer1 = new MemoryCacheLayer();
 			var layer2 = new MemoryCacheLayer();
 
-			var cacheStack = new CacheStack(new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = await cacheStack.SetAsync("Evict_EvictsAllTheLayers", 42, TimeSpan.FromDays(1));
 
 			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Evict_EvictsAllTheLayers"));
@@ -80,14 +78,23 @@ namespace CacheTower.Tests
 
 			Assert.IsNull(await layer1.GetAsync<int>("Evict_EvictsAllTheLayers"));
 			Assert.IsNull(await layer2.GetAsync<int>("Evict_EvictsAllTheLayers"));
+		}
+		[TestMethod]
+		public async Task Evict_TriggersCacheChangeExtension()
+		{
+			var mockExtension = new Mock<ICacheChangeExtension>();
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, new [] { mockExtension.Object });
+			var cacheEntry = await cacheStack.SetAsync("Evict_TriggerCacheChangeExtension", 42, TimeSpan.FromDays(1));
 
-			await DisposeOf(cacheStack);
+			await cacheStack.EvictAsync("Evict_TriggerCacheChangeExtension");
+
+			mockExtension.Verify(e => e.OnCacheEvictionAsync("Evict_TriggerCacheChangeExtension"), Times.Once);
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
 		public async Task Evict_ThrowsOnUseAfterDisposal()
 		{
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
-			await DisposeOf(cacheStack);
+			await using (cacheStack) { }
 
 			await cacheStack.EvictAsync("KeyDoesntMatter");
 		}
@@ -95,14 +102,14 @@ namespace CacheTower.Tests
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Get_ThrowsOnNullKey()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.GetAsync<int>(null);
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
 		public async Task Get_ThrowsOnUseAfterDisposal()
 		{
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
-			await DisposeOf(cacheStack);
+			await using (cacheStack) { }
 
 			await cacheStack.GetAsync<int>("KeyDoesntMatter");
 		}
@@ -110,21 +117,21 @@ namespace CacheTower.Tests
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Set_ThrowsOnNullKey()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.SetAsync(null, new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Set_ThrowsOnNullCacheEntry()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.SetAsync("MyCacheKey", (CacheEntry<int>)null);
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
 		public async Task Set_ThrowsOnUseAfterDisposal()
 		{
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
-			await DisposeOf(cacheStack);
+			await using (cacheStack) { }
 
 			await cacheStack.SetAsync("KeyDoesntMatter", 1, TimeSpan.FromDays(1));
 		}
@@ -132,7 +139,7 @@ namespace CacheTower.Tests
 		public async Task Set_ThrowsOnUseAfterDisposal_CacheEntry()
 		{
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
-			await DisposeOf(cacheStack);
+			await using (cacheStack) { }
 
 			await cacheStack.SetAsync("KeyDoesntMatter", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 		}
@@ -142,44 +149,49 @@ namespace CacheTower.Tests
 			var layer1 = new MemoryCacheLayer();
 			var layer2 = new MemoryCacheLayer();
 
-			var cacheStack = new CacheStack(new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = await cacheStack.SetAsync("Set_SetsAllTheLayers", 42, TimeSpan.FromDays(1));
 
 			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Set_SetsAllTheLayers"));
 			Assert.AreEqual(cacheEntry, await layer2.GetAsync<int>("Set_SetsAllTheLayers"));
+		}
+		[TestMethod]
+		public async Task Set_TriggersCacheChangeExtension()
+		{
+			var mockExtension = new Mock<ICacheChangeExtension>();
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, new[] { mockExtension.Object });
+			var cacheEntry = await cacheStack.SetAsync("Set_TriggersCacheChangeExtension", 42, TimeSpan.FromDays(1));
 
-			await DisposeOf(cacheStack);
+			mockExtension.Verify(e => e.OnCacheUpdateAsync("Set_TriggersCacheChangeExtension", cacheEntry.Expiry), Times.Once);
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullKey()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.GetOrSetAsync<int>(null, (old) => Task.FromResult(5), new CacheSettings(TimeSpan.FromDays(1)));
 		}
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullGetter()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheSettings(TimeSpan.FromDays(1)));
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheMiss()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
    			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheMiss", (oldValue) =>
 			{
 				return Task.FromResult(5);
 			}, new CacheSettings(TimeSpan.FromDays(1)));
 
 			Assert.AreEqual(5, result);
-
-			await DisposeOf(cacheStack);
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheHit()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.SetAsync("GetOrSet_CacheHit", 17, TimeSpan.FromDays(2));
 
 			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheHit", (oldValue) =>
@@ -188,13 +200,11 @@ namespace CacheTower.Tests
 			}, new CacheSettings(TimeSpan.FromDays(1)));
 
 			Assert.AreEqual(17, result);
-
-			await DisposeOf(cacheStack);
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheHitBackgroundRefresh()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(1));
 			await cacheStack.SetAsync("GetOrSet_CacheHitBackgroundRefresh", cacheEntry);
 
@@ -213,8 +223,6 @@ namespace CacheTower.Tests
 
 			var refetchedResult = await cacheStack.GetAsync<int>("GetOrSet_CacheHitBackgroundRefresh");
 			Assert.AreEqual(27, refetchedResult.Value);
-
-			await DisposeOf(cacheStack);
 		}
 		[TestMethod]
 		public async Task GetOrSet_BackPropagatesToEarlierCacheLayers()
@@ -223,7 +231,7 @@ namespace CacheTower.Tests
 			var layer2 = new MemoryCacheLayer();
 			var layer3 = new MemoryCacheLayer();
 
-			var cacheStack = new CacheStack(new[] { layer1, layer2, layer3 }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { layer1, layer2, layer3 }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
 			await layer2.SetAsync("GetOrSet_BackPropagatesToEarlierCacheLayers", cacheEntry);
 
@@ -239,13 +247,11 @@ namespace CacheTower.Tests
 
 			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("GetOrSet_BackPropagatesToEarlierCacheLayers"));
 			Assert.IsNull(await layer3.GetAsync<int>("GetOrSet_BackPropagatesToEarlierCacheLayers"));
-
-			await DisposeOf(cacheStack);
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheHitButAllowedStalePoint()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(-1));
 			await cacheStack.SetAsync("GetOrSet_CacheHitButAllowedStalePoint", cacheEntry);
 
@@ -254,13 +260,11 @@ namespace CacheTower.Tests
 				return Task.FromResult(27);
 			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.Zero));
 			Assert.AreEqual(27, result);
-			
-			await DisposeOf(cacheStack);
 		}
 		[TestMethod]
 		public async Task GetOrSet_ConcurrentStaleCacheHits()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(-2));
 			await cacheStack.SetAsync("GetOrSet_ConcurrentStaleCacheHits", cacheEntry);
 
@@ -291,21 +295,19 @@ namespace CacheTower.Tests
 
 			Assert.AreEqual(99, request1Result);
 			Assert.AreEqual(23, request2Result);
-			
-			await DisposeOf(cacheStack);
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
 		public async Task GetOrSet_ThrowsOnUseAfterDisposal()
 		{
 			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
-			await DisposeOf(cacheStack);
+			await using (cacheStack) { }
 
 			await cacheStack.GetOrSetAsync<int>("KeyDoesntMatter", (old) => Task.FromResult(1), new CacheSettings(TimeSpan.FromDays(1)));
 		}
 		[TestMethod]
 		public async Task GetOrSet_WaitingForRefresh()
 		{
-			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
 			var gettingLockSource = new TaskCompletionSource<bool>();
 			var continueRefreshSource = new TaskCompletionSource<bool>();
  
@@ -335,8 +337,6 @@ namespace CacheTower.Tests
 			Assert.AreEqual(42, await awaitingTasks[0]);
 			Assert.AreEqual(42, await awaitingTasks[1]);
 			Assert.AreEqual(42, await awaitingTasks[2]);
-
-			await DisposeOf(cacheStack);
 		}
 	}
 }
