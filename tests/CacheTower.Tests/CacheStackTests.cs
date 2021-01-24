@@ -99,6 +99,44 @@ namespace CacheTower.Tests
 			await cacheStack.EvictAsync("KeyDoesntMatter");
 		}
 
+
+		[TestMethod]
+		public async Task Flush_FlushesAllTheLayers()
+		{
+			var layer1 = new MemoryCacheLayer();
+			var layer2 = new MemoryCacheLayer();
+
+			await using var cacheStack = new CacheStack(new[] { layer1, layer2 }, Array.Empty<ICacheExtension>());
+			var cacheEntry = await cacheStack.SetAsync("Flush_FlushesAllTheLayers", 42, TimeSpan.FromDays(1));
+
+			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Flush_FlushesAllTheLayers"));
+			Assert.AreEqual(cacheEntry, await layer2.GetAsync<int>("Flush_FlushesAllTheLayers"));
+
+			await cacheStack.FlushAsync();
+
+			Assert.IsNull(await layer1.GetAsync<int>("Flush_FlushesAllTheLayers"));
+			Assert.IsNull(await layer2.GetAsync<int>("Flush_FlushesAllTheLayers"));
+		}
+		[TestMethod]
+		public async Task Flush_TriggersCacheChangeExtension()
+		{
+			var mockExtension = new Mock<ICacheChangeExtension>();
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, new[] { mockExtension.Object });
+
+			await cacheStack.FlushAsync();
+
+			mockExtension.Verify(e => e.OnCacheFlushAsync(), Times.Once);
+		}
+		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
+		public async Task Flush_ThrowsOnUseAfterDisposal()
+		{
+			var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, null);
+			await using (cacheStack)
+			{ }
+
+			await cacheStack.FlushAsync();
+		}
+
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Get_ThrowsOnNullKey()
 		{

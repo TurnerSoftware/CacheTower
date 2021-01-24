@@ -12,6 +12,7 @@ namespace CacheTower
 	{
 		ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry);
 		ValueTask OnCacheEvictionAsync(string cacheKey);
+		ValueTask OnCacheFlushAsync();
 	}
 
 	public interface ICacheRefreshCallSiteWrapperExtension : ICacheExtension

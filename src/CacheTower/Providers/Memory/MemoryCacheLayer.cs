@@ -30,6 +30,12 @@ namespace CacheTower.Providers.Memory
 			return new ValueTask();
 		}
 
+		public ValueTask FlushAsync()
+		{
+			Cache.Clear();
+			return new ValueTask();
+		}
+
 		public ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			if (Cache.TryGetValue(cacheKey, out var cacheEntry))

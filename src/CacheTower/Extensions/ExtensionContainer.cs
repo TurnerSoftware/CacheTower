@@ -93,6 +93,18 @@ namespace CacheTower.Extensions
 			}
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public async ValueTask OnCacheFlushAsync()
+		{
+			if (HasCacheChangeExtensions)
+			{
+				foreach (var extension in CacheChangeExtensions)
+				{
+					await extension.OnCacheFlushAsync();
+				}
+			}
+		}
+
 		public async ValueTask DisposeAsync()
 		{
 			if (Disposed)

@@ -46,6 +46,12 @@ namespace CacheTower.Tests.Providers.Redis
 		}
 
 		[TestMethod]
+		public async Task FlushFromCache()
+		{
+			await AssertCacheFlushAsync(new RedisCacheLayer(RedisHelper.GetConnection()));
+		}
+
+		[TestMethod]
 		public async Task CacheCleanup()
 		{
 			await AssertCacheCleanupAsync(new RedisCacheLayer(RedisHelper.GetConnection()));

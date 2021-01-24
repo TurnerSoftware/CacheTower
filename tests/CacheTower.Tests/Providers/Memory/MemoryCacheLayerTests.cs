@@ -26,6 +26,12 @@ namespace CacheTower.Tests.Providers.Memory
 		}
 
 		[TestMethod]
+		public async Task FlushFromCache()
+		{
+			await AssertCacheFlushAsync(new MemoryCacheLayer());
+		}
+
+		[TestMethod]
 		public async Task CacheCleanup()
 		{
 			await AssertCacheCleanupAsync(new MemoryCacheLayer());

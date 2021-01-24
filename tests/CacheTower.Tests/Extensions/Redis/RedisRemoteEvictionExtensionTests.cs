@@ -125,5 +125,47 @@ namespace CacheTower.Tests.Extensions.Redis
 			cacheLayerOne.Verify(c => c.EvictAsync("TestKey"), Times.Never, "Eviction took place locally where it should have been skipped");
 			cacheLayerTwo.Verify(c => c.EvictAsync("TestKey"), Times.Once, "Eviction was skipped where it should have taken place locally");
 		}
+
+		[TestMethod]
+		public async Task RemoteFlush()
+		{
+			RedisHelper.FlushDatabase();
+
+			var connection = RedisHelper.GetConnection();
+
+			var cacheStackMockOne = new Mock<ICacheStack>();
+			var cacheLayerOne = new Mock<ICacheLayer>();
+			var extensionOne = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerOne.Object });
+			extensionOne.Register(cacheStackMockOne.Object);
+
+			var cacheStackMockTwo = new Mock<ICacheStack>();
+			var cacheLayerTwo = new Mock<ICacheLayer>();
+			var extensionTwo = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerTwo.Object });
+			extensionTwo.Register(cacheStackMockTwo.Object);
+
+			var completionSource = new TaskCompletionSource<bool>();
+			connection.GetSubscriber().Subscribe("CacheTower.RemoteFlush").OnMessage(channelMessage =>
+			{
+				if (channelMessage.Message == StackExchange.Redis.RedisValue.EmptyString)
+				{
+					completionSource.SetResult(true);
+				}
+				else
+				{
+					completionSource.SetResult(false);
+				}
+			});
+
+			await extensionOne.OnCacheFlushAsync();
+
+			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
+			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the flush");
+
+			await Task.Delay(500);
+
+			cacheLayerOne.Verify(c => c.FlushAsync(), Times.Never, "Flush took place locally where it should have been skipped");
+			cacheLayerTwo.Verify(c => c.FlushAsync(), Times.Once, "Flush was skipped where it should have taken place locally");
+		}
 	}
 }

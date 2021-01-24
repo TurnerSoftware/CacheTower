@@ -55,6 +55,12 @@ namespace CacheTower.Tests.Providers.Database.MongoDB
 		}
 
 		[TestMethod]
+		public async Task FlushFromCache()
+		{
+			await AssertCacheFlushAsync(new MongoDbCacheLayer(MongoDbHelper.GetConnection()));
+		}
+
+		[TestMethod]
 		public async Task CacheCleanup()
 		{
 			await AssertCacheCleanupAsync(new MongoDbCacheLayer(MongoDbHelper.GetConnection()));

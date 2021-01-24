@@ -7,7 +7,7 @@ using CacheTower.Extensions;
 
 namespace CacheTower
 {
-	public class CacheStack : ICacheStack, IAsyncDisposable
+	public class CacheStack : ICacheStack, IFlushableCacheStack, IAsyncDisposable
 	{
 		private bool Disposed;
 
@@ -39,6 +39,19 @@ namespace CacheTower
 			{
 				throw new ObjectDisposedException("CacheStack is disposed");
 			}
+		}
+
+		public async ValueTask FlushAsync()
+		{
+			ThrowIfDisposed();
+
+			for (int i = 0, l = CacheLayers.Length; i < l; i++)
+			{
+				var layer = CacheLayers[i];
+				await layer.FlushAsync();
+			}
+
+			await Extensions.OnCacheFlushAsync();
 		}
 
 		public async ValueTask CleanupAsync()

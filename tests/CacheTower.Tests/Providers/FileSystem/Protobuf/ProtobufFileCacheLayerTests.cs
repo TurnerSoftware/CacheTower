@@ -45,6 +45,13 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 		}
 
 		[TestMethod]
+		public async Task FlushFromCache()
+		{
+			await using var cacheLayer = new ProtobufFileCacheLayer(DirectoryPath);
+			await AssertCacheFlushAsync(cacheLayer);
+		}
+
+		[TestMethod]
 		public async Task CacheCleanup()
 		{
 			await using var cacheLayer = new ProtobufFileCacheLayer(DirectoryPath);
