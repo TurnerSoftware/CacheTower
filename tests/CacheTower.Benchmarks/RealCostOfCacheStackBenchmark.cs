@@ -9,7 +9,7 @@ using CacheTower.Providers.Memory;
 
 namespace CacheTower.Benchmarks
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser, Orderer(SummaryOrderPolicy.FastestToSlowest)]
+	[SimpleJob(RuntimeMoniker.NetCoreApp31), MemoryDiagnoser, Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	public class RealCostOfCacheStackBenchmark
 	{
 		private class RealCostComplexType

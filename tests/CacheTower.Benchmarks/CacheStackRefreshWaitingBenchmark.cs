@@ -8,7 +8,7 @@ using CacheTower.Providers.Memory;
 
 namespace CacheTower.Benchmarks
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp30), MemoryDiagnoser]
+	[SimpleJob(RuntimeMoniker.NetCoreApp31), MemoryDiagnoser]
 	public class CacheStackRefreshWaitingBenchmark
 	{
 		private readonly static CacheStack CacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
