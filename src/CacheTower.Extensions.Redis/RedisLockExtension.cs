@@ -11,7 +11,7 @@ namespace CacheTower.Extensions.Redis
 	/// Based on Loris Cro's "RedisMemoLock"
 	/// https://github.com/kristoff-it/redis-memolock/blob/77da8f82711309b9dd81eafd02cb7ccfb22344c7/csharp/redis-memolock/RedisMemoLock.cs
 	/// </summary>
-	public class RedisLockExtension : IRefreshWrapperExtension
+	public class RedisLockExtension : ICacheRefreshCallSiteWrapperExtension
 	{
 		private ISubscriber Subscriber { get; }
 		private IDatabaseAsync Database { get; }
@@ -49,7 +49,7 @@ namespace CacheTower.Extensions.Redis
 			RegisteredStack = cacheStack;
 		}
 
-		public async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
+		public async ValueTask<CacheEntry<T>> WithRefreshAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
 			var lockKey = string.Format(Options.KeyFormat, cacheKey);
 			var hasLock = await Database.StringSetAsync(lockKey, RedisValue.EmptyString, expiry: Options.LockTimeout, when: When.NotExists);

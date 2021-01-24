@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CacheTower
 {
-#if NETSTANDARD2_0
-	public class CacheStack : ICacheStack, IDisposable
-#elif NETSTANDARD2_1
 	public class CacheStack : ICacheStack, IAsyncDisposable
-#endif
 	{
 		private bool Disposed;
 
@@ -73,6 +66,8 @@ namespace CacheTower
 				var layer = CacheLayers[i];
 				await layer.EvictAsync(cacheKey);
 			}
+
+			await Extensions.OnCacheEvictionAsync(cacheKey);
 		}
 
 		public async ValueTask<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive)
@@ -104,6 +99,8 @@ namespace CacheTower
 				var layer = CacheLayers[i];
 				await layer.SetAsync(cacheKey, cacheEntry);
 			}
+
+			await Extensions.OnCacheUpdateAsync(cacheKey, cacheEntry.Expiry);
 		}
 
 		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
@@ -262,7 +259,7 @@ namespace CacheTower
 			{
 				try
 				{
-					return await Extensions.RefreshValueAsync(cacheKey, async () =>
+					return await Extensions.WithRefreshAsync(cacheKey, async () =>
 					{
 						var previousEntry = await GetAsync<T>(cacheKey);
 
@@ -274,8 +271,6 @@ namespace CacheTower
 
 						var value = await getter(oldValue);
 						var refreshedEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
-
-						_ = Extensions.OnValueRefreshAsync(cacheKey, settings.TimeToLive);
 
 						UnlockWaitingTasks(cacheKey, refreshedEntry);
 
@@ -338,36 +333,6 @@ namespace CacheTower
 			}
 		}
 
-#if NETSTANDARD2_0
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (Disposed)
-			{
-				return;
-			}
-
-			if (disposing)
-			{
-				foreach (var layer in CacheLayers)
-				{
-					if (layer is IDisposable disposable)
-					{
-						disposable.Dispose();
-					}
-				}
-
-				Extensions.Dispose();
-			}
-
-			Disposed = true;
-		}
-#elif NETSTANDARD2_1
 		public async ValueTask DisposeAsync()
 		{
 			if (Disposed)
@@ -391,6 +356,5 @@ namespace CacheTower
 
 			Disposed = true;
 		}
-#endif
 	}
 }

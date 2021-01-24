@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace CacheTower
@@ -10,13 +8,14 @@ namespace CacheTower
 		void Register(ICacheStack cacheStack);
 	}
 
-	public interface IValueRefreshExtension : ICacheExtension
+	public interface ICacheChangeExtension : ICacheExtension
 	{
-		ValueTask OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive);
+		ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry);
+		ValueTask OnCacheEvictionAsync(string cacheKey);
 	}
 
-	public interface IRefreshWrapperExtension : ICacheExtension
+	public interface ICacheRefreshCallSiteWrapperExtension : ICacheExtension
 	{
-		ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings);
+		ValueTask<CacheEntry<T>> WithRefreshAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings);
 	}
 }

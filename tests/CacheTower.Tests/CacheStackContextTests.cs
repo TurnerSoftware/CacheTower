@@ -20,19 +20,19 @@ namespace CacheTower.Tests
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullKey()
 		{
-			var cacheStack = new CacheStack<object>(() => null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack<object>(() => null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.GetOrSetAsync<int>(null, (old, context) => Task.FromResult(5), new CacheSettings(TimeSpan.FromDays(1)));
 		}
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullGetter()
 		{
-			var cacheStack = new CacheStack<object>(() => null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack<object>(() => null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheSettings(TimeSpan.FromDays(1)));
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheMiss_ContextHasValue()
 		{
-			var cacheStack = new CacheStack<int>(() => 123, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack<int>(() => 123, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
    			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheMiss_ContextHasValue", (oldValue, context) =>
 			{
 				Assert.AreEqual(123, context);
@@ -40,14 +40,12 @@ namespace CacheTower.Tests
 			}, new CacheSettings(TimeSpan.FromDays(1)));
 
 			Assert.AreEqual(5, result);
-
-			await DisposeOf(cacheStack);
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheMiss_ContextFactoryCalledEachTime()
 		{
 			var contextValue = 0;
-			var cacheStack = new CacheStack<int>(() => contextValue++, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack<int>(() => contextValue++, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 
 			var result1 = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheMiss_ContextFactoryCalledEachTime_1", (oldValue, context) =>
 			{
@@ -62,8 +60,6 @@ namespace CacheTower.Tests
 				return Task.FromResult(5);
 			}, new CacheSettings(TimeSpan.FromDays(1)));
 			Assert.AreEqual(5, result2);
-
-			await DisposeOf(cacheStack);
 		}
 	}
 }

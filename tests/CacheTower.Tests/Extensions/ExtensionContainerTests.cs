@@ -15,62 +15,78 @@ namespace CacheTower.Tests.Extensions
 		[TestMethod]
 		public async Task AcceptsNullExtensions()
 		{
-			var container = new ExtensionContainer(null);
-			await DisposeOf(container);
+			await using var container = new ExtensionContainer(null);
 		}
 
 		[TestMethod]
 		public async Task AcceptsEmptyExtensions()
 		{
-			var container = new ExtensionContainer(Array.Empty<ICacheExtension>());
-			await DisposeOf(container);
+			await using var container = new ExtensionContainer(Array.Empty<ICacheExtension>());
 		}
 		
 		[TestMethod]
-		public async Task RefreshWrapperExtension()
+		public async Task RefreshCallSiteWrapperExtension()
 		{
 			var cacheStackMock = new Mock<ICacheStack>();
-			var refreshWrapperMock = new Mock<IRefreshWrapperExtension>();
-			var container = new ExtensionContainer(new[] { refreshWrapperMock.Object });
+			var refreshWrapperMock = new Mock<ICacheRefreshCallSiteWrapperExtension>();
+			await using var container = new ExtensionContainer(new[] { refreshWrapperMock.Object });
 
 			container.Register(cacheStackMock.Object);
 
 			var cacheEntry = new CacheEntry<int>(1, TimeSpan.FromDays(1));
 
-			var refreshedValue = await container.RefreshValueAsync("WrapperTestCacheKey", () =>
+			var refreshedValue = await container.WithRefreshAsync("WrapperTestCacheKey", () =>
 			{
 				return new ValueTask<CacheEntry<int>>(cacheEntry);
 			}, new CacheSettings(TimeSpan.FromDays(1)));
 
 			refreshWrapperMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
-			refreshWrapperMock.Verify(e => e.RefreshValueAsync(
+			refreshWrapperMock.Verify(e => e.WithRefreshAsync(
 					"WrapperTestCacheKey",
 					It.IsAny<Func<ValueTask<CacheEntry<int>>>>(), new CacheSettings(TimeSpan.FromDays(1))
 				),
 				Times.Once
 			);
-
-			await DisposeOf(container);
 		}
 
 		[TestMethod]
-		public async Task ValueRefreshExtension()
+		public async Task CacheChangeExtension_Update()
 		{
 			var cacheStackMock = new Mock<ICacheStack>();
-			var valueRefreshMock = new Mock<IValueRefreshExtension>();
-			var container = new ExtensionContainer(new[] { valueRefreshMock.Object });
+			var valueRefreshMock = new Mock<ICacheChangeExtension>();
+			await using var container = new ExtensionContainer(new[] { valueRefreshMock.Object });
 
 			container.Register(cacheStackMock.Object);
 
-			await container.OnValueRefreshAsync("ValueRefreshTestCacheKey", TimeSpan.FromDays(1));
+			var expiry = DateTime.UtcNow.AddDays(1);
+
+			await container.OnCacheUpdateAsync("CacheChangeKey", expiry);
 
 			valueRefreshMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
-			valueRefreshMock.Verify(e => 
-				e.OnValueRefreshAsync("ValueRefreshTestCacheKey", TimeSpan.FromDays(1)),
+			valueRefreshMock.Verify(e =>
+				e.OnCacheUpdateAsync("CacheChangeKey", expiry),
 				Times.Once
 			);
+		}
 
-			await DisposeOf(container);
+		[TestMethod]
+		public async Task CacheChangeExtension_Eviction()
+		{
+			var cacheStackMock = new Mock<ICacheStack>();
+			var valueRefreshMock = new Mock<ICacheChangeExtension>();
+			await using var container = new ExtensionContainer(new[] { valueRefreshMock.Object });
+
+			container.Register(cacheStackMock.Object);
+
+			var expiry = DateTime.UtcNow.AddDays(1);
+
+			await container.OnCacheEvictionAsync("CacheChangeKey");
+
+			valueRefreshMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
+			valueRefreshMock.Verify(e =>
+				e.OnCacheEvictionAsync("CacheChangeKey"),
+				Times.Once
+			);
 		}
 	}
 }

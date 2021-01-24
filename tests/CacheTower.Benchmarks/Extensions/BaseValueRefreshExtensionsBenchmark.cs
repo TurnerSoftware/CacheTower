@@ -8,12 +8,20 @@ namespace CacheTower.Benchmarks.Extensions
 {
 	public abstract class BaseValueRefreshExtensionsBenchmark : BaseExtensionsBenchmark
 	{
+		public DateTime BenchmarkValue;
+
+		[GlobalSetup]
+		public void Setup()
+		{
+			BenchmarkValue = DateTime.UtcNow;
+		}
+
 		[Benchmark]
 		public async Task OnValueRefresh()
 		{
-			var extension = CacheExtensionProvider() as IValueRefreshExtension;
+			var extension = CacheExtensionProvider() as ICacheChangeExtension;
 			extension.Register(CacheStack);
-			await extension.OnValueRefreshAsync("OnValueRefreshCacheKey", TimeSpan.FromDays(1));
+			await extension.OnCacheUpdateAsync("OnValueRefreshCacheKey", BenchmarkValue);
 			await DisposeOf(extension);
 		}
 	}

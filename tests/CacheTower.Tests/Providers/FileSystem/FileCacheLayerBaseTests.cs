@@ -48,16 +48,20 @@ namespace CacheTower.Tests.Providers.FileSystem
 		public async Task CanLoadExistingManifest()
 		{
 			var cacheLayer = new TestFileCacheLayer(DirectoryPath, ".test");
-			//IsAvailableAsync triggers load of manifest which in turn creates it because it doesn't exist
-			Assert.IsTrue(await cacheLayer.IsAvailableAsync("AnyKey"));
-			//Disposing will do any other final saves to the manifest
-			await DisposeOf(cacheLayer);
+			await using (cacheLayer)
+			{
+				//IsAvailableAsync triggers load of manifest which in turn creates it because it doesn't exist
+				Assert.IsTrue(await cacheLayer.IsAvailableAsync("AnyKey"));
+				//Disposing will do any other final saves to the manifest
+			}
 			Assert.AreEqual(2, cacheLayer.SerializeCount);
 			Assert.AreEqual(0, cacheLayer.DeserializeCount);
 
 			cacheLayer = new TestFileCacheLayer(DirectoryPath, ".test");
-			Assert.IsTrue(await cacheLayer.IsAvailableAsync("AnyKey"));
-			await DisposeOf(cacheLayer);
+			await using (cacheLayer)
+			{
+				Assert.IsTrue(await cacheLayer.IsAvailableAsync("AnyKey"));
+			}
 			Assert.AreEqual(1, cacheLayer.SerializeCount);
 			Assert.AreEqual(1, cacheLayer.DeserializeCount);
 		}
@@ -76,9 +80,8 @@ namespace CacheTower.Tests.Providers.FileSystem
 		[TestMethod]
 		public async Task NoFileExtension()
 		{
-			var cacheLayer = new TestFileCacheLayer(DirectoryPath, null);
+			await using var cacheLayer = new TestFileCacheLayer(DirectoryPath, null);
 			await cacheLayer.SetAsync("NoFileExtension", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-			await DisposeOf(cacheLayer);
 
 			var md5String = GetMD5String("NoFileExtension");
 			var expectedFilePath = Path.Combine(DirectoryPath, md5String);
@@ -87,9 +90,8 @@ namespace CacheTower.Tests.Providers.FileSystem
 		[TestMethod]
 		public async Task CustomFileExtension()
 		{
-			var cacheLayer = new TestFileCacheLayer(DirectoryPath, ".mycustomfileextension");
+			await using var cacheLayer = new TestFileCacheLayer(DirectoryPath, ".mycustomfileextension");
 			await cacheLayer.SetAsync("CustomFileExtension", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-			await DisposeOf(cacheLayer);
 
 			var md5String = GetMD5String("CustomFileExtension");
 			var expectedFilePath = Path.Combine(DirectoryPath, md5String + ".mycustomfileextension");

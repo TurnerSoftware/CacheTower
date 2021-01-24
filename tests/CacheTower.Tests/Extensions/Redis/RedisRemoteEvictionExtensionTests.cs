@@ -42,7 +42,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		}
 
 		[TestMethod]
-		public async Task EvictionOccursOnRefresh()
+		public async Task RemoteEvictionOccursOnRefresh()
 		{
 			RedisHelper.FlushDatabase();
 
@@ -71,7 +71,50 @@ namespace CacheTower.Tests.Extensions.Redis
 				}
 			});
 
-			await extensionOne.OnValueRefreshAsync("TestKey", TimeSpan.FromDays(1));
+			var expiry = DateTime.UtcNow.AddDays(1);
+			await extensionOne.OnCacheUpdateAsync("TestKey", expiry);
+
+			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
+			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the refreshed value");
+
+			await Task.Delay(500);
+
+			cacheLayerOne.Verify(c => c.EvictAsync("TestKey"), Times.Never, "Eviction took place locally where it should have been skipped");
+			cacheLayerTwo.Verify(c => c.EvictAsync("TestKey"), Times.Once, "Eviction was skipped where it should have taken place locally");
+		}
+
+		[TestMethod]
+		public async Task RemoteEvictionOccursOnLocalEviction()
+		{
+			RedisHelper.FlushDatabase();
+
+			var connection = RedisHelper.GetConnection();
+
+			var cacheStackMockOne = new Mock<ICacheStack>();
+			var cacheLayerOne = new Mock<ICacheLayer>();
+			var extensionOne = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerOne.Object });
+			extensionOne.Register(cacheStackMockOne.Object);
+
+			var cacheStackMockTwo = new Mock<ICacheStack>();
+			var cacheLayerTwo = new Mock<ICacheLayer>();
+			var extensionTwo = new RedisRemoteEvictionExtension(connection, new ICacheLayer[] { cacheLayerTwo.Object });
+			extensionTwo.Register(cacheStackMockTwo.Object);
+
+			var completionSource = new TaskCompletionSource<bool>();
+			connection.GetSubscriber().Subscribe("CacheTower.RemoteEviction").OnMessage(channelMessage =>
+			{
+				if (channelMessage.Message == "TestKey")
+				{
+					completionSource.SetResult(true);
+				}
+				else
+				{
+					completionSource.SetResult(false);
+				}
+			});
+
+			await extensionOne.OnCacheEvictionAsync("TestKey");
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
 			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");

@@ -8,18 +8,5 @@ namespace CacheTower.Tests
 {
 	public abstract class TestBase
 	{
-		protected static Task DisposeOf(IDisposable disposable)
-		{
-			disposable.Dispose();
-			return Task.CompletedTask;
-		}
-
-
-#if NETCOREAPP3_1
-		protected static async Task DisposeOf(IAsyncDisposable disposable)
-		{
-			await disposable.DisposeAsync();
-		}
-#endif
 	}
 }

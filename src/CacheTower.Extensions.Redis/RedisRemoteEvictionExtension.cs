@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
 namespace CacheTower.Extensions.Redis
 {
-	public class RedisRemoteEvictionExtension : IValueRefreshExtension
+	public class RedisRemoteEvictionExtension : ICacheChangeExtension
 	{
 		private ISubscriber Subscriber { get; }
 		private string RedisChannel { get; }
@@ -41,7 +39,16 @@ namespace CacheTower.Extensions.Redis
 			EvictFromLayers = evictFromLayers;
 		}
 
-		public async ValueTask OnValueRefreshAsync(string cacheKey, TimeSpan timeToLive)
+		public ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry)
+		{
+			return FlagEvictionAsync(cacheKey);
+		}
+		public ValueTask OnCacheEvictionAsync(string cacheKey)
+		{
+			return FlagEvictionAsync(cacheKey);
+		}
+
+		private async ValueTask FlagEvictionAsync(string cacheKey)
 		{
 			lock (FlaggedRefreshesLockObj)
 			{

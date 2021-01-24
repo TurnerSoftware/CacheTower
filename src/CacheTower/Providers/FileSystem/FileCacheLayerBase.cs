@@ -9,11 +9,7 @@ using Nito.AsyncEx;
 
 namespace CacheTower.Providers.FileSystem
 {
-#if NETSTANDARD2_0
-	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IDisposable where TManifest : IManifestEntry, new()
-#elif NETSTANDARD2_1
 	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IAsyncDisposable where TManifest : IManifestEntry, new()
-#endif
 	{
 		private bool Disposed = false;
 		private string DirectoryPath { get; }
@@ -271,30 +267,6 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
-#if NETSTANDARD2_0
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (Disposed)
-			{
-				return;
-			}
-
-			if (disposing)
-			{
-				SaveManifestAsync().Wait();
-				ManifestLock.Dispose();
-				FileNameHashAlgorithm.Dispose();
-			}
-
-			Disposed = true;
-		}
-#elif NETSTANDARD2_1
 		public async ValueTask DisposeAsync()
 		{
 			if (Disposed)
@@ -308,6 +280,5 @@ namespace CacheTower.Providers.FileSystem
 
 			Disposed = true;
 		}
-#endif
 	}
 }
