@@ -88,5 +88,25 @@ namespace CacheTower.Tests.Extensions
 				Times.Once
 			);
 		}
+
+		[TestMethod]
+		public async Task CacheChangeExtension_Flush()
+		{
+			var cacheStackMock = new Mock<ICacheStack>();
+			var valueRefreshMock = new Mock<ICacheChangeExtension>();
+			await using var container = new ExtensionContainer(new[] { valueRefreshMock.Object });
+
+			container.Register(cacheStackMock.Object);
+
+			var expiry = DateTime.UtcNow.AddDays(1);
+
+			await container.OnCacheFlushAsync();
+
+			valueRefreshMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
+			valueRefreshMock.Verify(e =>
+				e.OnCacheFlushAsync(),
+				Times.Once
+			);
+		}
 	}
 }
