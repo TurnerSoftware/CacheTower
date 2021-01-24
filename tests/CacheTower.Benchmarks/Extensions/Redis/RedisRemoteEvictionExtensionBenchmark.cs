@@ -8,7 +8,7 @@ namespace CacheTower.Benchmarks.Extensions.Redis
 	public class RedisRemoteEvictionExtensionBenchmark : BaseValueRefreshExtensionsBenchmark
 	{
 		[GlobalSetup]
-		public void Setup()
+		public new void Setup()
 		{
 			CacheExtensionProvider = () => new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { new MemoryCacheLayer() });
 		}
