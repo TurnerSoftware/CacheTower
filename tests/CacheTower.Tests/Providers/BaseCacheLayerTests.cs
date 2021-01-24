@@ -58,6 +58,20 @@ namespace CacheTower.Tests.Providers
 			Assert.IsNull(await DoCleanupTest(DateTime.UtcNow.AddDays(-1)), "Cleanup kept entry past the end of life");
 		}
 
+		protected static async Task AssertCacheFlushAsync(ICacheLayer cacheLayer)
+		{
+			var cacheEntry = new CacheEntry<int>(77, TimeSpan.FromDays(1));
+			await cacheLayer.SetAsync("AssertCacheFlush-ToFlush", cacheEntry);
+
+			var cacheEntryGetPreFlush = await cacheLayer.GetAsync<int>("AssertCacheFlush-ToFlush");
+			Assert.IsNotNull(cacheEntryGetPreFlush, "Value not set in cache");
+
+			await cacheLayer.FlushAsync();
+
+			var cacheEntryGetPostFlush = await cacheLayer.GetAsync<int>("AssertCacheFlush-ToFlush");
+			Assert.IsNull(cacheEntryGetPostFlush, "Didn't flush value that should have been");
+		}
+
 		protected static async Task AssertComplexTypeCachingAsync(ICacheLayer cacheLayer)
 		{
 			var complexTypeOneEntry = new CacheEntry<ComplexTypeCaching_TypeOne>(new ComplexTypeCaching_TypeOne

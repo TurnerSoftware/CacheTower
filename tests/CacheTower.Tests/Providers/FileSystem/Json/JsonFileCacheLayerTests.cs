@@ -46,6 +46,13 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 		}
 
 		[TestMethod]
+		public async Task FlushFromCache()
+		{
+			await using var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
+			await AssertCacheFlushAsync(cacheLayer);
+		}
+
+		[TestMethod]
 		public async Task CacheCleanup()
 		{
 			await using var cacheLayer = new JsonFileCacheLayer(DirectoryPath);
