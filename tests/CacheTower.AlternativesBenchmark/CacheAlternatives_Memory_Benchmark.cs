@@ -137,7 +137,7 @@ namespace CacheTower.AlternativesBenchmark
 		{
 			var fusionCache = new FusionCache(new FusionCacheOptions());
 
-			LoopAction(Iterations, async () =>
+			LoopAction(Iterations, () =>
 			{
 				fusionCache.Set("TestKey", 123, TimeSpan.FromDays(1));
 				fusionCache.GetOrDefault<int>("TestKey");
