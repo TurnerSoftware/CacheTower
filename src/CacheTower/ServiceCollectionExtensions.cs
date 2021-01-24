@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		}
 
 		/// <summary>
-		/// Adds a <see cref="CacheStack"/> singleton to the specified <see cref="IServiceCollection"/> with the specified <paramref name="contextFactory"/>, layers and extensions.
+		/// Adds a <see cref="CacheStack{TContext}"/> singleton to the specified <see cref="IServiceCollection"/> with the specified <paramref name="contextFactory"/>, layers and extensions.
 		/// </summary>
 		/// <param name="services"></param>
 		/// <param name="context"></param>

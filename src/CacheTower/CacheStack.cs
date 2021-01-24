@@ -7,7 +7,7 @@ using CacheTower.Extensions;
 
 namespace CacheTower
 {
-	public class CacheStack : ICacheStack, IAsyncDisposable
+	public class CacheStack : ICacheStack, IFlushableCacheStack, IAsyncDisposable
 	{
 		private bool Disposed;
 
@@ -51,7 +51,7 @@ namespace CacheTower
 				await layer.FlushAsync();
 			}
 
-			_ = Extensions.OnCacheFlushAsync();
+			await Extensions.OnCacheFlushAsync();
 		}
 
 		public async ValueTask CleanupAsync()

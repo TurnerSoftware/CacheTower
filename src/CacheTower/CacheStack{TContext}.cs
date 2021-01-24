@@ -3,11 +3,7 @@ using System.Threading.Tasks;
 
 namespace CacheTower
 {
-#if NETSTANDARD2_0
 	public class CacheStack<TContext> : CacheStack, ICacheStack<TContext>
-#elif NETSTANDARD2_1
-	public class CacheStack<TContext> : CacheStack, ICacheStack<TContext>
-#endif
 	{
 		private Func<TContext> ContextFactory { get; }
 
