@@ -90,14 +90,15 @@ This works in the situation where one web server has refreshed a key and wants t
 
 While this can work independently of using `RedisLockExtension` or even the `RedisCacheLayer`, you most likely would be using these all at the same time.
 
-## Example Usage
+## Usage
 
-### Setup with DI
+### Using Dependency Injection (DI)
+
 ```csharp
 
 public void ConfigureServices(IServiceCollection services)
 {
-	services.AddCacheStack<SomeClassThatExtendsICacheContext>(
+	services.AddCacheStack<MyCustomContext>(
 		new [] {
 			new MemoryCacheLayer(),
 			new ProtobufFileCacheLayer("directory/where/the/cache/can/write")
@@ -108,16 +109,28 @@ public void ConfigureServices(IServiceCollection services)
 	);
 }
 
+...
+
+public class MyController
+{
+	private ICacheStack<MyCustomContext> CacheStack { get; set; }
+
+	public MyController(ICacheStack<MyCustomContext> cacheStack)
+	{
+		CacheStack = cacheStack;
+	}
+}
 ```
 
-### Setup without DI
-Setup and store a singleton of `CacheStack`
+### Using a static variable/singleton
+
 ```csharp
+public static ICacheStack<MyCustomContext> CacheStack { get; private set; }
 
-//Context is allowed to be null if you don't need it
-var myContext = new SomeClassThatExtendsICacheContext();
+...
 
-var myCacheStack = new CacheStack<SomeClassThatExtendsICacheContext>(myContext, new [] {
+var myContext = new MyCustomContext();
+CacheStack = new CacheStack<MyCustomContext>(myContext, new [] {
 	new MemoryCacheLayer(),
 	new ProtobufFileCacheLayer("directory/where/the/cache/can/write")
 }, new [] {
@@ -129,11 +142,38 @@ var myCacheStack = new CacheStack<SomeClassThatExtendsICacheContext>(myContext, 
 ### Accessing the Cache
 
 Somewhere in your code base where you are wanting to optionally pull data from your cache.
+
 ```csharp
 await myCacheStack.GetOrSetAsync<MyTypeInTheCache>("MyCacheKey", async (old, context) => {
 	//Here is where your heavy work code goes, maybe a call to the DB or API
 	//Your returned value will be cached
 	//"context" here is what you declared in the CacheStack constructor
-	return await HoweverIGetMyData();
+	return await HoweverIGetMyData(context);
 }, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromMinutes(60));
 ```
+
+## Advanced Usage
+
+### Flushing the Cache
+
+There are times where you want to clear all cache layers - whether to help with debugging an issue or force fresh data on subsequent calls to the cache.
+This type of action is available in Cache Tower however is obfuscated somewhat to prevent accidental use.
+Please only flush the cache if you know what you're doing and what it would mean!
+
+If you have injected `ICacheContext` or `ICacheContext<MyCacheContext>` into your current method or class, you can cast to `IFlushableCacheStack`.
+This interface exposes the method `FlushAsync`.
+
+```csharp
+public ICacheContext MyCacheContext { get; set; } // Value injected via DI
+
+...
+
+await (MyCacheContext as IFlushableCacheStack).FlushAsync();
+```
+
+For the `MemoryCacheLayer`, the backing store is cleared.
+For file cache layers, all cache files are removed.
+For MongoDB, all documents are deleted in the cache collection.
+For Redis, a `FlushDB` command is sent.
+
+Combined with the `RedisRemoteEvictionExtension`, a call to `FlushAsync` will additionally be sent to all connected `CacheStack` instances.
