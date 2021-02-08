@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.Providers.Memory;
 using EasyCaching.InMemory;
 using LazyCache;
-using ZiggyCreatures.FusionCaching;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace CacheTower.AlternativesBenchmark
 {
