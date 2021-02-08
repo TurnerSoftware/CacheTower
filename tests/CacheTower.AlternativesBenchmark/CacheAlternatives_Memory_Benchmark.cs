@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.Providers.Memory;
 using EasyCaching.InMemory;
 using LazyCache;
-using ZiggyCreatures.FusionCaching;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace CacheTower.AlternativesBenchmark
 {
@@ -137,7 +135,7 @@ namespace CacheTower.AlternativesBenchmark
 		{
 			var fusionCache = new FusionCache(new FusionCacheOptions());
 
-			LoopAction(Iterations, async () =>
+			LoopAction(Iterations, () =>
 			{
 				fusionCache.Set("TestKey", 123, TimeSpan.FromDays(1));
 				fusionCache.GetOrDefault<int>("TestKey");
