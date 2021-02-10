@@ -15,7 +15,7 @@ using ProtoBuf;
 
 namespace CacheTower.Benchmarks.Providers
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp31), MemoryDiagnoser, Orderer(SummaryOrderPolicy.FastestToSlowest)]
+	[SimpleJob(RuntimeMoniker.NetCoreApp50), MemoryDiagnoser, Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	public class CacheLayerComparisonBenchmark
 	{
 		[Params(1, 10)]

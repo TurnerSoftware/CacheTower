@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
@@ -16,26 +14,17 @@ namespace CacheTower.Benchmarks
 	[Config(typeof(ConfigSettings))]
 	public class CacheStackBenchmark
 	{
-		[Params(1, 100)]
+		[Params(100)]
 		public int WorkIterations { get; set; }
 
 		public class ConfigSettings : ManualConfig
 		{
 			public ConfigSettings()
 			{
-				AddJob(Job.Default.WithRuntime(CoreRuntime.Core31).WithMaxIterationCount(50));
+				AddJob(Job.Default.WithRuntime(CoreRuntime.Core50).WithMaxIterationCount(50));
 				AddDiagnoser(MemoryDiagnoser.Default);
 
 				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(CultureInfo, true, SizeUnit.B, TimeUnit.Nanosecond);
-			}
-		}
-
-		[Benchmark]
-		public async Task SetupAndTeardown()
-		{
-			await using (new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
-			{
-
 			}
 		}
 
@@ -163,65 +152,20 @@ namespace CacheTower.Benchmarks
 			}
 		}
 		[Benchmark]
-		public async Task GetOrSet_TwoSimultaneous()
+		public async Task GetOrSet_UnderLoad()
 		{
 			await using (var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
 				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
 
-				for (var i = 0; i < WorkIterations; i++)
+				Parallel.For(0, WorkIterations, async value =>
 				{
-					var task1 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
+					await cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
 					{
 						await Task.Delay(30);
 						return 12;
 					}, new CacheSettings(TimeSpan.FromDays(1)));
-					var task2 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
-					{
-						await Task.Delay(30);
-						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
-
-					await task1;
-					await task2;
-				}
-			}
-		}
-		[Benchmark]
-		public async Task GetOrSet_FourSimultaneous()
-		{
-			await using (var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
-			{
-				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
-
-				for (var i = 0; i < WorkIterations; i++)
-				{
-					var task1 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
-					{
-						await Task.Delay(30);
-						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
-					var task2 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
-					{
-						await Task.Delay(30);
-						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
-					var task3 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
-					{
-						await Task.Delay(30);
-						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
-					var task4 = cacheStack.GetOrSetAsync<int>("GetOrSet", async (old) =>
-					{
-						await Task.Delay(30);
-						return 12;
-					}, new CacheSettings(TimeSpan.FromDays(1)));
-
-					await task1;
-					await task2;
-					await task3;
-					await task4;
-				}
+				});
 			}
 		}
 	}

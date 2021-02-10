@@ -4,7 +4,7 @@ using CacheTower.Extensions.Redis;
 
 namespace CacheTower.Benchmarks.Extensions.Redis
 {
-	public class RedisLockExtensionBenchmark : BaseRefreshWrapperExtensionsBenchmark
+	public class RedisLockExtensionBenchmark : BaseRefreshWrapperExtensionBenchmark
 	{
 		[GlobalSetup]
 		public void Setup()

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
@@ -20,7 +18,7 @@ namespace CacheTower.Benchmarks.Extensions
 		{
 			public ConfigSettings()
 			{
-				AddJob(Job.Default.WithRuntime(CoreRuntime.Core31).WithMaxIterationCount(200));
+				AddJob(Job.Default.WithRuntime(CoreRuntime.Core50).WithMaxIterationCount(200));
 				AddDiagnoser(MemoryDiagnoser.Default);
 
 				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(CultureInfo, true, SizeUnit.B, TimeUnit.Nanosecond);
@@ -40,21 +38,6 @@ namespace CacheTower.Benchmarks.Extensions
 			{
 				await asyncDisposableExtension.DisposeAsync();
 			}
-		}
-
-		[Benchmark]
-		public async Task Overhead()
-		{
-			var extension = CacheExtensionProvider();
-			await DisposeOf(extension);
-		}
-
-		[Benchmark]
-		public async Task Register()
-		{
-			var extension = CacheExtensionProvider();
-			extension.Register(CacheStack);
-			await DisposeOf(extension);
 		}
 	}
 }
