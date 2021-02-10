@@ -114,7 +114,7 @@ namespace CacheTower.AlternativesBenchmark
 			{
 				lazyCache.Add("TestKey", 123, TimeSpan.FromDays(1));
 				lazyCache.Get<int>("TestKey");
-				lazyCache.GetOrAdd("TestKey", () => "Hello World", TimeSpan.FromDays(1));
+				lazyCache.GetOrAdd("GetOrSet_TestKey", () => "Hello World", TimeSpan.FromDays(1));
 			});
 		}
 
@@ -127,7 +127,7 @@ namespace CacheTower.AlternativesBenchmark
 			{
 				lazyCache.Add("TestKey", 123, TimeSpan.FromDays(1));
 				await lazyCache.GetAsync<int>("TestKey");
-				await lazyCache.GetOrAddAsync("TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
+				await lazyCache.GetOrAddAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
 			});
 		}
 
@@ -140,7 +140,7 @@ namespace CacheTower.AlternativesBenchmark
 			{
 				fusionCache.Set("TestKey", 123, TimeSpan.FromDays(1));
 				fusionCache.GetOrDefault<int>("TestKey");
-				fusionCache.GetOrSet("TestKey", (cancellationToken) => "Hello World", TimeSpan.FromDays(1));
+				fusionCache.GetOrSet("GetOrSet_TestKey", (cancellationToken) => "Hello World", TimeSpan.FromDays(1));
 			});
 		}
 
@@ -153,7 +153,7 @@ namespace CacheTower.AlternativesBenchmark
 			{
 				await fusionCache.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
 				await fusionCache.GetOrDefaultAsync<int>("TestKey");
-				await fusionCache.GetOrSetAsync("TestKey", (cancellationToken) => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
+				await fusionCache.GetOrSetAsync("GetOrSet_TestKey", (cancellationToken) => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
 			});
 		}
 	}
