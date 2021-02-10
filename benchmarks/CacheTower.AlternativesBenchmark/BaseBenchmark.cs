@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
@@ -9,7 +7,7 @@ using BenchmarkDotNet.Order;
 
 namespace CacheTower.AlternativesBenchmark
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp31), MemoryDiagnoser, MaxIterationCount(200), Orderer(SummaryOrderPolicy.FastestToSlowest)]
+	[SimpleJob(RuntimeMoniker.NetCoreApp50), MemoryDiagnoser, MaxIterationCount(200), Orderer(SummaryOrderPolicy.FastestToSlowest)]
 	public abstract class BaseBenchmark
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
