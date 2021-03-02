@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace CacheTower
 {
+	/// <summary>
+	/// An <see cref="ICacheStack"/> is the backbone for Cache Tower. It is the primary user-facing type for interacting with the cache.
+	/// </summary>
 	public interface ICacheStack
 	{
 		/// <summary>
@@ -60,10 +63,15 @@ namespace CacheTower
 		/// <param name="cacheKey">The cache entry's key.</param>
 		/// <param name="getter">The value generator when no cache entry is available.</param>
 		/// <param name="settings">Cache control settings.</param>
-		/// <returns></returns>
+		/// <returns>The item from the cache that corresponds to the given <paramref name="cacheKey"/>.</returns>
 		ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings);
 	}
 
+	/// <remarks>
+	/// An <see cref="IFlushableCacheStack"/> exposes an extra method to completely clear all the data from a cache stack.
+	/// This is intentionally exposed as a separate interface in an attempt to prevent developers from inadvertently clearing all their cache data in production.
+	/// </remarks>
+	/// <inheritdoc/>
 	public interface IFlushableCacheStack : ICacheStack
 	{
 		/// <summary>
@@ -78,18 +86,18 @@ namespace CacheTower
 		ValueTask FlushAsync();
 	}
 
+	/// <remarks>
+	/// An <see cref="ICacheStack{TContext}"/> provides an additional <c>GetOrSetAsync</c> method that passes in a context object.
+	/// This context allows easier access to inject dependencies like database contexts or any other type needed to help generate the item to cache.
+	/// </remarks>
+	/// <typeparam name="TContext">The type of context that is passed during the cache entry generation process.</typeparam>
+	/// <inheritdoc/>
 	public interface ICacheStack<out TContext> : ICacheStack
 	{
-		/// <summary>
-		/// Attempts to retrieve the value for the given <paramref name="cacheKey"/>.
-		/// When unavailable, will fallback to use <paramref name="getter"/> to generate the value, storing it in the cache.
-		/// </summary>
-		/// <remarks>Additionally provides access to a context object, allowing easier access to inject dependencies.</remarks>
-		/// <typeparam name="T">The type of value in the cache entry.</typeparam>
-		/// <param name="cacheKey">The cache entry's key.</param>
-		/// <param name="getter">The value generator when no cache entry is available.</param>
-		/// <param name="settings">Cache control settings.</param>
-		/// <returns></returns>
+		/// <remarks>
+		/// Additionally provides access to a context object during refreshing, allowing easier access to inject dependencies.
+		/// </remarks>
+		/// <inheritdoc cref="ICacheStack.GetOrSetAsync{T}(string, Func{T, Task{T}}, CacheSettings)"/>
 		ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, TContext, Task<T>> getter, CacheSettings settings);
 	}
 }

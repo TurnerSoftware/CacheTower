@@ -6,7 +6,7 @@ using MongoFramework.Infrastructure.Commands;
 
 namespace CacheTower.Providers.Database.MongoDB.Commands
 {
-	public class EvictCommand : IWriteCommand<DbCachedEntry>
+	internal class EvictCommand : IWriteCommand<DbCachedEntry>
 	{
 		private string CacheKey { get; }
 

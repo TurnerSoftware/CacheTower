@@ -8,7 +8,7 @@ using MongoFramework.Attributes;
 
 namespace CacheTower.Providers.Database.MongoDB.Entities
 {
-	public class DbCachedEntry
+	internal class DbCachedEntry
 	{
 		public ObjectId Id { get; set; }
 

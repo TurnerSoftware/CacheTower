@@ -6,16 +6,29 @@ using System.Threading.Tasks;
 
 namespace CacheTower.Extensions
 {
-	public class AutoCleanupExtension : ICacheExtension, IDisposable
+	/// <summary>
+	/// A basic delay-based cleanup extension for removing expired entries from cache layers.
+	/// </summary>
+	/// <remarks>
+	/// Not all cache layers manage their own cleanup of expired entries.
+	/// This calls <see cref="ICacheStack.CleanupAsync"/> which triggers the cleanup on each layer.
+	/// </remarks>
+	public class AutoCleanupExtension : ICacheExtension, IAsyncDisposable
 	{
+		/// <summary>
+		/// The frequency at which an automatic cleanup is performed.
+		/// </summary>
 		public TimeSpan Frequency { get; }
 
 		private Task BackgroundTask { get; set; }
 
 		private CancellationTokenSource TokenSource { get; }
 
-		private bool Disposed;
-
+		/// <summary>
+		/// Creates a new <see cref="AutoCleanupExtension"/> with the given <paramref name="frequency"/>.
+		/// </summary>
+		/// <param name="frequency">The frequency at which an automatic cleanup is performed.</param>
+		/// <param name="cancellationToken">Optional cancellation token to end automatic cleanups.</param>
 		public AutoCleanupExtension(TimeSpan frequency, CancellationToken cancellationToken = default)
 		{
 			if (frequency <= TimeSpan.Zero)
@@ -27,6 +40,7 @@ namespace CacheTower.Extensions
 			TokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		}
 
+		/// <inheritdoc/>
 		public void Register(ICacheStack cacheStack)
 		{
 			if (BackgroundTask != null)
@@ -39,42 +53,29 @@ namespace CacheTower.Extensions
 
 		private async Task BackgroundCleanup(ICacheStack cacheStack)
 		{
-			var cancellationToken = TokenSource.Token;
-			while (!cancellationToken.IsCancellationRequested)
+			try
 			{
-				await Task.Delay(Frequency, cancellationToken);
-				cancellationToken.ThrowIfCancellationRequested();
-				await cacheStack.CleanupAsync();
+				var cancellationToken = TokenSource.Token;
+				while (!cancellationToken.IsCancellationRequested)
+				{
+					await Task.Delay(Frequency, cancellationToken);
+					cancellationToken.ThrowIfCancellationRequested();
+					await cacheStack.CleanupAsync();
+				}
+			}
+			catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+			{
 			}
 		}
 
-		public void Dispose()
+		/// <summary>
+		/// Cancels the automatic cleanup and releases all resources that were being used.
+		/// </summary>
+		/// <returns></returns>
+		public async ValueTask DisposeAsync()
 		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (Disposed)
-			{
-				return;
-			}
-
-			if (disposing)
-			{
-				TokenSource.Cancel();
-				try
-				{
-					BackgroundTask.Wait();
-				}
-				catch (AggregateException ex) when (ex.InnerException is TaskCanceledException)
-				{
-					//Ignores
-				}
-			}
-
-			Disposed = true;
+			TokenSource.Cancel();
+			await BackgroundTask;
 		}
 	}
 }

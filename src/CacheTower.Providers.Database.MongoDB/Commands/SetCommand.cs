@@ -6,7 +6,7 @@ using MongoFramework.Infrastructure.Commands;
 
 namespace CacheTower.Providers.Database.MongoDB.Commands
 {
-	public class SetCommand : IWriteCommand<DbCachedEntry>
+	internal class SetCommand : IWriteCommand<DbCachedEntry>
 	{
 		public DbCachedEntry Entry { get; }
 

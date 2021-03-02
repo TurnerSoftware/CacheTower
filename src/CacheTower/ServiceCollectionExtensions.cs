@@ -4,6 +4,9 @@ using CacheTower.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+	/// <summary>
+	/// Microsoft <see cref="IServiceCollection"/> extensions for Cache Tower
+	/// </summary>
 	public static class ServiceCollectionExtensions
 	{
 		/// <summary>
@@ -22,7 +25,6 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// An implementation factory of <typeparamref name="TContext"/> is built using the <see cref="IServiceProvider"/> established when instantiating the <see cref="CacheStack{TContext}"/>.
 		/// </summary>
 		/// <param name="services"></param>
-		/// <param name="context"></param>
 		/// <param name="layers"></param>
 		/// <param name="extensions"></param>
 		public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheLayer[] layers, ICacheExtension[] extensions)
@@ -37,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// Adds a <see cref="CacheStack{TContext}"/> singleton to the specified <see cref="IServiceCollection"/> with the specified <paramref name="contextFactory"/>, layers and extensions.
 		/// </summary>
 		/// <param name="services"></param>
-		/// <param name="context"></param>
+		/// <param name="contextFactory"></param>
 		/// <param name="layers"></param>
 		/// <param name="extensions"></param>
 		public static void AddCacheStack<TContext>(this IServiceCollection services, Func<TContext> contextFactory, ICacheLayer[] layers, ICacheExtension[] extensions)

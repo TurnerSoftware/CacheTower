@@ -9,6 +9,12 @@ using Nito.AsyncEx;
 
 namespace CacheTower.Providers.FileSystem
 {
+	/// <summary>
+	/// Provides flexible file system caching.
+	/// This uses a cache manifest file to keep track of the cache entries and their corresponding files.
+	/// The individual cache entries are stored within their own files.
+	/// </summary>
+	/// <typeparam name="TManifest"></typeparam>
 	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IAsyncDisposable where TManifest : IManifestEntry, new()
 	{
 		private bool Disposed = false;
@@ -24,6 +30,11 @@ namespace CacheTower.Providers.FileSystem
 		private ConcurrentDictionary<string, IManifestEntry> CacheManifest { get; set; }
 		private ConcurrentDictionary<string, AsyncReaderWriterLock> FileLock { get; }
 
+		/// <summary>
+		/// Initialises the file cache layer with the given <paramref name="directoryPath"/> and <paramref name="fileExtension"/>.
+		/// </summary>
+		/// <param name="directoryPath"></param>
+		/// <param name="fileExtension"></param>
 		protected FileCacheLayerBase(string directoryPath, string fileExtension)
 		{
 			DirectoryPath = directoryPath;
@@ -32,8 +43,20 @@ namespace CacheTower.Providers.FileSystem
 			FileLock = new ConcurrentDictionary<string, AsyncReaderWriterLock>(StringComparer.Ordinal);
 		}
 
+		/// <summary>
+		/// Provides stream deserialization to <typeparamref name="T"/>.
+		/// </summary>
+		/// <typeparam name="T">The type to deserialize to.</typeparam>
+		/// <param name="stream">The stream to deserialize from.</param>
+		/// <returns></returns>
 		protected abstract T Deserialize<T>(Stream stream);
 
+		/// <summary>
+		/// Provides <typeparamref name="T"/> serialization to a stream.
+		/// </summary>
+		/// <typeparam name="T">The type for <paramref name="value"/> that will be serialized.</typeparam>
+		/// <param name="stream">The stream that the serialization is written to.</param>
+		/// <param name="value">The value to be serialized.</param>
 		protected abstract void Serialize<T>(Stream stream, T value);
 
 		private async Task<T> DeserializeFileAsync<T>(string path)
@@ -92,6 +115,10 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
+		/// <summary>
+		/// Saves the cache manifest to the file system.
+		/// </summary>
+		/// <returns></returns>
 		public async Task SaveManifestAsync()
 		{
 			await ManifestLock.WaitAsync();
@@ -161,6 +188,7 @@ namespace CacheTower.Providers.FileSystem
 			return new string(charArrayPtr, 0, charArrayLength);
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask CleanupAsync()
 		{
 			await TryLoadManifestAsync();
@@ -186,6 +214,7 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask EvictAsync(string cacheKey)
 		{
 			await TryLoadManifestAsync();
@@ -205,6 +234,8 @@ namespace CacheTower.Providers.FileSystem
 				}
 			}
 		}
+
+		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{
 			await TryLoadManifestAsync();
@@ -229,6 +260,7 @@ namespace CacheTower.Providers.FileSystem
 			await SaveManifestAsync();
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			await TryLoadManifestAsync();
@@ -251,6 +283,10 @@ namespace CacheTower.Providers.FileSystem
 			return default;
 		}
 
+		/// <remarks>
+		/// For <see cref="FileCacheLayerBase{TManifest}"/>, availability is determined by being able to load the manifest.
+		/// </remarks>
+		/// <inheritdoc/>
 		public async ValueTask<bool> IsAvailableAsync(string cacheKey)
 		{
 			if (IsManifestAvailable == null)
@@ -269,6 +305,7 @@ namespace CacheTower.Providers.FileSystem
 			return IsManifestAvailable.Value;
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			await TryLoadManifestAsync();
@@ -290,6 +327,10 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
+		/// <summary>
+		/// Saves the manifest to the file system and releases all resources associated.
+		/// </summary>
+		/// <returns></returns>
 		public async ValueTask DisposeAsync()
 		{
 			if (Disposed)

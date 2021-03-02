@@ -8,9 +8,11 @@ using StackExchange.Redis;
 namespace CacheTower.Extensions.Redis
 {
 	/// <summary>
-	/// Based on Loris Cro's "RedisMemoLock"
-	/// https://github.com/kristoff-it/redis-memolock/blob/77da8f82711309b9dd81eafd02cb7ccfb22344c7/csharp/redis-memolock/RedisMemoLock.cs
+	/// Provides distributed cache locking via Redis.
 	/// </summary>
+	/// <remarks>
+	/// Based on <a href="https://github.com/kristoff-it/redis-memolock/blob/77da8f82711309b9dd81eafd02cb7ccfb22344c7/csharp/redis-memolock/RedisMemoLock.cs">Loris Cro's RedisMemoLock"</a>
+	/// </remarks>
 	public class RedisLockExtension : ICacheRefreshCallSiteWrapperExtension
 	{
 		private ISubscriber Subscriber { get; }
@@ -21,9 +23,18 @@ namespace CacheTower.Extensions.Redis
 		
 		internal ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
 
-		public RedisLockExtension(ConnectionMultiplexer connection) : this(connection, RedisLockOptions.Default) { }
+		/// <summary>
+		/// Creates a new instance of <see cref="RedisLockExtension"/> with the given <paramref name="connection"/> and default lock options.
+		/// </summary>
+		/// <param name="connection">The primary connection to Redis where the distributed lock will be co-ordinated through.</param>
+		public RedisLockExtension(IConnectionMultiplexer connection) : this(connection, RedisLockOptions.Default) { }
 
-		public RedisLockExtension(ConnectionMultiplexer connection, RedisLockOptions options)
+		/// <summary>
+		/// Creates a new instance of <see cref="RedisLockExtension"/> with the given <paramref name="connection"/> and <paramref name="options"/>.
+		/// </summary>
+		/// <param name="connection">The primary connection to Redis where the distributed lock will be co-ordinated through.</param>
+		/// <param name="options">The lock options to configure the behaviour of locking.</param>
+		public RedisLockExtension(IConnectionMultiplexer connection, RedisLockOptions options)
 		{
 			if (connection == null)
 			{
@@ -39,6 +50,7 @@ namespace CacheTower.Extensions.Redis
 			Subscriber.Subscribe(options.RedisChannel, (channel, value) => UnlockWaitingTasks(value));
 		}
 
+		/// <inheritdoc/>
 		public void Register(ICacheStack cacheStack)
 		{
 			if (RegisteredStack != null)
@@ -49,6 +61,12 @@ namespace CacheTower.Extensions.Redis
 			RegisteredStack = cacheStack;
 		}
 
+		/// <remarks>
+		/// The <see cref="RedisLockExtension"/> attempts to set a key in Redis representing whether it has achieved a lock.
+		/// If it succeeds to set the key, it continues to refresh the value, broadcasting the success of the updated value to all subscribers.
+		/// If it fails to set the key, it waits until notified that the cache is updated, retrieving it from the cache stack and returning the value.
+		/// </remarks>
+		/// <inheritdoc/>
 		public async ValueTask<CacheEntry<T>> WithRefreshAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
 		{
 			var lockKey = string.Format(Options.KeyFormat, cacheKey);
