@@ -15,7 +15,7 @@ Cache Tower isn't a single type of cache, its a multi-layer solution to caching 
 A multi-layer cache provides the performance benefits of a fast cache like in-memory with the resilience of a file, database or Redis-backed cache.
 
 This library was inspired by a blog post by Nick Craver about [how Stack Overflow do caching](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/).<br>
-_Hint: They use a custom 2-layer caching solution with in-memory and Redis._
+They use a custom 2-layer caching solution with in-memory and Redis.
 
 ## Features
 
@@ -41,6 +41,7 @@ _Hint: They use a custom 2-layer caching solution with in-memory and Redis._
 - [Performance and Comparisons](#Performance-and-Comparisons)
 - [Example Usage](#Example-Usage)
 - [Advanced Usage](#Advanced-Usage)
+  - [Flushing the Cache](#Flushing-the-Cache)
 
 ## Installation
 
@@ -158,7 +159,22 @@ Using [protobuf-net](https://github.com/protobuf-net/protobuf-net), provides a b
 It stores each serialized cache item into its own file and uses a singular manifest file to track the status of the cache.
 
 The use of [protobuf-net requires decorating the class](https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes) you want to cache with attributes `[ProtoContract]` and `[ProtoMember]`.
-While this can be inconvienent, using protobuf-net ensures high performance and low allocations for serializing. 
+
+**Example with Protobuf Attributes**
+```csharp
+[ProtoContract]
+public class UserProfile
+{
+	[ProtoMember(1)]
+	public int UserId { get; set; }
+	[ProtoMember(2)]
+	public string UserName { get; set; }
+
+	...
+}
+```
+
+While this can be inconvienent, using protobuf-net ensures high performance and low allocations for serializing.
 
 #### MongoDbCacheLayer
 
@@ -177,8 +193,7 @@ PM> Install-Package CacheTower.Providers.Redis
 
 Allows caching of data in Redis. Data is serialized to Protobuf using [protobuf-net](https://github.com/protobuf-net/protobuf-net).
 
-The use of [protobuf-net requires decorating the class](https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes) you want to cache with attributes `[ProtoContract]` and `[ProtoMember]`.
-While this can be inconvienent, using protobuf-net ensures high performance and low allocations for serializing. 
+Like the [ProtobufFileCacheLayer](#ProtobufFileCacheLayer), the use of [protobuf-net requires decorating the class](https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes) you want to cache with attributes `[ProtoContract]` and `[ProtoMember]`.
 
 ## Getting Started
 
