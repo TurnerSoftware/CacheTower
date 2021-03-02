@@ -104,7 +104,12 @@ namespace CacheTower.Tests.Extensions.Redis
 				() => new ValueTask<CacheEntry<int>>(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
-			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
+			if (!succeedingTask.Equals(completionSource.Task))
+			{
+				RedisHelper.DebugInfo(connection);
+				Assert.Fail("Subscriber response took too long");
+			}
+
 			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the refreshed value");
 		}
 
@@ -142,7 +147,12 @@ namespace CacheTower.Tests.Extensions.Redis
 			await connection.GetSubscriber().PublishAsync("CacheTower.CacheLock", "TestKey");
 
 			var succeedingTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(10)));
-			Assert.AreEqual(refreshTask, succeedingTask, "Refresh has timed out - something has gone very wrong");
+			if (!succeedingTask.Equals(refreshTask))
+			{
+				RedisHelper.DebugInfo(connection);
+				Assert.Fail("Refresh has timed out - something has gone very wrong");
+			}
+
 			cacheStackMock.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Two checks to the cache stack are expected");
 		}
 
@@ -189,7 +199,12 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var whenAllRefreshesTask = Task.WhenAll(refreshTask1, refreshTask2);
 			var succeedingTask = await Task.WhenAny(whenAllRefreshesTask, Task.Delay(TimeSpan.FromSeconds(10)));
-			Assert.AreEqual(whenAllRefreshesTask, succeedingTask, "Refresh has timed out - something has gone very wrong");
+			if (!succeedingTask.Equals(whenAllRefreshesTask))
+			{
+				RedisHelper.DebugInfo(connection);
+				Assert.Fail("Refresh has timed out - something has gone very wrong");
+			}
+
 			cacheStackMock.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(4), "Two checks to the cache stack are expected");
 		}
 	}
