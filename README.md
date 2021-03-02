@@ -174,7 +174,8 @@ public class UserProfile
 }
 ```
 
-While this can be inconvienent, using protobuf-net ensures high performance and low allocations for serializing.
+Additionally, as the Protobuf format doesn't have a way to represent an empty collection, these will be returned as `null`.
+While this can be inconvienent, using Protobuf ensures high performance and low allocations for serializing.
 
 #### MongoDbCacheLayer
 

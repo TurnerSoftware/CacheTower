@@ -10,8 +10,11 @@ namespace CacheTower.Providers.Redis
 	/// <remarks>
 	/// The <see cref="RedisCacheLayer"/> allows caching data in Redis. Data will be serialized to Protobuf using <a href="https://github.com/protobuf-net/protobuf-net">protobuf-net</a>.
 	/// <para>
-	/// When caching custom types, you will need to <a href="https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes">decorate your class</a> with <c>[ProtoContact]</c> and <c>[ProtoMember]</c> attributes per protobuf-net's documentation.
-	/// While this can be inconvienent, using protobuf-net ensures high performance and low allocations for serializing.
+	/// When caching custom types, you will need to <a href="https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes">decorate your class</a> with <c>[ProtoContact]</c> and <c>[ProtoMember]</c> attributes per protobuf-net's documentation.<br/>
+	/// Additionally, as the Protobuf format doesn't have a way to represent an empty collection, these will be returned as <c>null</c>.
+	/// </para>
+	/// <para>
+	/// While this can be inconvienent, using Protobuf ensures high performance and low allocations for serializing.
 	/// </para>
 	/// </remarks>
 	/// <inheritdoc cref="ICacheLayer"/>
