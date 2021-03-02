@@ -23,7 +23,7 @@ namespace CacheTower.Tests.Extensions
 		[TestMethod, ExpectedException(typeof(InvalidOperationException))]
 		public async Task ThrowForRegisteringTwoCacheStacks()
 		{
-			using (var extension = new AutoCleanupExtension(TimeSpan.FromSeconds(30)))
+			await using (var extension = new AutoCleanupExtension(TimeSpan.FromSeconds(30)))
 			{
 				//Will register as part of the CacheStack constructor
 				await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, new[] { extension });
@@ -35,7 +35,7 @@ namespace CacheTower.Tests.Extensions
 		[TestMethod]
 		public async Task RunsBackgroundCleanup()
 		{
-			using (var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500)))
+			await using (var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500)))
 			{
 				var cacheStackMock = new Mock<ICacheStack>();
 				extension.Register(cacheStackMock.Object);
@@ -47,7 +47,7 @@ namespace CacheTower.Tests.Extensions
 		[TestMethod]
 		public async Task BackgroundCleanupObeysCancel()
 		{
-			using (var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500), new CancellationToken(true)))
+			await using (var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500), new CancellationToken(true)))
 			{
 				var cacheStackMock = new Mock<ICacheStack>();
 				extension.Register(cacheStackMock.Object);

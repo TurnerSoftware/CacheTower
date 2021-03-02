@@ -9,6 +9,11 @@ using MongoFramework.Infrastructure.Linq;
 
 namespace CacheTower.Providers.Database.MongoDB
 {
+	/// <remarks>
+	/// The <see cref="MongoDbCacheLayer"/> allows caching through a MongoDB server.
+	/// Cache entries are serialized to BSON using <see cref="global::MongoDB.Bson.Serialization.BsonSerializer"/>.
+	/// </remarks>
+	/// <inheritdoc cref="ICacheLayer"/>
 	public class MongoDbCacheLayer : ICacheLayer
 	{
 		private bool? IsDatabaseAvailable { get; set; }
@@ -17,6 +22,10 @@ namespace CacheTower.Providers.Database.MongoDB
 
 		private bool HasSetIndexes = false;
 
+		/// <summary>
+		/// Creates a new instance of <see cref="MongoDbCacheLayer"/> with the given <paramref name="connection"/>.
+		/// </summary>
+		/// <param name="connection">The connection to the MongoDB database.</param>
 		public MongoDbCacheLayer(IMongoDbConnection connection)
 		{
 			Connection = connection;
@@ -31,23 +40,27 @@ namespace CacheTower.Providers.Database.MongoDB
 			}
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask CleanupAsync()
 		{
 			await TryConfigureIndexes();
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new CleanupCommand() }, default);
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask EvictAsync(string cacheKey)
 		{
 			await TryConfigureIndexes();
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new EvictCommand(cacheKey) }, default);
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new FlushCommand() }, default);
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			await TryConfigureIndexes();
@@ -66,6 +79,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			return cacheEntry;
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			await TryConfigureIndexes();
@@ -79,6 +93,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { command }, default);
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask<bool> IsAvailableAsync(string cacheKey)
 		{
 			if (IsDatabaseAvailable == null)

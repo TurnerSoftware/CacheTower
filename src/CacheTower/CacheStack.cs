@@ -7,6 +7,9 @@ using CacheTower.Extensions;
 
 namespace CacheTower
 {
+	/// <summary>
+	/// A <see cref="CacheStack"/> is the backbone of caching for Cache Tower. This manages coordination between the various cache layers, manages the cache extensions and handles background refreshing.
+	/// </summary>
 	public class CacheStack : ICacheStack, IFlushableCacheStack, IAsyncDisposable
 	{
 		private bool Disposed;
@@ -17,6 +20,11 @@ namespace CacheTower
 
 		private ExtensionContainer Extensions { get; }
 
+		/// <summary>
+		/// Creates a new <see cref="CacheStack"/> with the given <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
+		/// </summary>
+		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
+		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
 		public CacheStack(ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
 			if (cacheLayers == null || cacheLayers.Length == 0)
@@ -32,6 +40,9 @@ namespace CacheTower
 			WaitingKeyRefresh = new Dictionary<string, IEnumerable<TaskCompletionSource<object>>>(StringComparer.Ordinal);
 		}
 
+		/// <summary>
+		/// Helper for throwing if disposed.
+		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		protected void ThrowIfDisposed()
 		{
@@ -41,6 +52,7 @@ namespace CacheTower
 			}
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{
 			ThrowIfDisposed();
@@ -54,6 +66,7 @@ namespace CacheTower
 			await Extensions.OnCacheFlushAsync();
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask CleanupAsync()
 		{
 			ThrowIfDisposed();
@@ -65,6 +78,7 @@ namespace CacheTower
 			}
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask EvictAsync(string cacheKey)
 		{
 			ThrowIfDisposed();
@@ -83,6 +97,7 @@ namespace CacheTower
 			await Extensions.OnCacheEvictionAsync(cacheKey);
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask<CacheEntry<T>> SetAsync<T>(string cacheKey, T value, TimeSpan timeToLive)
 		{
 			ThrowIfDisposed();
@@ -93,6 +108,7 @@ namespace CacheTower
 			return cacheEntry;
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
 			ThrowIfDisposed();
@@ -116,6 +132,7 @@ namespace CacheTower
 			await Extensions.OnCacheUpdateAsync(cacheKey, cacheEntry.Expiry);
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
 		{
 			ThrowIfDisposed();
@@ -160,6 +177,7 @@ namespace CacheTower
 			return default;
 		}
 
+		/// <inheritdoc/>
 		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings)
 		{
 			ThrowIfDisposed();
@@ -346,6 +364,10 @@ namespace CacheTower
 			}
 		}
 
+		/// <summary>
+		/// Disposes the current instance of <see cref="CacheStack"/> and all associated layers and extensions.
+		/// </summary>
+		/// <returns></returns>
 		public async ValueTask DisposeAsync()
 		{
 			if (Disposed)

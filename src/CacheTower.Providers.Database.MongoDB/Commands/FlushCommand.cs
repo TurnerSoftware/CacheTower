@@ -6,7 +6,7 @@ using MongoFramework.Infrastructure.Commands;
 
 namespace CacheTower.Providers.Database.MongoDB.Commands
 {
-	public class FlushCommand : IWriteCommand<DbCachedEntry>
+	internal class FlushCommand : IWriteCommand<DbCachedEntry>
 	{
 		public Type EntityType => typeof(DbCachedEntry);
 

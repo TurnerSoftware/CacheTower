@@ -8,12 +8,21 @@ using Newtonsoft.Json;
 
 namespace CacheTower.Providers.FileSystem.Json
 {
+	/// <remarks>
+	/// The <see cref="JsonFileCacheLayer"/> uses <a href="https://github.com/JamesNK/Newtonsoft.Json/">Newtonsoft.Json</a> to serialize and deserialize the cache items to the file system.
+	/// </remarks>
+	/// <inheritdoc/>
 	public class JsonFileCacheLayer : FileCacheLayerBase<ManifestEntry>, ICacheLayer
 	{
 		private static readonly JsonSerializer Serializer = new JsonSerializer();
 
+		/// <summary>
+		/// Creates a <see cref="JsonFileCacheLayer"/>, using the given <paramref name="directoryPath"/> as the location to store the cache.
+		/// </summary>
+		/// <param name="directoryPath"></param>
 		public JsonFileCacheLayer(string directoryPath) : base(directoryPath, ".json") { }
 
+		/// <inheritdoc/>
 		protected override T Deserialize<T>(Stream stream)
 		{
 			using (var streamReader = new StreamReader(stream, Encoding.UTF8, false, 1024))
@@ -41,6 +50,7 @@ namespace CacheTower.Providers.FileSystem.Json
 			}
 		}
 
+		/// <inheritdoc/>
 		protected override void Serialize<T>(Stream stream, T value)
 		{
 			using (var streamWriter = new StreamWriter(stream, Encoding.UTF8, 1024, true))
