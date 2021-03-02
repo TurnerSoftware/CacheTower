@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using StackExchange.Redis;
@@ -23,6 +24,12 @@ namespace CacheTower.Tests.Utils
 		public static void FlushDatabase()
 		{
 			GetConnection().GetServer(Endpoint).FlushDatabase();
+		}
+
+		public static void DebugInfo(IConnectionMultiplexer connection)
+		{
+			Debug.WriteLine(connection.GetStatus());
+			Debug.WriteLine(connection.GetCounters().ToString());
 		}
 	}
 }

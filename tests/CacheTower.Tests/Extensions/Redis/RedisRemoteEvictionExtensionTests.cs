@@ -117,7 +117,12 @@ namespace CacheTower.Tests.Extensions.Redis
 			await extensionOne.OnCacheEvictionAsync("TestKey");
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
-			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
+			if (!succeedingTask.Equals(completionSource.Task))
+			{
+				RedisHelper.DebugInfo(connection);
+				Assert.Fail("Subscriber response took too long");
+			}
+
 			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the refreshed value");
 
 			await Task.Delay(500);
@@ -159,7 +164,12 @@ namespace CacheTower.Tests.Extensions.Redis
 			await extensionOne.OnCacheFlushAsync();
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
-			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
+			if (!succeedingTask.Equals(completionSource.Task))
+			{
+				RedisHelper.DebugInfo(connection);
+				Assert.Fail("Subscriber response took too long");
+			}
+
 			Assert.IsTrue(completionSource.Task.Result, "Subscribers were not notified about the flush");
 
 			await Task.Delay(500);
