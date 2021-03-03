@@ -5,12 +5,11 @@ using System.Threading;
 
 namespace CacheTower.Internal
 {
-	public static class DateTimeProvider
+	internal static class DateTimeProvider
 	{
 		public static DateTime Now { get; internal set; }
 
-#pragma warning disable IDE0052 // Remove unread private members
-		private static readonly Timer DateTimeTimer = new Timer(state => Now = DateTime.UtcNow, null, 1000, 1000);
-#pragma warning restore IDE0052 // Remove unread private members
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Establishes timer and prevents it being garbage collected")]
+		private static readonly Timer DateTimeTimer = new(state => Now = DateTime.UtcNow, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
 	}
 }
