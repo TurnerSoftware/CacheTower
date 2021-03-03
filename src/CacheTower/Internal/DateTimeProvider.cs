@@ -9,7 +9,7 @@ namespace CacheTower.Internal
 		/// <summary>
 		/// The current <see cref="DateTime.UtcNow"/>, updated every second.
 		/// </summary>
-		public static DateTime Now { get; private set; }
+		public static DateTime Now { get; private set; } = DateTime.UtcNow;
 
 		/// <summary>
 		/// Updates <see cref="Now"/> to the current <see cref="DateTime.UtcNow"/> value. This is automatically called by a timer every second.
