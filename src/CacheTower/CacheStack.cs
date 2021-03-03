@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
@@ -15,7 +14,7 @@ namespace CacheTower
 	{
 		private bool Disposed;
 
-		private Dictionary<string, IEnumerable<TaskCompletionSource<object>>> WaitingKeyRefresh { get; }
+		private Dictionary<string, TaskCompletionSource<CacheEntry>> WaitingKeyRefresh { get; }
 
 		private ICacheLayer[] CacheLayers { get; }
 
@@ -38,7 +37,7 @@ namespace CacheTower
 			Extensions = new ExtensionContainer(extensions);
 			Extensions.Register(this);
 
-			WaitingKeyRefresh = new Dictionary<string, IEnumerable<TaskCompletionSource<object>>>(StringComparer.Ordinal);
+			WaitingKeyRefresh = new Dictionary<string, TaskCompletionSource<CacheEntry>>(StringComparer.Ordinal);
 		}
 
 		/// <summary>
@@ -229,10 +228,10 @@ namespace CacheTower
 				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
 				if (hasLock)
 				{
-					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<object>>();
+					WaitingKeyRefresh[cacheKey] = null;
 				}
 #elif NETSTANDARD2_1
-				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<object>>());
+				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, null);
 #endif
 			}
 
@@ -267,10 +266,10 @@ namespace CacheTower
 				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
 				if (hasLock)
 				{
-					WaitingKeyRefresh[cacheKey] = Array.Empty<TaskCompletionSource<object>>();
+					WaitingKeyRefresh[cacheKey] = null;
 				}
 #elif NETSTANDARD2_1
-				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, Array.Empty<TaskCompletionSource<object>>());
+				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, null);
 #endif
 			}
 
@@ -313,18 +312,18 @@ namespace CacheTower
 			}
 			else if (noExistingValueAvailable)
 			{
-				var delayedResultSource = new TaskCompletionSource<object>();
+				TaskCompletionSource<CacheEntry> completionSource;
 
 				lock (WaitingKeyRefresh)
 				{
-					var waitList = new[] { delayedResultSource };
-					if (WaitingKeyRefresh.TryGetValue(cacheKey, out var oldList))
+					if (!WaitingKeyRefresh.TryGetValue(cacheKey, out completionSource))
 					{
-						WaitingKeyRefresh[cacheKey] = oldList.Concat(waitList);
+						WaitingKeyRefresh[cacheKey] = new TaskCompletionSource<CacheEntry>();
 					}
-					else
+					else if (completionSource == null)
 					{
-						WaitingKeyRefresh[cacheKey] = waitList;
+						completionSource = new TaskCompletionSource<CacheEntry>();
+						WaitingKeyRefresh[cacheKey] = completionSource;
 					}
 				}
 
@@ -337,7 +336,7 @@ namespace CacheTower
 				}
 
 				//Lock until we are notified to be unlocked
-				var result = await delayedResultSource.Task;
+				var result = await completionSource.Task;
 				return result as CacheEntry<T>;
 			}
 
@@ -348,15 +347,10 @@ namespace CacheTower
 		{
 			lock (WaitingKeyRefresh)
 			{
-				if (WaitingKeyRefresh.TryGetValue(cacheKey, out var waitingTasks))
+				if (WaitingKeyRefresh.TryGetValue(cacheKey, out var completionSource))
 				{
 					WaitingKeyRefresh.Remove(cacheKey);
-
-					var tasks = waitingTasks.ToArray();
-					for (int i = 0, l = tasks.Length; i < l; i++)
-					{
-						tasks[i].TrySetResult(cacheEntry);
-					}
+					completionSource?.TrySetResult(cacheEntry);
 				}
 			}
 		}
