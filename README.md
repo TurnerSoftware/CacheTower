@@ -66,7 +66,7 @@ Not only that, limitations of different types of caches can affect what you can 
 
 ----
 
-#### In-memory Caching
+### In-memory Caching
 
 ✔ **Pro**: The fastest cache you can possible have!
 
@@ -74,7 +74,7 @@ Not only that, limitations of different types of caches can affect what you can 
 
 ❌ **Con**: Memory capacity is more limited than other types of storage.
 
-#### File-based Caching
+### File-based Caching
 
 ✔ **Pro**: Caching huge amounts of data is not just possible, it is usually cheap!
 
@@ -82,7 +82,7 @@ Not only that, limitations of different types of caches can affect what you can 
 
 ❌ **Con**: Even with fast SSDs, it can be orders-of-magnitude slower than in-memory!
 
-#### Database Caching
+### Database Caching
 
 ✔ **Pro**: Database can run on the local machine _OR_ a remote machine!
 
@@ -92,7 +92,7 @@ Not only that, limitations of different types of caches can affect what you can 
 
 ❌ **Con**: Performance is only as good as the database provider itself.
 
-#### Redis Caching
+### Redis Caching
 
 ✔ **Pro**: Redis can run on the local machine _OR_ a remote machine!
 
@@ -131,7 +131,7 @@ Which combination of cache layers you use to build your cache stack is up to you
 
 Cache Tower has a number of officially supported cache layers that you can use.
 
-#### MemoryCacheLayer
+### MemoryCacheLayer
 
 > Bundled with Cache Tower
 
@@ -140,7 +140,7 @@ The data is kept as a reference in memory and _not serialized_.
 It is strongly recommended to treat the cached instance as immutable.
 Modification of an in-memory cached value won't be updated to other cache layers.
 
-#### JsonFileCacheLayer
+### JsonFileCacheLayer
 
 ```powershell
 PM> Install-Package CacheTower.Providers.FileSystem.Json
@@ -149,7 +149,7 @@ PM> Install-Package CacheTower.Providers.FileSystem.Json
 Using [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json/), provides a basic file-based caching solution.
 It stores each serialized cache item into its own file and uses a singular manifest file to track the status of the cache.
 
-#### ProtobufFileCacheLayer
+### ProtobufFileCacheLayer
 
 ```powershell
 PM> Install-Package CacheTower.Providers.FileSystem.Protobuf
@@ -177,7 +177,7 @@ public class UserProfile
 Additionally, as the Protobuf format doesn't have a way to represent an empty collection, these will be returned as `null`.
 While this can be inconvienent, using Protobuf ensures high performance and low allocations for serializing.
 
-#### MongoDbCacheLayer
+### MongoDbCacheLayer
 
 ```powershell
 PM> Install-Package CacheTower.Providers.Database.MongoDB
@@ -186,7 +186,7 @@ PM> Install-Package CacheTower.Providers.Database.MongoDB
 Allows caching through a MongoDB server.
 Cache entries are serialized to BSON using `MongoDB.Bson.Serialization.BsonSerializer`.
 
-#### RedisCacheLayer
+### RedisCacheLayer
 
 ```powershell
 PM> Install-Package CacheTower.Providers.Redis
@@ -276,7 +276,7 @@ Using Redis in this way can avoid cache stampedes where multiple different web s
 
 If you are only running one web server/instance of your application, you won't need this extension.
 
-#### Distributed Eviction via Redis
+### Distributed Eviction via Redis
 
 ```powershell
 PM> Install-Package CacheTower.Extensions.Redis
