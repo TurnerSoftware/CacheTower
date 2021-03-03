@@ -38,7 +38,7 @@ namespace CacheTower.AlternativesBenchmark
 			var layer = new MemoryCacheLayer();
 			await LoopActionAsync(Iterations, async () =>
 			{
-				await layer.SetAsync("TestKey", new CacheEntry<int>(123, DateTimeProvider.Now + TimeSpan.FromDays(1)));
+				await layer.SetAsync("TestKey", new CacheEntry<int>(123, TimeSpan.FromDays(1)));
 				await layer.GetAsync<int>("TestKey");
 
 				var getOrSetResult = await layer.GetAsync<string>("GetOrSet_TestKey");
