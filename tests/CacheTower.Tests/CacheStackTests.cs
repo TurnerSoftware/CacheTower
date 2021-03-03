@@ -231,6 +231,8 @@ namespace CacheTower.Tests
 			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			await cacheStack.SetAsync("GetOrSet_CacheHit", 17, TimeSpan.FromDays(2));
 
+			Internal.DateTimeProvider.UpdateTime();
+
 			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheHit", (oldValue) =>
 			{
 				return Task.FromResult(27);
@@ -244,6 +246,8 @@ namespace CacheTower.Tests
 			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(17, DateTime.UtcNow.AddDays(2));
 			await cacheStack.SetAsync("GetOrSet_StaleCacheHit", cacheEntry);
+
+			Internal.DateTimeProvider.UpdateTime();
 
 			var refreshWaitSource = new TaskCompletionSource<bool>();
 
@@ -271,6 +275,8 @@ namespace CacheTower.Tests
 			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
 			await layer2.SetAsync("GetOrSet_BackPropagatesToEarlierCacheLayers", cacheEntry);
 
+			Internal.DateTimeProvider.UpdateTime();
+
 			var cacheEntryFromStack = await cacheStack.GetOrSetAsync<int>("GetOrSet_BackPropagatesToEarlierCacheLayers", (old) =>
 			{
 				return Task.FromResult(14);
@@ -290,6 +296,8 @@ namespace CacheTower.Tests
 			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 			var cacheEntry = new CacheEntry<int>(23, DateTime.UtcNow.AddDays(2));
 			await cacheStack.SetAsync("GetOrSet_ConcurrentStaleCacheHits_OnlyOneRefresh", cacheEntry);
+
+			Internal.DateTimeProvider.UpdateTime();
 
 			var refreshWaitSource = new TaskCompletionSource<bool>();
 			var getterCallCount = 0;
@@ -338,6 +346,8 @@ namespace CacheTower.Tests
 			await gettingLockSource.Task;
 
 			var awaitingTasks = new List<Task<int>>();
+
+			Internal.DateTimeProvider.UpdateTime();
 
 			for (var i = 0; i < 3; i++)
 			{

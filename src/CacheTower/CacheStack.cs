@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
+using CacheTower.Internal;
 
 namespace CacheTower
 {
@@ -102,7 +103,7 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			var expiry = DateTime.UtcNow + timeToLive;
+			var expiry = DateTimeProvider.Now + timeToLive;
 			var cacheEntry = new CacheEntry<T>(value, expiry);
 			await SetAsync(cacheKey, cacheEntry);
 			return cacheEntry;
@@ -192,7 +193,7 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(getter));
 			}
 
-			var currentTime = DateTime.UtcNow;
+			var currentTime = DateTimeProvider.Now;
 			var cacheEntryPoint = await GetWithLayerIndexAsync<T>(cacheKey);
 			if (cacheEntryPoint != default && cacheEntryPoint.CacheEntry.Expiry > currentTime)
 			{
@@ -278,7 +279,7 @@ namespace CacheTower
 				try
 				{
 					var previousEntry = await GetAsync<T>(cacheKey);
-					if (previousEntry != default && noExistingValueAvailable && previousEntry.Expiry < DateTime.UtcNow)
+					if (previousEntry != default && noExistingValueAvailable && previousEntry.Expiry < DateTimeProvider.Now)
 					{
 						//The Cache Stack will always return an unexpired value if one exists.
 						//If we are told to refresh because one doesn't and we find one, we return the existing value, ignoring the refresh.
@@ -329,7 +330,7 @@ namespace CacheTower
 
 				//Last minute check to confirm whether waiting is required
 				var currentEntry = await GetAsync<T>(cacheKey);
-				if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTime.UtcNow)
+				if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTimeProvider.Now)
 				{
 					UnlockWaitingTasks(cacheKey, currentEntry);
 					return currentEntry;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using CacheTower.Internal;
 
 namespace CacheTower
 {
@@ -55,7 +56,7 @@ namespace CacheTower
 		/// </summary>
 		/// <param name="value">The value to cache.</param>
 		/// <param name="timeToLive">The amount of time before the cache entry expires.</param>
-		public CacheEntry(T value, TimeSpan timeToLive) : this(value, DateTime.UtcNow + timeToLive) { }
+		public CacheEntry(T value, TimeSpan timeToLive) : this(value, DateTimeProvider.Now + timeToLive) { }
 		/// <summary>
 		/// Creates a new <see cref="CacheEntry"/> with the given <paramref name="value"/> and <paramref name="expiry"/>.
 		/// </summary>
