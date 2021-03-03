@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
-using CacheTower.Internal;
 using CacheTower.Providers.Memory;
 using EasyCaching.InMemory;
 using LazyCache;
@@ -16,7 +15,7 @@ namespace CacheTower.AlternativesBenchmark
 		public int Iterations;
 
 		[Benchmark(Baseline = true)]
-		public async Task CacheTower_MemoryCacheLayer_ViaCacheStack()
+		public async Task CacheTower_MemoryCacheLayer()
 		{
 			await using (var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
 			{
@@ -30,23 +29,6 @@ namespace CacheTower.AlternativesBenchmark
 					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 				});
 			}
-		}
-
-		[Benchmark]
-		public async ValueTask CacheTower_MemoryCacheLayer_Direct()
-		{
-			var layer = new MemoryCacheLayer();
-			await LoopActionAsync(Iterations, async () =>
-			{
-				await layer.SetAsync("TestKey", new CacheEntry<int>(123, TimeSpan.FromDays(1)));
-				await layer.GetAsync<int>("TestKey");
-
-				var getOrSetResult = await layer.GetAsync<string>("GetOrSet_TestKey");
-				if (getOrSetResult == null)
-				{
-					await layer.SetAsync("GetOrSet_TestKey", new CacheEntry<string>("Hello World", TimeSpan.FromDays(1)));
-				}
-			});
 		}
 
 		[Benchmark]
@@ -89,23 +71,6 @@ namespace CacheTower.AlternativesBenchmark
 		}
 
 		[Benchmark]
-		public async Task EasyCaching_InMemoryAsync()
-		{
-			var easyCaching = new DefaultInMemoryCachingProvider(
-				"EasyCaching",
-				new[] { new InMemoryCaching("EasyCaching", new InMemoryCachingOptions()) },
-				new InMemoryOptions()
-			);
-
-			await LoopActionAsync(Iterations, async () =>
-			{
-				await easyCaching.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
-				await easyCaching.GetAsync<int>("TestKey");
-				await easyCaching.GetAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
-			});
-		}
-
-		[Benchmark]
 		public void LazyCache_MemoryProvider()
 		{
 			var lazyCache = new CachingService();
@@ -119,19 +84,6 @@ namespace CacheTower.AlternativesBenchmark
 		}
 
 		[Benchmark]
-		public async Task LazyCache_MemoryProviderAsync()
-		{
-			var lazyCache = new CachingService();
-
-			await LoopActionAsync(Iterations, async () =>
-			{
-				lazyCache.Add("TestKey", 123, TimeSpan.FromDays(1));
-				await lazyCache.GetAsync<int>("TestKey");
-				await lazyCache.GetOrAddAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
-			});
-		}
-
-		[Benchmark]
 		public void FusionCache_MemoryProvider()
 		{
 			var fusionCache = new FusionCache(new FusionCacheOptions());
@@ -141,19 +93,6 @@ namespace CacheTower.AlternativesBenchmark
 				fusionCache.Set("TestKey", 123, TimeSpan.FromDays(1));
 				fusionCache.GetOrDefault<int>("TestKey");
 				fusionCache.GetOrSet("GetOrSet_TestKey", (cancellationToken) => "Hello World", TimeSpan.FromDays(1));
-			});
-		}
-
-		[Benchmark]
-		public async Task FusionCache_MemoryProviderAsync()
-		{
-			var fusionCache = new FusionCache(new FusionCacheOptions());
-
-			await LoopActionAsync(Iterations, async () =>
-			{
-				await fusionCache.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
-				await fusionCache.GetOrDefaultAsync<int>("TestKey");
-				await fusionCache.GetOrSetAsync("GetOrSet_TestKey", (cancellationToken) => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
 			});
 		}
 	}
