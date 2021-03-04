@@ -21,7 +21,7 @@ namespace CacheTower.Extensions.Redis
 
 		private ICacheStack? RegisteredStack { get; set; }
 		
-		internal ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
+		internal ConcurrentDictionary<string, TaskCompletionSource<bool>> LockedOnKeyRefresh { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="RedisLockExtension"/> with the given <paramref name="connection"/> and default lock options.
@@ -45,7 +45,7 @@ namespace CacheTower.Extensions.Redis
 			Database = connection.GetDatabase(options.DatabaseIndex);
 			Subscriber = connection.GetSubscriber();
 
-			LockedOnKeyRefresh = new ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>>(StringComparer.Ordinal);
+			LockedOnKeyRefresh = new ConcurrentDictionary<string, TaskCompletionSource<bool>>(StringComparer.Ordinal);
 
 			Subscriber.Subscribe(options.RedisChannel, (channel, value) => UnlockWaitingTasks(value));
 		}
@@ -87,39 +87,29 @@ namespace CacheTower.Extensions.Redis
 			}
 			else
 			{
-				return await WaitForResult<T>(cacheKey, settings);
+				var completionSource = LockedOnKeyRefresh.GetOrAdd(cacheKey, key => new TaskCompletionSource<bool>());
+
+				//Last minute check to confirm whether waiting is required (in case the notification is missed)
+				var currentEntry = await RegisteredStack!.GetAsync<T>(cacheKey);
+				if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTime.UtcNow)
+				{
+					UnlockWaitingTasks(cacheKey);
+					return currentEntry;
+				}
+
+				//Lock until we are notified to be unlocked
+				await completionSource.Task;
+
+				//Get the updated value from the cache stack
+				return (await RegisteredStack.GetAsync<T>(cacheKey))!;
 			}
-		}
-
-		private async Task<CacheEntry<T>> WaitForResult<T>(string cacheKey, CacheSettings settings)
-		{
-			var delayedResultSource = new TaskCompletionSource<bool>();
-			var waitList = new[] { delayedResultSource };
-			LockedOnKeyRefresh.AddOrUpdate(cacheKey, waitList, (key, oldList) => oldList.Concat(waitList));
-
-			//Last minute check to confirm whether waiting is required (in case the notification is missed)
-			var currentEntry = await RegisteredStack!.GetAsync<T>(cacheKey);
-			if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTime.UtcNow)
-			{
-				UnlockWaitingTasks(cacheKey);
-				return currentEntry;
-			}
-
-			//Lock until we are notified to be unlocked
-			await delayedResultSource.Task;
-
-			//Get the updated value from the cache stack
-			return (await RegisteredStack.GetAsync<T>(cacheKey))!;
 		}
 
 		private void UnlockWaitingTasks(string cacheKey)
 		{
 			if (LockedOnKeyRefresh.TryRemove(cacheKey, out var waitingTasks))
 			{
-				foreach (var task in waitingTasks)
-				{
-					task.TrySetResult(true);
-				}
+				waitingTasks.TrySetResult(true);
 			}
 		}
 	}
