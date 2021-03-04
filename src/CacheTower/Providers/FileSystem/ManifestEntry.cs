@@ -8,7 +8,7 @@ namespace CacheTower.Providers.FileSystem
 	public class ManifestEntry : IManifestEntry
 	{
 		/// <inheritdoc/>
-		public string FileName { get; set; }
+		public string? FileName { get; set; }
 		/// <inheritdoc/>
 		public DateTime Expiry { get; set; }
 	}

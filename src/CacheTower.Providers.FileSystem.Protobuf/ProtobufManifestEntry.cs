@@ -13,7 +13,7 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 	{
 		/// <inheritdoc/>
 		[ProtoMember(1)]
-		public string FileName { get; set; }
+		public string? FileName { get; set; }
 		/// <inheritdoc/>
 		[ProtoMember(2)]
 		public DateTime Expiry { get; set; }

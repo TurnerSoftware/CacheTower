@@ -61,7 +61,7 @@ namespace CacheTower.Providers.Database.MongoDB
 		}
 
 		/// <inheritdoc/>
-		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public async ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey)
 		{
 			await TryConfigureIndexes();
 
@@ -73,7 +73,7 @@ namespace CacheTower.Providers.Database.MongoDB
 
 			if (dbEntry != default)
 			{
-				cacheEntry = new CacheEntry<T>((T)dbEntry.Value, dbEntry.Expiry);
+				cacheEntry = new CacheEntry<T>((T)dbEntry.Value!, dbEntry.Expiry);
 			}
 
 			return cacheEntry;
@@ -87,7 +87,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			{
 				CacheKey = cacheKey,
 				Expiry = cacheEntry.Expiry,
-				Value = cacheEntry.Value
+				Value = cacheEntry.Value!
 			});
 
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { command }, default);

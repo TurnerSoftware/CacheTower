@@ -19,7 +19,7 @@ namespace CacheTower.Extensions.Redis
 		private IDatabaseAsync Database { get; }
 		private RedisLockOptions Options { get; }
 
-		private ICacheStack RegisteredStack { get; set; }
+		private ICacheStack? RegisteredStack { get; set; }
 		
 		internal ConcurrentDictionary<string, IEnumerable<TaskCompletionSource<bool>>> LockedOnKeyRefresh { get; }
 
@@ -98,7 +98,7 @@ namespace CacheTower.Extensions.Redis
 			LockedOnKeyRefresh.AddOrUpdate(cacheKey, waitList, (key, oldList) => oldList.Concat(waitList));
 
 			//Last minute check to confirm whether waiting is required (in case the notification is missed)
-			var currentEntry = await RegisteredStack.GetAsync<T>(cacheKey);
+			var currentEntry = await RegisteredStack!.GetAsync<T>(cacheKey);
 			if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTime.UtcNow)
 			{
 				UnlockWaitingTasks(cacheKey);
@@ -109,7 +109,7 @@ namespace CacheTower.Extensions.Redis
 			await delayedResultSource.Task;
 
 			//Get the updated value from the cache stack
-			return await RegisteredStack.GetAsync<T>(cacheKey);
+			return (await RegisteredStack.GetAsync<T>(cacheKey))!;
 		}
 
 		private void UnlockWaitingTasks(string cacheKey)

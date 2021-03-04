@@ -20,27 +20,27 @@ namespace CacheTower.Providers.FileSystem
 		private bool Disposed = false;
 		private string DirectoryPath { get; }
 		private string ManifestPath { get; }
-		private string FileExtension { get; }
+		private string? FileExtension { get; }
 
 		private SemaphoreSlim ManifestLock { get; } = new SemaphoreSlim(1, 1);
 		private bool? IsManifestAvailable { get; set; }
 
 		private HashAlgorithm FileNameHashAlgorithm { get; } = MD5.Create();
 
-		private ConcurrentDictionary<string, IManifestEntry> CacheManifest { get; set; }
-		private ConcurrentDictionary<string, AsyncReaderWriterLock> FileLock { get; }
+		private ConcurrentDictionary<string?, IManifestEntry>? CacheManifest { get; set; }
+		private ConcurrentDictionary<string?, AsyncReaderWriterLock> FileLock { get; }
 
 		/// <summary>
 		/// Initialises the file cache layer with the given <paramref name="directoryPath"/> and <paramref name="fileExtension"/>.
 		/// </summary>
 		/// <param name="directoryPath"></param>
 		/// <param name="fileExtension"></param>
-		protected FileCacheLayerBase(string directoryPath, string fileExtension)
+		protected FileCacheLayerBase(string directoryPath, string? fileExtension)
 		{
-			DirectoryPath = directoryPath;
+			DirectoryPath = directoryPath ?? throw new ArgumentNullException(nameof(directoryPath));
 			FileExtension = fileExtension;
 			ManifestPath = Path.Combine(directoryPath, "manifest" + fileExtension);
-			FileLock = new ConcurrentDictionary<string, AsyncReaderWriterLock>(StringComparer.Ordinal);
+			FileLock = new ConcurrentDictionary<string?, AsyncReaderWriterLock>(StringComparer.Ordinal);
 		}
 
 		/// <summary>
@@ -59,7 +59,7 @@ namespace CacheTower.Providers.FileSystem
 		/// <param name="value">The value to be serialized.</param>
 		protected abstract void Serialize<T>(Stream stream, T value);
 
-		private async Task<T> DeserializeFileAsync<T>(string path)
+		private async Task<T?> DeserializeFileAsync<T>(string path)
 		{
 			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024))
 			using (var memStream = new MemoryStream((int)stream.Length))
@@ -84,17 +84,17 @@ namespace CacheTower.Providers.FileSystem
 		private async Task TryLoadManifestAsync()
 		{
 			//Avoid unnecessary lock contention way after manifest is loaded by checking before lock
-			if (CacheManifest == null)
+			if (CacheManifest is null)
 			{
 				await ManifestLock.WaitAsync();
 				try
 				{
 					//Check that once we have lock (due to a race condition on the outer check) that we still need to load the manifest
-					if (CacheManifest == null)
+					if (CacheManifest is null)
 					{
 						if (File.Exists(ManifestPath))
 						{
-							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string, IManifestEntry>>(ManifestPath);
+							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string?, IManifestEntry>>(ManifestPath);
 						}
 						else
 						{
@@ -103,7 +103,7 @@ namespace CacheTower.Providers.FileSystem
 								Directory.CreateDirectory(DirectoryPath);
 							}
 
-							CacheManifest = new ConcurrentDictionary<string, IManifestEntry>();
+							CacheManifest = new ConcurrentDictionary<string?, IManifestEntry>();
 							await SerializeFileAsync(ManifestPath, CacheManifest);
 						}
 					}
@@ -182,7 +182,7 @@ namespace CacheTower.Providers.FileSystem
 
 			for (var i = 0; i < fileExtensionLength; i++)
 			{
-				*charPtr++ = FileExtension[i];
+				*charPtr++ = FileExtension![i];
 			}
 
 			return new string(charArrayPtr, 0, charArrayLength);
@@ -194,7 +194,7 @@ namespace CacheTower.Providers.FileSystem
 			await TryLoadManifestAsync();
 
 			var currentTime = DateTime.UtcNow;
-			foreach (var cachePair in CacheManifest)
+			foreach (var cachePair in CacheManifest!)
 			{
 				var manifestEntry = cachePair.Value;
 				if (manifestEntry.Expiry < currentTime && CacheManifest.TryRemove(cachePair.Key, out var _))
@@ -219,7 +219,7 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifestAsync();
 
-			if (CacheManifest.TryRemove(cacheKey, out var manifestEntry))
+			if (CacheManifest!.TryRemove(cacheKey, out var manifestEntry))
 			{
 				if (FileLock.TryRemove(manifestEntry.FileName, out var lockObj))
 				{
@@ -240,7 +240,7 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifestAsync();
 
-			foreach (var manifestEntry in CacheManifest.Values)
+			foreach (var manifestEntry in CacheManifest!.Values)
 			{
 				if (FileLock.TryRemove(manifestEntry.FileName, out var lockObj))
 				{
@@ -261,11 +261,11 @@ namespace CacheTower.Providers.FileSystem
 		}
 
 		/// <inheritdoc/>
-		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public async ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey)
 		{
 			await TryLoadManifestAsync();
 
-			if (CacheManifest.TryGetValue(cacheKey, out var manifestEntry))
+			if (CacheManifest!.TryGetValue(cacheKey, out var manifestEntry))
 			{
 				var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, (name) => new AsyncReaderWriterLock());
 				using (await lockObj.ReaderLockAsync())
@@ -284,12 +284,12 @@ namespace CacheTower.Providers.FileSystem
 		}
 
 		/// <remarks>
-		/// For <see cref="FileCacheLayerBase{TManifest}"/>, availability is determined by being able to load the manifest.
+		/// For file caching, availability is determined by the ability to load the cache manifest.
 		/// </remarks>
 		/// <inheritdoc/>
 		public async ValueTask<bool> IsAvailableAsync(string cacheKey)
 		{
-			if (IsManifestAvailable == null)
+			if (IsManifestAvailable is null)
 			{
 				try
 				{
@@ -310,7 +310,7 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifestAsync();
 
-			var manifestEntry = CacheManifest.GetOrAdd(cacheKey, (key) => new TManifest
+			var manifestEntry = CacheManifest!.GetOrAdd(cacheKey, (key) => new TManifest
 			{
 				FileName = GetFileName(cacheKey)
 			});

@@ -12,7 +12,7 @@ namespace CacheTower.Providers.FileSystem
 		/// <summary>
 		/// The file name that contains the cached data.
 		/// </summary>
-		string FileName { get; set; }
+		string? FileName { get; set; }
 		/// <summary>
 		/// The expiry date of the cached value.
 		/// </summary>

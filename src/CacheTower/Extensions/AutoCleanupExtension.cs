@@ -20,7 +20,7 @@ namespace CacheTower.Extensions
 		/// </summary>
 		public TimeSpan Frequency { get; }
 
-		private Task BackgroundTask { get; set; }
+		private Task? BackgroundTask { get; set; }
 
 		private CancellationTokenSource TokenSource { get; }
 
@@ -43,7 +43,7 @@ namespace CacheTower.Extensions
 		/// <inheritdoc/>
 		public void Register(ICacheStack cacheStack)
 		{
-			if (BackgroundTask != null)
+			if (BackgroundTask is not null)
 			{
 				throw new InvalidOperationException($"{nameof(AutoCleanupExtension)} can only be registered to one {nameof(ICacheStack)}");
 			}
@@ -75,7 +75,11 @@ namespace CacheTower.Extensions
 		public async ValueTask DisposeAsync()
 		{
 			TokenSource.Cancel();
-			await BackgroundTask;
+
+			if (BackgroundTask is not null)
+			{
+				await BackgroundTask;
+			}
 		}
 	}
 }

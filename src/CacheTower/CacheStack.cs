@@ -14,7 +14,7 @@ namespace CacheTower
 	{
 		private bool Disposed;
 
-		private Dictionary<string, TaskCompletionSource<CacheEntry>> WaitingKeyRefresh { get; }
+		private Dictionary<string, TaskCompletionSource<CacheEntry>?> WaitingKeyRefresh { get; }
 
 		private ICacheLayer[] CacheLayers { get; }
 
@@ -37,7 +37,7 @@ namespace CacheTower
 			Extensions = new ExtensionContainer(extensions);
 			Extensions.Register(this);
 
-			WaitingKeyRefresh = new Dictionary<string, TaskCompletionSource<CacheEntry>>(StringComparer.Ordinal);
+			WaitingKeyRefresh = new Dictionary<string, TaskCompletionSource<CacheEntry>?>(StringComparer.Ordinal);
 		}
 
 		/// <summary>
@@ -133,7 +133,7 @@ namespace CacheTower
 		}
 
 		/// <inheritdoc/>
-		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public async ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey)
 		{
 			ThrowIfDisposed();
 
@@ -208,12 +208,12 @@ namespace CacheTower
 					_ = BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry);
 				}
 
-				return cacheEntry.Value;
+				return cacheEntry.Value!;
 			}
 			else
 			{
 				//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
-				return (await RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: true)).Value;
+				return (await RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: true))!.Value!;
 			}
 		}
 
@@ -255,7 +255,7 @@ namespace CacheTower
 			}
 		}
 
-		private async ValueTask<CacheEntry<T>> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings, bool noExistingValueAvailable)
+		private async ValueTask<CacheEntry<T>?> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings, bool noExistingValueAvailable)
 		{
 			ThrowIfDisposed();
 
@@ -296,7 +296,7 @@ namespace CacheTower
 							oldValue = previousEntry.Value;
 						}
 
-						var value = await getter(oldValue);
+						var value = await getter(oldValue!);
 						var refreshedEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
 
 						UnlockWaitingTasks(cacheKey, refreshedEntry);
@@ -306,7 +306,7 @@ namespace CacheTower
 				}
 				catch
 				{
-					UnlockWaitingTasks(cacheKey, null);
+					UnlockWaitingTasks(cacheKey, null!);
 					throw;
 				}
 			}
@@ -316,7 +316,7 @@ namespace CacheTower
 
 				lock (WaitingKeyRefresh)
 				{
-					if (!WaitingKeyRefresh.TryGetValue(cacheKey, out completionSource) || completionSource == null)
+					if (!WaitingKeyRefresh.TryGetValue(cacheKey, out completionSource!) || completionSource == null)
 					{
 						completionSource = new TaskCompletionSource<CacheEntry>();
 						WaitingKeyRefresh[cacheKey] = completionSource;

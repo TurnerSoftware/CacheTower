@@ -70,7 +70,7 @@ namespace CacheTower.Providers.Redis
 		}
 
 		/// <inheritdoc/>
-		public async ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public async ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey)
 		{
 			var redisValue = await Database.StringGetAsync(cacheKey);
 			if (redisValue != RedisValue.Null)
@@ -103,7 +103,7 @@ namespace CacheTower.Providers.Redis
 			var redisCacheEntry = new RedisCacheEntry<T>
 			{
 				Expiry = cacheEntry.Expiry,
-				Value = cacheEntry.Value
+				Value = cacheEntry.Value!
 			};
 
 			using (var stream = new MemoryStream())

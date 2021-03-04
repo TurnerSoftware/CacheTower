@@ -44,31 +44,31 @@ namespace CacheTower
 	/// Container for both the cached value and its expiry date.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class CacheEntry<T> : CacheEntry, IEquatable<CacheEntry<T>>
+	public class CacheEntry<T> : CacheEntry, IEquatable<CacheEntry<T?>?>
 	{
 		/// <summary>
 		/// The cached value.
 		/// </summary>
-		public T Value { get; }
+		public T? Value { get; }
 
 		/// <summary>
 		/// Creates a new <see cref="CacheEntry"/> with the given <paramref name="value"/> and an expiry adjusted to the <paramref name="timeToLive"/>.
 		/// </summary>
 		/// <param name="value">The value to cache.</param>
 		/// <param name="timeToLive">The amount of time before the cache entry expires.</param>
-		public CacheEntry(T value, TimeSpan timeToLive) : this(value, DateTimeProvider.Now + timeToLive) { }
+		public CacheEntry(T? value, TimeSpan timeToLive) : this(value, DateTimeProvider.Now + timeToLive) { }
 		/// <summary>
 		/// Creates a new <see cref="CacheEntry"/> with the given <paramref name="value"/> and <paramref name="expiry"/>.
 		/// </summary>
 		/// <param name="value">The value to cache.</param>
 		/// <param name="expiry">The expiry date of the cache entry.</param>
-		public CacheEntry(T value, DateTime expiry) : base(expiry)
+		public CacheEntry(T? value, DateTime expiry) : base(expiry)
 		{
 			Value = value;
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(CacheEntry<T> other)
+		public bool Equals(CacheEntry<T?>? other)
 		{
 			if (other == null)
 			{
@@ -80,9 +80,9 @@ namespace CacheTower
 		}
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
-			if (obj is CacheEntry<T> objOfType)
+			if (obj is CacheEntry<T?> objOfType)
 			{
 				return Equals(objOfType);
 			}
