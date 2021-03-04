@@ -54,7 +54,7 @@ namespace CacheTower
 		/// <typeparam name="T">The type of value in the cache entry.</typeparam>
 		/// <param name="cacheKey">The cache entry's key.</param>
 		/// <returns></returns>
-		ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey);
+		ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey);
 		/// <summary>
 		/// Attempts to retrieve the value for the given <paramref name="cacheKey"/>.
 		/// When unavailable, will fallback to use <paramref name="getter"/> to generate the value, storing it in the cache.

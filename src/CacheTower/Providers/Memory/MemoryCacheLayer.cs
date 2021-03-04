@@ -50,14 +50,14 @@ namespace CacheTower.Providers.Memory
 		}
 
 		/// <inheritdoc/>
-		public ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey)
+		public ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey)
 		{
 			if (Cache.TryGetValue(cacheKey, out var cacheEntry))
 			{
-				return new ValueTask<CacheEntry<T>>(cacheEntry as CacheEntry<T>);
+				return new ValueTask<CacheEntry<T>?>(cacheEntry as CacheEntry<T>);
 			}
 
-			return new ValueTask<CacheEntry<T>>(default(CacheEntry<T>));
+			return new ValueTask<CacheEntry<T>?>(default(CacheEntry<T>));
 		}
 
 		/// <inheritdoc/>

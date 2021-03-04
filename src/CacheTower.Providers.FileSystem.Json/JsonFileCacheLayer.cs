@@ -31,22 +31,22 @@ namespace CacheTower.Providers.FileSystem.Json
 				//Read start object
 				if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.StartObject)
 				{
-					return default;
+					return default!;
 				}
 
 				//Read property name
 				if (!jsonReader.Read() || jsonReader.TokenType != JsonToken.PropertyName)
 				{
-					return default;
+					return default!;
 				}
 				
 				//Read value start
 				if (!jsonReader.Read() || jsonReader.TokenType == JsonToken.Null)
 				{
-					return default;
+					return default!;
 				}
 
-				return Serializer.Deserialize<T>(jsonReader);
+				return Serializer.Deserialize<T>(jsonReader)!;
 			}
 		}
 

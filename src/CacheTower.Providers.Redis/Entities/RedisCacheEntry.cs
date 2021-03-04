@@ -21,6 +21,6 @@ namespace CacheTower.Providers.Redis.Entities
 		/// The cached value itself.
 		/// </summary>
 		[ProtoMember(2)]
-		public T Value { get; set; }
+		public T? Value { get; set; }
 	}
 }

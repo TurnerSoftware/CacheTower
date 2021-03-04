@@ -10,7 +10,7 @@ namespace CacheTower.Extensions
 		private bool Disposed;
 
 		private bool HasCacheRefreshCallSiteWrapperExtension { get; }
-		private ICacheRefreshCallSiteWrapperExtension CacheRefreshCallSiteWrapperExtension { get; }
+		private ICacheRefreshCallSiteWrapperExtension? CacheRefreshCallSiteWrapperExtension { get; }
 		private bool HasCacheChangeExtensions { get; }
 		private ICacheChangeExtension[] CacheChangeExtensions { get; }
 		private ICacheExtension[] AllExtensions { get; }
@@ -65,7 +65,7 @@ namespace CacheTower.Extensions
 			}
 			else
 			{
-				return CacheRefreshCallSiteWrapperExtension.WithRefreshAsync(cacheKey, valueProvider, settings);
+				return CacheRefreshCallSiteWrapperExtension!.WithRefreshAsync(cacheKey, valueProvider, settings);
 			}
 		}
 

@@ -30,7 +30,7 @@ namespace CacheTower
 		/// <typeparam name="T">The type of value in the cache entry.</typeparam>
 		/// <param name="cacheKey">The cache entry's key.</param>
 		/// <returns>The existing cache entry or <c>null</c> if no entry is found.</returns>
-		ValueTask<CacheEntry<T>> GetAsync<T>(string cacheKey);
+		ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey);
 		/// <summary>
 		/// Caches <paramref name="cacheEntry"/> against the <paramref name="cacheKey"/>.
 		/// </summary>
