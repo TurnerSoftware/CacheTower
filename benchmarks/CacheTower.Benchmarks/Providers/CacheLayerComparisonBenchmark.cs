@@ -92,14 +92,14 @@ namespace CacheTower.Benchmarks.Providers
 		}
 
 		[Benchmark(Baseline = true)]
-		public async ValueTask MemoryCacheLayer()
+		public async Task MemoryCacheLayer()
 		{
 			var cacheLayer = new MemoryCacheLayer();
 			await BenchmarkWork(cacheLayer);
 		}
 
 		[Benchmark]
-		public async ValueTask JsonFileCacheLayer()
+		public async Task JsonFileCacheLayer()
 		{
 			var directoryPath = "CacheLayerComparison/JsonFileCacheLayer";
 			await using (var cacheLayer = new JsonFileCacheLayer(directoryPath))
@@ -110,7 +110,7 @@ namespace CacheTower.Benchmarks.Providers
 		}
 
 		[Benchmark]
-		public async ValueTask ProtobufFileCacheLayer()
+		public async Task ProtobufFileCacheLayer()
 		{
 			var directoryPath = "CacheLayerComparison/ProtobufFileCacheLayer";
 			await using (var cacheLayer = new ProtobufFileCacheLayer(directoryPath))
@@ -121,7 +121,7 @@ namespace CacheTower.Benchmarks.Providers
 		}
 
 		[Benchmark]
-		public async ValueTask MongoDbCacheLayer()
+		public async Task MongoDbCacheLayer()
 		{
 			var cacheLayer = new MongoDbCacheLayer(MongoDbHelper.GetConnection());
 			await BenchmarkWork(cacheLayer);
@@ -129,7 +129,7 @@ namespace CacheTower.Benchmarks.Providers
 		}
 
 		[Benchmark]
-		public async ValueTask RedisCacheLayer()
+		public async Task RedisCacheLayer()
 		{
 			var cacheLayer = new RedisCacheLayer(RedisHelper.GetConnection());
 			await BenchmarkWork(cacheLayer);
