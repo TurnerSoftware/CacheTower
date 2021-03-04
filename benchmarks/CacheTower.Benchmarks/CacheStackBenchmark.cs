@@ -81,10 +81,9 @@ namespace CacheTower.Benchmarks
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
-					await cacheStack.SetAsync($"Cleanup_{i}", 15, TimeSpan.FromDays(1));
+					await cacheStack.SetAsync("Cleanup", 15, TimeSpan.FromDays(1));
+					await cacheStack.CleanupAsync();
 				}
-
-				await cacheStack.CleanupAsync();
 			}
 		}
 		[Benchmark]
