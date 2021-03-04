@@ -8,62 +8,46 @@ Regarding specific tests, it is best to look at the implementations themselves t
 **Test Machine**
 
 ```
-BenchmarkDotNet=v0.12.0, OS=Windows 10.0.18362
+BenchmarkDotNet=v0.12.1, OS=Windows 10.0.19041.804 (2004/?/20H1)
 Intel Core i7-6700HQ CPU 2.60GHz (Skylake), 1 CPU, 8 logical and 4 physical cores
-.NET Core SDK=3.0.100
-  [Host]     : .NET Core 3.0.0 (CoreCLR 4.700.19.46205, CoreFX 4.700.19.46214), X64 RyuJIT
-  Job-CQNZSR : .NET Core 3.0.0 (CoreCLR 4.700.19.46205, CoreFX 4.700.19.46214), X64 RyuJIT
+.NET Core SDK=5.0.200
+  [Host]     : .NET Core 5.0.3 (CoreCLR 5.0.321.7212, CoreFX 5.0.321.7212), X64 RyuJIT
+  Job-HZFSHP : .NET Core 5.0.3 (CoreCLR 5.0.321.7212, CoreFX 5.0.321.7212), X64 RyuJIT
 
-Runtime=.NET Core 3.0  MaxIterationCount=200
-UnrollFactor=1
+Runtime=.NET Core 5.0  MaxIterationCount=50
 ```
 
 ## Cache Stack Benchmark
 
-|                    Method | WorkIterations |       Mean [ns] |    Error [ns] |   StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
-|-------------------------- |--------------- |----------------:|--------------:|--------------:|-------:|------:|------:|--------------:|
-|          SetupAndTeardown |              1 |        351.6 ns |       2.94 ns |       2.75 ns | 0.2933 |     - |     - |         920 B |
-|                       Set |              1 |        726.5 ns |       6.33 ns |       5.61 ns | 0.3185 |     - |     - |        1000 B |
-|             Set_TwoLayers |              1 |      1,003.6 ns |       7.58 ns |       7.09 ns | 0.5627 |     - |     - |        1768 B |
-|                     Evict |              1 |        846.2 ns |       6.08 ns |       5.69 ns | 0.3185 |     - |     - |        1000 B |
-|           Evict_TwoLayers |              1 |      1,185.8 ns |      10.07 ns |       8.93 ns | 0.5627 |     - |     - |        1768 B |
-|                   Cleanup |              1 |      1,231.8 ns |      15.87 ns |      14.07 ns | 0.3586 |     - |     - |        1128 B |
-|         Cleanup_TwoLayers |              1 |      1,675.8 ns |      16.53 ns |      15.46 ns | 0.6027 |     - |     - |        1896 B |
-|                   GetMiss |              1 |        450.3 ns |       3.77 ns |       3.53 ns | 0.2933 |     - |     - |         920 B |
-|                    GetHit |              1 |        847.1 ns |       4.87 ns |       4.31 ns | 0.3185 |     - |     - |        1000 B |
-|       GetOrSet_NeverStale |              1 |      1,535.0 ns |      13.80 ns |      12.91 ns | 0.4215 |     - |     - |        1328 B |
-|      GetOrSet_AlwaysStale |              1 |      1,520.2 ns |      15.95 ns |      14.92 ns | 0.4215 |     - |     - |        1328 B |
-|  GetOrSet_TwoSimultaneous |              1 | 31,351,330.8 ns | 355,621.61 ns | 332,648.68 ns |      - |     - |     - |        2456 B |
-| GetOrSet_FourSimultaneous |              1 | 31,516,912.2 ns | 623,711.44 ns | 765,973.66 ns |      - |     - |     - |        2600 B |
-|          SetupAndTeardown |            100 |        358.5 ns |       1.92 ns |       1.60 ns | 0.2933 |     - |     - |         920 B |
-|                       Set |            100 |     34,208.9 ns |     378.14 ns |     353.71 ns | 1.2817 |     - |     - |        4168 B |
-|             Set_TwoLayers |            100 |     41,915.1 ns |     369.91 ns |     346.01 ns | 1.5259 |     - |     - |        4936 B |
-|                     Evict |            100 |     45,399.9 ns |     415.31 ns |     388.48 ns | 2.8076 |     - |     - |        8920 B |
-|           Evict_TwoLayers |            100 |     59,663.5 ns |     560.85 ns |     524.62 ns | 4.5776 |     - |     - |       14440 B |
-|                   Cleanup |            100 |     59,699.5 ns |     523.00 ns |     436.73 ns | 8.9111 |     - |     - |       28112 B |
-|         Cleanup_TwoLayers |            100 |    102,450.6 ns |   1,011.53 ns |     946.18 ns | 5.6152 |     - |     - |       17736 B |
-|                   GetMiss |            100 |      7,621.4 ns |      84.16 ns |      78.72 ns | 0.2899 |     - |     - |         920 B |
-|                    GetHit |            100 |      8,347.6 ns |      55.77 ns |      49.44 ns | 0.3052 |     - |     - |        1000 B |
-|       GetOrSet_NeverStale |            100 |     28,985.6 ns |     142.29 ns |     133.10 ns | 0.3967 |     - |     - |        1328 B |
-|      GetOrSet_AlwaysStale |            100 |    112,913.5 ns |     965.52 ns |     855.91 ns | 7.4463 |     - |     - |       23504 B |
-|  GetOrSet_TwoSimultaneous |            100 | 31,343,604.2 ns | 439,636.97 ns | 389,726.73 ns |      - |     - |     - |       17080 B |
-| GetOrSet_FourSimultaneous |            100 | 31,423,357.8 ns | 588,223.86 ns | 577,714.48 ns |      - |     - |     - |       28312 B |
+|               Method | WorkIterations |   Mean [ns] | Error [ns] | StdDev [ns] |   Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|--------------------- |--------------- |------------:|-----------:|------------:|--------:|------:|------:|--------------:|
+|                  Set |            100 | 24,129.0 ns |   290.8 ns |    257.8 ns |  1.3123 |     - |     - |        4160 B |
+|        Set_TwoLayers |            100 | 30,731.2 ns |   388.0 ns |    363.0 ns |  1.5259 |     - |     - |        4920 B |
+|                Evict |            100 | 36,629.8 ns |   588.4 ns |    550.4 ns |  2.8076 |     - |     - |        8912 B |
+|      Evict_TwoLayers |            100 | 49,364.9 ns |   973.3 ns |    910.4 ns |  4.5776 |     - |     - |       14424 B |
+|              Cleanup |            100 | 55,434.8 ns |   822.3 ns |    728.9 ns |  3.3569 |     - |     - |       10560 B |
+|    Cleanup_TwoLayers |            100 | 87,934.2 ns | 1,068.4 ns |    999.4 ns |  5.6152 |     - |     - |       17720 B |
+|              GetMiss |            100 |  8,930.0 ns |   152.2 ns |    142.3 ns |  0.2899 |     - |     - |         912 B |
+|               GetHit |            100 |  9,411.4 ns |   121.6 ns |    113.7 ns |  0.3052 |     - |     - |         992 B |
+|  GetOrSet_NeverStale |            100 | 17,346.2 ns |   294.4 ns |    275.4 ns |  0.3967 |     - |     - |        1328 B |
+| GetOrSet_AlwaysStale |            100 | 71,033.2 ns |   976.5 ns |    815.4 ns |  7.6904 |     - |     - |       24296 B |
+|   GetOrSet_UnderLoad |            100 | 80,199.5 ns | 1,564.1 ns |  2,388.5 ns | 13.6719 |     - |     - |       42506 B |
 
 ## Cache Layer Comparison Benchmark
 
-|                 Method | WorkIterations |           Mean |        Error |       StdDev |    Ratio | RatioSD |       Gen 0 |  Gen 1 | Gen 2 |    Allocated |
-|----------------------- |--------------- |---------------:|-------------:|-------------:|---------:|--------:|------------:|-------:|------:|-------------:|
-|       MemoryCacheLayer |              1 |       136.9 us |      2.71 us |      2.40 us |     1.00 |    0.00 |     41.2598 |      - |     - |    126.83 KB |
-|        RedisCacheLayer |              1 |    49,761.2 us |  1,029.10 us |  1,373.82 us |   366.25 |   14.21 |           - |      - |     - |    317.11 KB |
-| ProtobufFileCacheLayer |              1 |   227,291.1 us |  4,533.02 us |  6,354.65 us | 1,662.04 |   48.53 |           - |      - |     - |    1575.7 KB |
-|     JsonFileCacheLayer |              1 |   276,206.6 us |  5,463.95 us |  5,846.36 us | 2,023.36 |   60.97 |   1000.0000 |      - |     - |   3320.27 KB |
-|      MongoDbCacheLayer |              1 |   457,461.3 us |  9,054.99 us | 17,873.66 us | 3,385.67 |  125.30 |  10000.0000 |      - |     - |  31073.59 KB |
-|                        |                |                |              |              |          |         |             |        |       |              |
-|       MemoryCacheLayer |             10 |     1,107.1 us |     14.27 us |     12.65 us |     1.00 |    0.00 |    261.7188 | 1.9531 |     - |    805.28 KB |
-|        RedisCacheLayer |             10 |   470,178.5 us |  2,899.91 us |  2,570.70 us |   424.72 |    4.44 |   1000.0000 |      - |     - |   3129.15 KB |
-| ProtobufFileCacheLayer |             10 | 1,903,920.6 us | 18,260.78 us | 17,081.15 us | 1,720.54 |   25.20 |   4000.0000 |      - |     - |  14579.13 KB |
-|     JsonFileCacheLayer |             10 | 2,350,582.6 us | 19,487.75 us | 18,228.85 us | 2,122.86 |   33.53 |  10000.0000 |      - |     - |  31642.21 KB |
-|      MongoDbCacheLayer |             10 | 3,692,059.0 us | 71,407.86 us | 79,369.65 us | 3,319.53 |   74.62 | 100000.0000 |      - |     - | 308501.52 KB |
+|                 Method | WorkIterations |           Mean |        Error |       StdDev |         Median |    Ratio | RatioSD |      Gen 0 |  Gen 1 | Gen 2 |   Allocated |
+|----------------------- |--------------- |---------------:|-------------:|-------------:|---------------:|---------:|--------:|-----------:|-------:|------:|------------:|
+|       MemoryCacheLayer |              1 |       119.7 us |      0.88 us |      0.78 us |       119.5 us |     1.00 |    0.00 |    43.7012 | 0.2441 |     - |   134.34 KB |
+|        RedisCacheLayer |              1 |    53,373.7 us |    824.23 us |  1,465.07 us |    53,399.2 us |   450.35 |   16.42 |          - |      - |     - |   266.34 KB |
+| ProtobufFileCacheLayer |              1 |   187,721.3 us |  3,373.72 us |  2,817.21 us |   188,113.5 us | 1,568.86 |   23.26 |          - |      - |     - |  1474.11 KB |
+|     JsonFileCacheLayer |              1 |   201,487.0 us |  2,606.99 us |  2,438.58 us |   201,416.3 us | 1,683.92 |   26.89 |  1000.0000 |      - |     - |  3250.96 KB |
+|      MongoDbCacheLayer |              1 |   355,290.8 us |  6,233.94 us |  5,831.23 us |   354,024.5 us | 2,965.19 |   42.63 |  8000.0000 |      - |     - | 27257.54 KB |
+|                        |                |                |              |              |                |          |         |            |        |       |             |
+|       MemoryCacheLayer |             10 |       912.4 us |     17.27 us |     43.34 us |       891.9 us |     1.00 |    0.00 |   261.7188 | 0.9766 |     - |   801.94 KB |
+|        RedisCacheLayer |             10 |   495,324.8 us |  2,694.06 us |  2,520.03 us |   495,735.3 us |   504.72 |   11.26 |          - |      - |     - |  2643.95 KB |
+| ProtobufFileCacheLayer |             10 | 1,630,101.8 us | 14,011.98 us | 13,106.81 us | 1,633,028.9 us | 1,661.13 |   42.41 |  4000.0000 |      - |     - | 13651.83 KB |
+|     JsonFileCacheLayer |             10 | 1,758,585.6 us |  9,551.04 us |  8,934.05 us | 1,757,511.6 us | 1,792.05 |   44.36 | 10000.0000 |      - |     - | 30750.66 KB |
+|      MongoDbCacheLayer |             10 | 3,315,541.0 us | 66,175.49 us | 70,807.03 us | 3,297,892.4 us | 3,430.08 |  167.72 | 89000.0000 |      - |     - | 272440.1 KB |
 
 ## In-Memory Benchmarks
 
