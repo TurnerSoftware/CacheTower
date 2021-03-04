@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
@@ -19,7 +18,7 @@ namespace CacheTower.Benchmarks.Providers
 		{
 			public ConfigSettings()
 			{
-				AddJob(Job.Default.WithRuntime(CoreRuntime.Core31).WithMaxIterationCount(200));
+				AddJob(Job.Default.WithRuntime(CoreRuntime.Core50).WithMaxIterationCount(200));
 				AddDiagnoser(MemoryDiagnoser.Default);
 
 				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(CultureInfo, true, SizeUnit.B, TimeUnit.Nanosecond);
@@ -41,13 +40,6 @@ namespace CacheTower.Benchmarks.Providers
 			{
 				await asyncDisposableLayer.DisposeAsync();
 			}
-		}
-
-		[Benchmark]
-		public async Task Overhead()
-		{
-			var cacheLayer = CacheLayerProvider.Invoke();
-			await DisposeOf(cacheLayer);
 		}
 
 		[Benchmark]
@@ -108,8 +100,6 @@ namespace CacheTower.Benchmarks.Providers
 			await DisposeOf(cacheLayer);
 		}
 
-
-
 		[Benchmark]
 		public async Task Cleanup()
 		{
@@ -120,6 +110,46 @@ namespace CacheTower.Benchmarks.Providers
 				await cacheLayer.SetAsync($"Cleanup_{i}", new CacheEntry<int>(1, expiredDate));
 			}
 			await cacheLayer.CleanupAsync();
+			await DisposeOf(cacheLayer);
+		}
+
+		[Benchmark]
+		public async Task GetHitSimultaneous()
+		{
+			var cacheLayer = CacheLayerProvider.Invoke();
+
+			await cacheLayer.SetAsync("GetHitSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+
+			var tasks = new List<Task>();
+
+			for (var i = 0; i < WorkIterations; i++)
+			{
+				var task = cacheLayer.GetAsync<int>("GetHitSimultaneous");
+				tasks.Add(task.AsTask());
+			}
+
+			await Task.WhenAll(tasks);
+
+			await DisposeOf(cacheLayer);
+		}
+
+		[Benchmark]
+		public async Task SetExistingSimultaneous()
+		{
+			var cacheLayer = CacheLayerProvider.Invoke();
+
+			await cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+
+			var tasks = new List<Task>();
+
+			for (var i = 0; i < WorkIterations; i++)
+			{
+				var task = cacheLayer.SetAsync("SetExistingSimultaneous", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
+				tasks.Add(task.AsTask());
+			}
+
+			await Task.WhenAll(tasks);
+
 			await DisposeOf(cacheLayer);
 		}
 	}

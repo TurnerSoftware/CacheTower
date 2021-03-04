@@ -5,10 +5,9 @@ using CacheTower.Providers.Memory;
 
 namespace CacheTower.Benchmarks.Extensions.Redis
 {
-	public class RedisRemoteEvictionExtensionBenchmark : BaseValueRefreshExtensionsBenchmark
+	public class RedisRemoteEvictionExtensionBenchmark : BaseCacheChangeExtensionBenchmark
 	{
-		[GlobalSetup]
-		public new void Setup()
+		public override void Setup()
 		{
 			CacheExtensionProvider = () => new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { new MemoryCacheLayer() });
 		}

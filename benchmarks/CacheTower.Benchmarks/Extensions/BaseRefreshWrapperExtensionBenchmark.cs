@@ -6,10 +6,10 @@ using BenchmarkDotNet.Attributes;
 
 namespace CacheTower.Benchmarks.Extensions
 {
-	public abstract class BaseRefreshWrapperExtensionsBenchmark : BaseExtensionsBenchmark
+	public abstract class BaseRefreshWrapperExtensionBenchmark : BaseExtensionsBenchmark
 	{
 		[Benchmark]
-		public async Task RefreshValue()
+		public async Task WithRefresh()
 		{
 			var extension = CacheExtensionProvider() as ICacheRefreshCallSiteWrapperExtension;
 			extension.Register(CacheStack);

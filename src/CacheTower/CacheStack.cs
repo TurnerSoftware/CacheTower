@@ -316,11 +316,7 @@ namespace CacheTower
 
 				lock (WaitingKeyRefresh)
 				{
-					if (!WaitingKeyRefresh.TryGetValue(cacheKey, out completionSource))
-					{
-						WaitingKeyRefresh[cacheKey] = new TaskCompletionSource<CacheEntry>();
-					}
-					else if (completionSource == null)
+					if (!WaitingKeyRefresh.TryGetValue(cacheKey, out completionSource) || completionSource == null)
 					{
 						completionSource = new TaskCompletionSource<CacheEntry>();
 						WaitingKeyRefresh[cacheKey] = completionSource;
