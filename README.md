@@ -14,11 +14,12 @@ _Why don't we do this with our code?_
 Cache Tower isn't a single type of cache, its a multi-layer solution to caching with each layer on top of another.
 A multi-layer cache provides the performance benefits of a fast cache like in-memory with the resilience of a file, database or Redis-backed cache.
 
-This library was inspired by a blog post by Nick Craver about [how Stack Overflow do caching](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/).<br>
-They use a custom 2-layer caching solution with in-memory and Redis.
+This library was inspired by a blog post by Nick Craver about [how Stack Overflow do caching](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/).
+Stack Overflow use a custom 2-layer caching solution with in-memory and Redis.
 
 ## Features
 
+- High performance with low allocations ([see comparison to other caching solutions](/docs/Comparison.md)).
 - Local system caching with in-memory and file-based caches.
 - Distributed system caching with MongoDB and Redis.
 - Background refreshes of non-expired but "stale" data, helping avoid expired data cache misses.
@@ -80,7 +81,7 @@ Not only that, limitations of different types of caches can affect what you can 
 
 ✔ **Pro**: Resilient to application restarts!
 
-❌ **Con**: Even with fast SSDs, it can be orders-of-magnitude slower than in-memory!
+❌ **Con**: Even with fast SSDs, it can be _1500x slower_ than in-memory!
 
 ### Database Caching
 
@@ -90,7 +91,7 @@ Not only that, limitations of different types of caches can affect what you can 
 
 ✔ **Pro**: Can support multiple systems at the same time!
 
-❌ **Con**: Performance is only as good as the database provider itself.
+❌ **Con**: Performance is only as good as the database provider itself. Don't forget network latency either!
 
 ### Redis Caching
 
@@ -100,7 +101,7 @@ Not only that, limitations of different types of caches can affect what you can 
 
 ✔ **Pro**: Can support multiple systems at the same time!
 
-✔ **Pro**: Extremely fast, losing out only to in-memory!
+✔ **Pro**: High performance (faster than file-based, slower than in-memory).
 
 ❌ **Con**: Linux only. *
 
