@@ -20,7 +20,7 @@ namespace CacheTower.Providers.FileSystem
 		private bool Disposed = false;
 		private string DirectoryPath { get; }
 		private string ManifestPath { get; }
-		private string FileExtension { get; }
+		private string? FileExtension { get; }
 
 		private SemaphoreSlim ManifestLock { get; } = new SemaphoreSlim(1, 1);
 		private bool? IsManifestAvailable { get; set; }
@@ -35,9 +35,9 @@ namespace CacheTower.Providers.FileSystem
 		/// </summary>
 		/// <param name="directoryPath"></param>
 		/// <param name="fileExtension"></param>
-		protected FileCacheLayerBase(string directoryPath, string fileExtension)
+		protected FileCacheLayerBase(string directoryPath, string? fileExtension)
 		{
-			DirectoryPath = directoryPath;
+			DirectoryPath = directoryPath ?? throw new ArgumentNullException(nameof(directoryPath));
 			FileExtension = fileExtension;
 			ManifestPath = Path.Combine(directoryPath, "manifest" + fileExtension);
 			FileLock = new ConcurrentDictionary<string?, AsyncReaderWriterLock>(StringComparer.Ordinal);
@@ -284,12 +284,12 @@ namespace CacheTower.Providers.FileSystem
 		}
 
 		/// <remarks>
-		/// For <see cref="FileCacheLayerBase{TManifest}"/>, availability is determined by being able to load the manifest.
+		/// For file caching, availability is determined by the ability to load the cache manifest.
 		/// </remarks>
 		/// <inheritdoc/>
 		public async ValueTask<bool> IsAvailableAsync(string cacheKey)
 		{
-			if (IsManifestAvailable == null)
+			if (IsManifestAvailable is null)
 			{
 				try
 				{
