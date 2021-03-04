@@ -11,13 +11,11 @@ namespace CacheTower.Benchmarks.Extensions
 		[Benchmark]
 		public async Task WithRefresh()
 		{
-			var extension = CacheExtensionProvider() as ICacheRefreshCallSiteWrapperExtension;
-			extension.Register(CacheStack);
+			var extension = CacheExtension as ICacheRefreshCallSiteWrapperExtension;
 			await extension.WithRefreshAsync("RefreshValue", () =>
 			{
 				return new ValueTask<CacheEntry<int>>(new CacheEntry<int>(5, TimeSpan.FromDays(1)));
 			}, new CacheSettings(TimeSpan.FromDays(1)));
-			await DisposeOf(extension);
 		}
 	}
 }

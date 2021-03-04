@@ -185,16 +185,14 @@ Runtime=.NET Core 5.0  MaxIterationCount=50
 
 ### RedisRemoteEvictionExtension
 
-|         Method |   Mean [ns] | Error [ns] | StdDev [ns] | Median [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
-|--------------- |------------:|-----------:|------------:|------------:|------:|------:|------:|--------------:|
-| OnValueRefresh | 50,831.5 ns | 7,238.7 ns | 29,110.7 ns | 37,700.0 ns |     - |     - |     - |        1000 B |
-|       Overhead |  6,028.0 ns |   574.0 ns |  2,193.5 ns |  5,450.0 ns |     - |     - |     - |         352 B |
-|       Register | 11,579.1 ns |   868.4 ns |  3,255.1 ns | 10,950.0 ns |     - |     - |     - |         568 B |
+|          Method |  Mean [ns] | Error [ns] | StdDev [ns] |  Gen 0 |  Gen 1 | Gen 2 | Allocated [B] |
+|---------------- |-----------:|-----------:|------------:|-------:|-------:|------:|--------------:|
+|   OnCacheUpdate | 2,503.0 ns |   50.01 ns |    46.78 ns | 0.1068 | 0.0153 |     - |         423 B |
+| OnCacheEviction | 1,459.5 ns |   29.17 ns |    74.78 ns | 0.0572 | 0.0191 |     - |         299 B |
+|    OnCacheFlush | 2,176.6 ns |   43.33 ns |    79.23 ns | 0.0801 | 0.0153 |     - |         296 B |
 
 ### RedisLockExtension
 
-|       Method |    Mean [ns] |  Error [ns] | StdDev [ns] |  Median [ns] | Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
-|------------- |-------------:|------------:|------------:|-------------:|------:|------:|------:|--------------:|
-| RefreshValue | 365,707.6 ns | 16,378.3 ns | 66,613.7 ns | 358,900.0 ns |     - |     - |     - |       11848 B |
-|     Overhead |  16,570.1 ns |  2,097.4 ns |  8,014.9 ns |  14,750.0 ns |     - |     - |     - |        1128 B |
-|     Register |  25,740.4 ns |  4,293.5 ns | 17,118.0 ns |  17,850.0 ns |     - |     - |     - |        1128 B |
+|      Method |    Mean [ns] | Error [ns] | StdDev [ns] |  Gen 0 | Gen 1 | Gen 2 | Allocated [B] |
+|------------ |-------------:|-----------:|------------:|-------:|------:|------:|--------------:|
+| WithRefresh | 162,511.5 ns | 1,243.2 ns |  1,102.0 ns | 0.2441 |     - |     - |        1208 B |

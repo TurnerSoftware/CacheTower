@@ -18,7 +18,8 @@ namespace CacheTower.Benchmarks.Utils
 			{
 				var config = new ConfigurationOptions
 				{
-					AllowAdmin = true
+					AllowAdmin = true,
+					SyncTimeout = (int)TimeSpan.FromSeconds(20).TotalMilliseconds
 				};
 				config.EndPoints.Add(Endpoint);
 				Connection = ConnectionMultiplexer.Connect(config);

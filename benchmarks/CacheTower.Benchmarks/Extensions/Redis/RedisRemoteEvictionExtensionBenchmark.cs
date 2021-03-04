@@ -7,20 +7,17 @@ namespace CacheTower.Benchmarks.Extensions.Redis
 {
 	public class RedisRemoteEvictionExtensionBenchmark : BaseCacheChangeExtensionBenchmark
 	{
-		public override void Setup()
+		protected override void SetupBenchmark()
 		{
-			CacheExtensionProvider = () => new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { new MemoryCacheLayer() });
-		}
+			base.SetupBenchmark();
 
-		[IterationSetup]
-		public void PreIterationRedisCleanup()
-		{
+			CacheExtension = new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { new MemoryCacheLayer() });
 			RedisHelper.FlushDatabase();
 		}
 
-		[IterationCleanup]
-		public void PostIterationRedisCleanup()
+		protected override void CleanupBenchmark()
 		{
+			base.CleanupBenchmark();
 			RedisHelper.FlushDatabase();
 		}
 	}

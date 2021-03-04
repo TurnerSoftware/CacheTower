@@ -24,20 +24,26 @@ namespace CacheTower.Benchmarks.Extensions
 				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(CultureInfo, true, SizeUnit.B, TimeUnit.Nanosecond);
 			}
 		}
-		protected Func<ICacheExtension> CacheExtensionProvider { get; set; }
 
-		protected static ICacheStack CacheStack { get; } = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+		protected ICacheExtension CacheExtension { get; set; }
 
-		protected static async Task DisposeOf(ICacheExtension cacheExtension)
+		protected virtual void SetupBenchmark() { }
+		protected virtual void CleanupBenchmark() { }
+
+		protected static CacheStack CacheStack { get; } = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+
+		[GlobalSetup]
+		public void Setup()
 		{
-			if (cacheExtension is IDisposable disposableExtension)
-			{
-				disposableExtension.Dispose();
-			}
-			else if (cacheExtension is IAsyncDisposable asyncDisposableExtension)
-			{
-				await asyncDisposableExtension.DisposeAsync();
-			}
+			SetupBenchmark();
+			CacheExtension.Register(CacheStack);
+		}
+
+		[GlobalCleanup]
+		public async Task CleanupAsync()
+		{
+			CleanupBenchmark();
+			await CacheStack.DisposeAsync();
 		}
 	}
 }

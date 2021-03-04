@@ -6,21 +6,17 @@ namespace CacheTower.Benchmarks.Extensions.Redis
 {
 	public class RedisLockExtensionBenchmark : BaseRefreshWrapperExtensionBenchmark
 	{
-		[GlobalSetup]
-		public void Setup()
+		protected override void SetupBenchmark()
 		{
-			CacheExtensionProvider = () => new RedisLockExtension(RedisHelper.GetConnection());
-		}
+			base.SetupBenchmark();
 
-		[IterationSetup]
-		public void PreIterationRedisCleanup()
-		{
+			CacheExtension = new RedisLockExtension(RedisHelper.GetConnection());
 			RedisHelper.FlushDatabase();
 		}
 
-		[IterationCleanup]
-		public void PostIterationRedisCleanup()
+		protected override void CleanupBenchmark()
 		{
+			base.CleanupBenchmark();
 			RedisHelper.FlushDatabase();
 		}
 	}

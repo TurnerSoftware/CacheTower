@@ -8,8 +8,7 @@ namespace CacheTower.Benchmarks.Extensions
 	{
 		public DateTime BenchmarkValue;
 
-		[GlobalSetup]
-		public virtual void Setup()
+		protected override void SetupBenchmark()
 		{
 			BenchmarkValue = DateTime.UtcNow;
 		}
@@ -17,28 +16,22 @@ namespace CacheTower.Benchmarks.Extensions
 		[Benchmark]
 		public async Task OnCacheUpdate()
 		{
-			var extension = CacheExtensionProvider() as ICacheChangeExtension;
-			extension.Register(CacheStack);
+			var extension = CacheExtension as ICacheChangeExtension;
 			await extension.OnCacheUpdateAsync("OnCacheUpdate_CacheKey", BenchmarkValue);
-			await DisposeOf(extension);
 		}
 
 		[Benchmark]
 		public async Task OnCacheEviction()
 		{
-			var extension = CacheExtensionProvider() as ICacheChangeExtension;
-			extension.Register(CacheStack);
+			var extension = CacheExtension as ICacheChangeExtension;
 			await extension.OnCacheEvictionAsync("OnCacheEviction_CacheKey");
-			await DisposeOf(extension);
 		}
 
 		[Benchmark]
 		public async Task OnCacheFlush()
 		{
-			var extension = CacheExtensionProvider() as ICacheChangeExtension;
-			extension.Register(CacheStack);
+			var extension = CacheExtension as ICacheChangeExtension;
 			await extension.OnCacheFlushAsync();
-			await DisposeOf(extension);
 		}
 	}
 }
