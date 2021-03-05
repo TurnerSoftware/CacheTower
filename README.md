@@ -20,22 +20,25 @@ Stack Overflow use a custom 2-layer caching solution with in-memory and Redis.
 ## Features
 
 - High performance with low allocations ([see comparison to other caching solutions](/docs/Comparison.md)).
-- Local system caching with in-memory and file-based caches.
-- Distributed system caching with MongoDB and Redis.
-- Background refreshes of non-expired but "stale" data, helping avoid expired data cache misses.
-- Local refresh locking (only refreshing the cache in one thread).
-- Distributed refresh locking (only refreshing the cache in one application across multiple servers).
-- Distributed evictions for clearing out old data from shared caches.
+- Local system caching with [in-memory](#MemoryCacheLayer) and [file-based caches](#JsonFileCacheLayer).
+- Distributed system caching with [MongoDB](#MongoDbCacheLayer) and [Redis](#RedisCacheLayer).
+- Supports one or more cache layers, [allowing a cache that has the best of all worlds](#Understanding-a-Multi-Layer-Caching-System).
+- [Background refreshes of non-expired but "stale" data](#Background-Refreshing-of-Stale-Data), helping avoid expired data cache misses.
+- Local refresh locking, guaranteeing only 1 factory call per key locally.
+- [Distributed refresh locking](#Distributed-Locking-via-Redis), guaranteeing only 1 factory call per key across multiple application instances.
+- [Distributed evictions](#Distributed-Eviction-via-Redis), helping to keep caches across multiple application instances the same.
 - All-async API, ready for high performance workloads.
-- Targets minimum .NET Standard 2.0 for wide compatibility.
+- [Targets minimum .NET Standard 2.0 for wide compatibility (.NET Framework 4.6.1+, .NET Core 2.0+, .NET 5.0+)](https://docs.microsoft.com/en-us/dotnet/standard/net-standard#net-implementation-support).
 
 ## Table of Contents
 
 - [Installation](#Installation)
 - [Understanding a Multi-Layer Caching System](#Understanding-a-Multi-Layer-Caching-System)
 - [The Cache Layers of Cache Tower](#The-Cache-Layers-of-Cache-Tower)
+  - [Making Your Own Cache Layer](#Making-Your-Own-Cache-Layer)
 - [Getting Started](#Getting-Started)
 - [Background Refreshing of Stale Data](#Background-Refreshing-of-Stale-Data)
+  - [Avoiding Disposed Contexts](#Avoiding-Disposed-Contexts)
 - [Cache Tower Extensions](#Cache-Tower-Extensions)
   - [Automatic Cleanup](#Automatic-Cleanup)
   - [Distributed Locking via Redis](#Distributed-Locking-via-Redis)
@@ -128,6 +131,11 @@ If a valid cache entry is found, that will be returned.
 
 Which combination of cache layers you use to build your cache stack is up to you and what is best for your application.
 
+> ℹ **Don't need a multi-layer cache right now?**<br>
+> Multi-layer caching is only one part of Cache Tower. 
+> If you only need one layer of caching, you can still leverage the different types of caches available and take advantage of background refreshing.
+> If later on you need to add more layers, you only need to change the configuration of your cache stack!
+
 ## The Cache Layers of Cache Tower
 
 Cache Tower has a number of officially supported cache layers that you can use.
@@ -197,6 +205,14 @@ Allows caching of data in Redis. Data is serialized to Protobuf using [protobuf-
 
 Like the [ProtobufFileCacheLayer](#ProtobufFileCacheLayer), the use of [protobuf-net requires decorating the class](https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes) you want to cache with attributes `[ProtoContract]` and `[ProtoMember]`.
 
+## Making Your Own Cache Layer
+
+You can create your own cache layer by implementing [`ICacheLayer`](src/CacheTower/ICacheLayer.cs).
+With it, you could implement caching layers that talk to SQL databases or cloud-based storage systems.
+
+When making your own cache layer, you will need to keep in mind that your implementation should be thread safe.
+Cache Stack prevents multiple threads at once calling the value factory, not preventing multiple threads accessing the cache layer.
+
 ## Getting Started
 
 
@@ -224,7 +240,6 @@ Once you have your cache stack, you can call `GetOrSetAsync` - this is the prima
 var userId = 17;
 
 await cacheStack.GetOrSetAsync<UserProfile>($"user-{userId}", async (old, context) => {
-	
 	return await context.GetUserForIdAsync(userId);
 }, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromMinutes(60));
 ```
@@ -242,8 +257,8 @@ If there is a cache hit on an item and the item is considered stale, it will per
 By doing this, it avoids blocking the request on a potential cache miss later.
 
 ```csharp
-await cacheStack.GetOrSetAsync<MyCachedType>("my-cache-key", async (oldValue, context) => {
-	return await DoWorkThatNeedsToBeCached();
+await cacheStack.GetOrSetAsync<MyCachedType>("my-cache-key", async (oldValue) => {
+	return await DoWorkThatNeedsToBeCachedAsync();
 }, new CacheSettings(timeToLive: TimeSpan.FromMinutes(60), staleAfter: TimeSpan.FromMinutes(30)));
 ```
 
@@ -252,6 +267,32 @@ However, after 30 minutes, the cache will be considered stale.
 
 If this code was run again at least 30 minutes from now but no later than 60 minutes from now, it would perform a background refresh.
 If we call this code again after 60 minutes from now, it will be a cache miss and block the thread till the cache is refreshed.
+
+### Avoiding Disposed Contexts
+
+With stale refreshes happening in the background, it is important to not reference potentially disposed objects and contexts.
+Cache Tower can help with this by providing a context into the `GetOrSetAsync` method.
+
+```csharp
+await cacheStack.GetOrSetAsync<MyCachedType>("my-cache-key", async (oldValue, context) => {
+	return await DoWorkThatNeedsToBeCachedAsync(context);
+}, new CacheSettings(timeToLive: TimeSpan.FromMinutes(60), staleAfter: TimeSpan.FromMinutes(30)));
+```
+
+The type of `context` is established at the time of configuring the cache stack.
+
+```csharp
+services.AddCacheStack<MyContext>(new[] { new MemoryCacheLayer() }, new[] { new AutoCleanupExtension(TimeSpan.FromMinutes(5)) });
+```
+
+The context object is resolved every time there is a cache refresh.
+You can use this context to hold any of the other objects or properties you need for safe access in a background thread, avoiding the possibility of accessing disposed objects like database connections.
+
+> ℹ **Want to specify your own context factory?**<br>
+> You can specify your own context factory via the `AddCacheStack` methods on the services collection or via the `CacheStack<TContext>` constructor.
+> ```csharp
+> services.AddCacheStack(() => new MyContext(), new[] { new MemoryCacheLayer() }, new[] { new AutoCleanupExtension(TimeSpan.FromMinutes(5)) });
+> ```
 
 ## Cache Tower Extensions
 
