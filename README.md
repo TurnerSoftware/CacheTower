@@ -262,11 +262,35 @@ await cacheStack.GetOrSetAsync<MyCachedType>("my-cache-key", async (oldValue) =>
 }, new CacheSettings(timeToLive: TimeSpan.FromMinutes(60), staleAfter: TimeSpan.FromMinutes(30)));
 ```
 
-In the example above, the cache would expire in 60 minutes time.
-However, after 30 minutes, the cache will be considered stale.
+In the example above, the cache would expire in 60 minutes time (`timeToLive`).
+However, in 30 minutes, the cache will be considered stale (`staleAfter`).
 
 If this code was run again at least 30 minutes from now but no later than 60 minutes from now, it would perform a background refresh.
 If we call this code again after 60 minutes from now, it will be a cache miss and block the thread till the cache is refreshed.
+
+### Understanding Cache Time-to-Live and Stale Time
+
+Say you're caching something for 90 minutes, that would be your `timeToLive`.
+This is the absolute time till the cache entry will expire.
+If you want a 30 minutes "grace" period where data is refreshed in the background, you would set your `staleAfter` to 60 minutes.
+
+```
+staleAfter = timeToLive - gracePeriod
+```
+
+While specific stale times are dependent on what you're caching and why, a reasonable rule of thumb can be to have a stale time no less than half of the time-to-live.
+
+⚠ **Warning: Avoid setting a stale time that is too short!**
+
+This is called _"over refreshing"_ whereby the background refreshing happens far more frequently than is useful.
+Over refreshing is at its worse with stale times shorter than a few minutes for cache entries that are frequently hit.
+
+This has two effects:
+1. Frequent refreshes would increase load on the factory that provides the data to cache, potentially degrading its performance.
+2. Background refreshing, while efficient, has a non-zero cost when invoked thus putting additional pressure on the application where they are triggering.
+
+With this in mind, it is not advised to set your `staleAfter` time to 0.
+This effectively means the cache is always stale, performing a background refresh every hit of the cache.
 
 ### Avoiding Disposed Contexts
 
