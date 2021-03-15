@@ -288,9 +288,9 @@ services.AddCacheStack<MyContext>(new[] { new MemoryCacheLayer() }, new[] { new 
 The context object is resolved every time there is a cache refresh.
 You can use this context to hold any of the other objects or properties you need for safe access in a background thread, avoiding the possibility of accessing disposed objects like database connections.
 
-| ℹ Want to specify your own context factory? |
-|-|
-|You can specify your own context factory via the `AddCacheStack` methods on the services collection or via the `CacheStack<TContext>` constructor.<br/><pre lang="csharp">services.AddCacheStack(() => new MyContext(), ... );</pre>|
+|ℹ Want to specify your own context factory? |
+|:-|
+|You can specify your own context factory via the `AddCacheStack` methods on the services collection or via the `CacheStack<TContext>` constructor.<br/><br/><pre lang="csharp">services.AddCacheStack(() => new MyContext(), ... );</pre>|
 
 ## Cache Tower Extensions
 
