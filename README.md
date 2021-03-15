@@ -131,10 +131,10 @@ If a valid cache entry is found, that will be returned.
 
 Which combination of cache layers you use to build your cache stack is up to you and what is best for your application.
 
-> ℹ **Don't need a multi-layer cache right now?**<br>
-> Multi-layer caching is only one part of Cache Tower. 
-> If you only need one layer of caching, you can still leverage the different types of caches available and take advantage of background refreshing.
-> If later on you need to add more layers, you only need to change the configuration of your cache stack!
+|ℹ Don't need a multi-layer cache right now? |
+|:-|
+|Multi-layer caching is only one part of Cache Tower. If you only need one layer of caching, you can still leverage the different types of caches available and take advantage of background refreshing. If later on you need to add more layers, you only need to change the configuration of your cache stack!|
+
 
 ## The Cache Layers of Cache Tower
 
