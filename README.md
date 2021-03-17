@@ -32,22 +32,22 @@ Stack Overflow use a custom 2-layer caching solution with in-memory and Redis.
 
 ## 📖 Table of Contents
 
-- [Installation](#Installation)
-- [Understanding a Multi-Layer Caching System](#Understanding-a-Multi-Layer-Caching-System)
-- [The Cache Layers of Cache Tower](#The-Cache-Layers-of-Cache-Tower)
-  - [Making Your Own Cache Layer](#Making-Your-Own-Cache-Layer)
-- [Getting Started](#Getting-Started)
-- [Background Refreshing of Stale Data](#Background-Refreshing-of-Stale-Data)
-  - [Avoiding Disposed Contexts](#Avoiding-Disposed-Contexts)
-- [Cache Tower Extensions](#Cache-Tower-Extensions)
-  - [Automatic Cleanup](#Automatic-Cleanup)
-  - [Distributed Locking via Redis](#Distributed-Locking-via-Redis)
-  - [Distributed Eviction via Redis](#Distributed-Eviction-via-Redis)
-- [Performance and Comparisons](#Performance-and-Comparisons)
-- [Advanced Usage](#Advanced-Usage)
-  - [Flushing the Cache](#Flushing-the-Cache)
+- [Installation](#installation)
+- [Understanding a Multi-Layer Caching System](#understanding-multi-layer-caching)
+- [The Cache Layers of Cache Tower](#official-cache-layers)
+  - [Making Your Own Cache Layer](#custom-cache-layers)
+- [Getting Started](#getting-started)
+- [Background Refreshing of Stale Data](#background-refreshing)
+  - [Avoiding Disposed Contexts](#avoiding-disposed-contexts)
+- [Cache Tower Extensions](#extensions)
+  - [Automatic Cleanup](#automatic-cleanup)
+  - [Distributed Locking via Redis](#distributed-locking-via-redis)
+  - [Distributed Eviction via Redis](#distributed-eviction-via-redis)
+- [Performance and Comparisons](#performance)
+- [Advanced Usage](#advanced-usage)
+  - [Flushing the Cache](#flushing-the-cache)
 
-## 💿 Installation
+## <a id="installation" /> 💿 Installation
 
 You will need the `CacheTower` package on NuGet - it provides the core infrastructure for Cache Tower as well as an in-memory cache layer.
 To add additional cache layers, you will need to install the appropriate packages as listed below.
@@ -61,7 +61,7 @@ To add additional cache layers, you will need to install the appropriate package
 | [CacheTower.Providers.FileSystem.Protobuf](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/)<br><small>Provides a file-based cache layer using Protobuf.</small> | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.FileSystem.Protobuf.svg)](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.FileSystem.Protobuf.svg)](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/) |
 | [CacheTower.Providers.Redis](https://www.nuget.org/packages/CacheTower.Providers.Redis/)<br><small>Provides a cache layer for Redis.</small> | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.Redis.svg)](https://www.nuget.org/packages/CacheTower.Providers.Redis/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.Redis.svg)](https://www.nuget.org/packages/CacheTower.Providers.Redis/) |
 
-## 🎓 Understanding a Multi-Layer Caching System
+## <a id="understanding-multi-layer-caching" /> 🎓 Understanding a Multi-Layer Caching System
 
 At its most basic level, caching is designed to prevent reprocessing of data by storing the result _somewhere_.
 In turn, preventing the reprocessing of data makes our code faster and more scaleable.
@@ -136,7 +136,7 @@ Which combination of cache layers you use to build your cache stack is up to you
 |Multi-layer caching is only one part of Cache Tower. If you only need one layer of caching, you can still leverage the different types of caches available and take advantage of background refreshing. If later on you need to add more layers, you only need to change the configuration of your cache stack!|
 
 
-## 🏢 The Cache Layers of Cache Tower
+## <a id="official-cache-layers" /> 🏢 The Cache Layers of Cache Tower
 
 Cache Tower has a number of officially supported cache layers that you can use.
 
@@ -205,7 +205,7 @@ Allows caching of data in Redis. Data is serialized to Protobuf using [protobuf-
 
 Like the [ProtobufFileCacheLayer](#ProtobufFileCacheLayer), the use of [protobuf-net requires decorating the class](https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes) you want to cache with attributes `[ProtoContract]` and `[ProtoMember]`.
 
-## 🔨 Making Your Own Cache Layer
+## <a id="custom-cache-layers" /> 🔨 Making Your Own Cache Layer
 
 You can create your own cache layer by implementing [`ICacheLayer`](src/CacheTower/ICacheLayer.cs).
 With it, you could implement caching layers that talk to SQL databases or cloud-based storage systems.
@@ -213,7 +213,7 @@ With it, you could implement caching layers that talk to SQL databases or cloud-
 When making your own cache layer, you will need to keep in mind that your implementation should be thread safe.
 Cache Stack prevents multiple threads at once calling the value factory, not preventing multiple threads accessing the cache layer.
 
-## ⭐ Getting Started
+## <a id="getting-started" /> ⭐ Getting Started
 
 
 > In this example, `UserContext` is a type added to the service collection.
@@ -247,7 +247,7 @@ await cacheStack.GetOrSetAsync<UserProfile>($"user-{userId}", async (old, contex
 This call to `GetOrSetAsync` is configured with a cache expiry of `1 day` and an effective stale time after `60 minutes`.
 A good stale time is extremely useful for high performance scenarios where background refreshing is leveraged.
 
-## 🔁 Background Refreshing of Stale Data
+## <a id="background-refreshing" /> 🔁 Background Refreshing of Stale Data
 
 A high-performance cache needs to keep throughput high.
 Having a cache miss because of expired data stalls the potential throughput.
@@ -316,7 +316,7 @@ You can use this context to hold any of the other objects or properties you need
 |:-|
 |You can specify your own context factory via the `AddCacheStack` methods on the services collection or via the `CacheStack<TContext>` constructor.<br/><br/><pre lang="csharp">services.AddCacheStack(() => new MyContext(), ... );</pre>|
 
-## 🏗 Cache Tower Extensions
+## <a id="extensions" /> 🏗 Cache Tower Extensions
 
 To allow more flexibility, Cache Tower uses an extension system to enhance functionality.
 Some of these extensions rely on third party libraries and software to function correctly.
@@ -349,7 +349,7 @@ PM> Install-Package CacheTower.Extensions.Redis
 The `RedisRemoteEvictionExtension` extension uses the pub/sub feature of Redis to co-ordinate cache invalidation across multiple instances of your application.
 This works in the situation where one web server has refreshed a key and wants to let the other web servers know their data is now old.
 
-## 🥇 Performance and Comparisons
+## <a id="performance" /> 🥇 Performance and Comparisons
 
 Cache Tower has been built from the ground up for high performance and low memory consumption.
 Across a number of benchmarks against other caching solutions, Cache Tower performs similarly or better than the competition.
@@ -360,7 +360,7 @@ It is important to weigh both the feature set and performance when deciding on a
 For internal benchmarks between cache layers, see: [Performance Figures & Cache Layer Comparisons](/docs/Performance.md).<br>
 For comparisons between alternative caching libraries, see: [Comparisons to Cache Tower Alternatives](/docs/Comparison.md).
 
-## ℹ Advanced Usage
+## <a id="advanced-usage" /> 🧪 Advanced Usage
 
 ### Flushing the Cache
 
