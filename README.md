@@ -47,7 +47,7 @@ Stack Overflow use a custom 2-layer caching solution with in-memory and Redis.
 - [Advanced Usage](#Advanced-Usage)
   - [Flushing the Cache](#Flushing-the-Cache)
 
-## 💿 Installation
+## <a id="installation" /> 💿 Installation
 
 You will need the `CacheTower` package on NuGet - it provides the core infrastructure for Cache Tower as well as an in-memory cache layer.
 To add additional cache layers, you will need to install the appropriate packages as listed below.
