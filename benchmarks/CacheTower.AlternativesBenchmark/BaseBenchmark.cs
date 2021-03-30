@@ -2,28 +2,38 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Order;
+using BenchmarkDotNet.Validators;
 
 namespace CacheTower.AlternativesBenchmark
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp50), MemoryDiagnoser, MaxIterationCount(200), Orderer(SummaryOrderPolicy.FastestToSlowest)]
+	[Config(typeof(Config))]
 	public abstract class BaseBenchmark
 	{
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		protected void LoopAction(int iterations, Action action)
+		public class Config : ManualConfig
 		{
-			for (var i = 0; i < iterations; i++)
+			public Config()
 			{
-				action();
-			}
-		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		protected async ValueTask LoopActionAsync(int iterations, Func<ValueTask> action)
-		{
-			for (var i = 0; i < iterations; i++)
-			{
-				await action();
+				AddLogger(ConsoleLogger.Default);
+
+				AddDiagnoser(MemoryDiagnoser.Default);
+				AddColumn(StatisticColumn.OperationsPerSecond);
+				AddColumnProvider(DefaultColumnProviders.Instance);
+
+				WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest));
+
+				AddValidator(JitOptimizationsValidator.FailOnError);
+
+				AddJob(Job.Default
+					.WithRuntime(CoreRuntime.Core50)
+					.WithMaxIterationCount(200));
+
 			}
 		}
 	}

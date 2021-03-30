@@ -11,89 +11,62 @@ namespace CacheTower.AlternativesBenchmark
 {
 	public class CacheAlternatives_Memory_Benchmark : BaseBenchmark
 	{
-		[Params(1, 1000)]
-		public int Iterations;
+		private readonly CacheStack CacheTower;
+		private readonly ICacheManager<string> CacheManager;
+		private readonly DefaultInMemoryCachingProvider EasyCaching;
+		private readonly CachingService LazyCache;
+		private readonly FusionCache FusionCache;
 
-		[Benchmark(Baseline = true)]
-		public async Task CacheTower_MemoryCacheLayer()
+		public CacheAlternatives_Memory_Benchmark()
 		{
-			await using (var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
-			{
-				await LoopActionAsync(Iterations, async () =>
-				{
-					await cacheStack.SetAsync("TestKey", 123, TimeSpan.FromDays(1));
-					await cacheStack.GetAsync<int>("TestKey");
-					await cacheStack.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
-					{
-						return Task.FromResult("Hello World");
-					}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
-				});
-			}
-		}
-
-		[Benchmark]
-		public void CacheManager_MicrosoftMemoryCache()
-		{
-			var cacheManager = CacheFactory.Build(b =>
+			CacheTower = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			CacheManager = CacheFactory.Build<string>(b =>
 			{
 				b.WithMicrosoftMemoryCacheHandle();
 			});
-
-			using (cacheManager)
-			{
-				LoopAction(Iterations, () =>
-				{
-					cacheManager.Add("TestKey", 123);
-					cacheManager.GetCacheItem("TestKey");
-					cacheManager.GetOrAdd("GetOrSet_TestKey", (key) =>
-					{
-						return new CacheItem<string>(key, "Hello World");
-					});
-				});
-			}
-		}
-
-		[Benchmark]
-		public void EasyCaching_InMemory()
-		{
-			var easyCaching = new DefaultInMemoryCachingProvider(
+			EasyCaching = new DefaultInMemoryCachingProvider(
 				"EasyCaching",
 				new[] { new InMemoryCaching("EasyCaching", new InMemoryCachingOptions()) },
 				new InMemoryOptions()
 			);
+			LazyCache = new CachingService();
+			FusionCache = new FusionCache(new FusionCacheOptions());
+		}
 
-			LoopAction(Iterations, () =>
+		[Benchmark(Baseline = true)]
+		public async Task<string> CacheTower_MemoryCacheLayer()
+		{
+			return await CacheTower.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
 			{
-				easyCaching.Set("TestKey", 123, TimeSpan.FromDays(1));
-				easyCaching.Get<int>("TestKey");
-				easyCaching.Get("GetOrSet_TestKey", () => "Hello World", TimeSpan.FromDays(1));
-			});
+				return Task.FromResult("Hello World");
+			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 		}
 
 		[Benchmark]
-		public void LazyCache_MemoryProvider()
+		public string CacheManager_MicrosoftMemoryCache()
 		{
-			var lazyCache = new CachingService();
-
-			LoopAction(Iterations, () =>
+			return CacheManager.GetOrAdd("GetOrSet_TestKey", (key) =>
 			{
-				lazyCache.Add("TestKey", 123, TimeSpan.FromDays(1));
-				lazyCache.Get<int>("TestKey");
-				lazyCache.GetOrAdd("GetOrSet_TestKey", () => "Hello World", TimeSpan.FromDays(1));
-			});
+				return new CacheItem<string>(key, "Hello World");
+			}).Value;
 		}
 
 		[Benchmark]
-		public void FusionCache_MemoryProvider()
+		public string EasyCaching_InMemory()
 		{
-			var fusionCache = new FusionCache(new FusionCacheOptions());
+			return EasyCaching.Get("GetOrSet_TestKey", () => "Hello World", TimeSpan.FromDays(1)).Value;
+		}
 
-			LoopAction(Iterations, () =>
-			{
-				fusionCache.Set("TestKey", 123, TimeSpan.FromDays(1));
-				fusionCache.GetOrDefault<int>("TestKey");
-				fusionCache.GetOrSet("GetOrSet_TestKey", (cancellationToken) => "Hello World", TimeSpan.FromDays(1));
-			});
+		[Benchmark]
+		public string LazyCache_MemoryProvider()
+		{
+			return LazyCache.GetOrAdd("GetOrSet_TestKey", () => "Hello World", TimeSpan.FromDays(1));
+		}
+
+		[Benchmark]
+		public string FusionCache_MemoryProvider()
+		{
+			return FusionCache.GetOrSet("GetOrSet_TestKey", (cancellationToken) => "Hello World", TimeSpan.FromDays(1));
 		}
 	}
 }

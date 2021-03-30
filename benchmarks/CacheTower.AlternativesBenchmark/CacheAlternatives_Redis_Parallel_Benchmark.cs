@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
@@ -10,13 +11,15 @@ using ProtoBuf;
 
 namespace CacheTower.AlternativesBenchmark
 {
-	public class CacheAlternatives_Redis_Benchmark : BaseBenchmark
+	public class CacheAlternatives_Redis_Parallel_Benchmark : BaseBenchmark
 	{
+		private readonly int ParallelIterations = 100;
+
 		private readonly CacheStack CacheTower;
 		private readonly ICacheManager<ProtobufCacheItem> CacheManager;
 		private readonly DefaultRedisCachingProvider EasyCaching;
 
-		public CacheAlternatives_Redis_Benchmark()
+		public CacheAlternatives_Redis_Parallel_Benchmark()
 		{
 			CacheTower = new CacheStack(new[] { new RedisCacheLayer(RedisHelper.GetConnection()) }, Array.Empty<ICacheExtension>());
 			CacheManager = CacheFactory.Build<ProtobufCacheItem>(b =>
@@ -44,15 +47,19 @@ namespace CacheTower.AlternativesBenchmark
 		public void Setup()
 		{
 			RedisHelper.FlushDatabase();
+			Thread.Sleep(TimeSpan.FromSeconds(3));
 		}
 
 		[Benchmark(Baseline = true)]
-		public async Task<string> CacheTower_RedisCacheLayer()
+		public void CacheTower_RedisCacheLayer()
 		{
-			return await CacheTower.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
+			Parallel.For(0, ParallelIterations, async i =>
 			{
-				return Task.FromResult("Hello World");
-			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+				await CacheTower.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
+				{
+					return Task.FromResult("Hello World");
+				}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+			});
 		}
 
 		[Serializable]
@@ -64,21 +71,27 @@ namespace CacheTower.AlternativesBenchmark
 		}
 
 		[Benchmark]
-		public string CacheManager_Redis()
+		public void CacheManager_Redis()
 		{
-			return CacheManager.GetOrAdd("GetOrSet_TestKey", (key) =>
+			Parallel.For(0, ParallelIterations, i =>
 			{
-				return new ProtobufCacheItem
+				var _ = CacheManager.GetOrAdd("GetOrSet_TestKey", (key) =>
 				{
-					Value = "Hello World"
-				};
-			}).Value;
+					return new ProtobufCacheItem
+					{
+						Value = "Hello World"
+					};
+				}).Value;
+			});
 		}
 
 		[Benchmark]
-		public async Task<string> EasyCaching_Redis()
+		public void EasyCaching_Redis()
 		{
-			return (await EasyCaching.GetAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1))).Value;
+			Parallel.For(0, ParallelIterations, async i =>
+			{
+				var _ = (await EasyCaching.GetAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1))).Value;
+			});
 		}
 	}
 }
