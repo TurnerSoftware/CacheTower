@@ -16,48 +16,9 @@ env:
   BUILD_ARTIFACT_PATH: ${{github.workspace}}/build-artifacts
 
 jobs:
-
-  version:
-    name: Identify build version
-    runs-on: ubuntu-latest
-    outputs:
-      BuildVersion: ${{steps.configureBuildVersion.outputs.BUILD_VERSION}}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Fetch all Git tags
-      run: git fetch --prune --unshallow --tags
-    - name: Configure build version
-      id: configureBuildVersion
-      run: |
-        $githubRunId = $env:GITHUB_RUN_ID;
-        $prNumber = $env:PR_NUMBER;
-        $gitSourceVersion = git describe --tags --abbrev=7 --always 2>$1;
-        $gitSourceVersionSplit = [regex]::split($gitSourceVersion, "-(?=\d+-\w+)");
-        $version = $(if($gitSourceVersionSplit.length -eq 1){"0.0.0"}else{$gitSourceVersionSplit[0]});
-        $commitsSinceTag = '0';
-        $commitHash = $gitSourceVersionSplit[0];
-        if ($gitSourceVersionSplit.length -eq 2) {
-            $gitMetadata = $gitSourceVersionSplit[1].split("-");
-            $commitsSinceTag = $gitMetadata[0];
-            $commitHash = $gitMetadata[1];
-        }
-        $buildMetadata = "$($commitHash)-$($githubRunId)";
-        $customSuffix = $(if($prNumber -ne ''){"-PR$($prNumber)"}elseif($commitsSinceTag -ne '0'){"-dev"});
-        echo "::set-output name=BUILD_VERSION::$($version)$($customSuffix)+$($buildMetadata)";
-      shell: pwsh
-      env:
-        PR_NUMBER: ${{github.event.number}}
-    - name: Print build version
-      run: echo ${{steps.configureBuildVersion.outputs.BUILD_VERSION}}
-
-
   build:
     name: Build ${{matrix.os}}
     runs-on: ${{matrix.os}}
-    needs: version
-    env:
-      BUILD_VERSION: ${{needs.version.outputs.BuildVersion}}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
@@ -76,13 +37,13 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install dependencies
-      run: dotnet --version && dotnet nuget list source && dotnet restore --verbosity normal
+      run: dotnet restore
     - name: Build
-      run: dotnet build -c Release --no-restore /p:Version=${{env.BUILD_VERSION}}
+      run: dotnet build --no-restore -c Release
     - name: Test with Coverage
-      run: dotnet test --logger trx --results-directory ${{env.BUILD_ARTIFACT_PATH}}/coverage --collect "XPlat Code Coverage" --settings CodeCoverage.runsettings
+      run: dotnet test --no-restore --logger trx --results-directory ${{env.BUILD_ARTIFACT_PATH}}/coverage --collect "XPlat Code Coverage" --settings CodeCoverage.runsettings /p:SkipBuildVersioning=true
     - name: Pack
-      run: dotnet pack -c Release --no-build /p:Version=${{env.BUILD_VERSION}} /p:PackageOutputPath=${{env.BUILD_ARTIFACT_PATH}}
+      run: dotnet pack --no-build -c Release /p:PackageOutputPath=${{env.BUILD_ARTIFACT_PATH}}
     - name: Publish artifacts
       uses: actions/upload-artifact@v2
       with:

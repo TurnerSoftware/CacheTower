@@ -8,11 +8,14 @@ install:
   - choco install Memurai-Developer
   
 build_script:
-  - ps: .\build.appveyor.ps1
-  
+  - ps: dotnet restore
+  - ps: dotnet build --no-restore -c Release
+  - ps: dotnet test --no-restore /p:SkipBuildVersioning=true
+  - ps: dotnet pack --no-build -c Release /p:PackageOutputPath=build-artifacts
+
 test: false
 artifacts:
-  - path: '.\build-artifacts\*'
+  - path: '**\build-artifacts\*'
 
 deploy:
   - provider: NuGet
