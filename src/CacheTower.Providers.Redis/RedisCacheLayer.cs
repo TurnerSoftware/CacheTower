@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using CacheTower.Providers.Redis.Entities;
-using ProtoBuf;
+using CacheTower.Serializers.Protobuf;
 using StackExchange.Redis;
 
 namespace CacheTower.Providers.Redis
@@ -23,6 +23,7 @@ namespace CacheTower.Providers.Redis
 		private IConnectionMultiplexer Connection { get; }
 		private IDatabaseAsync Database { get; }
 		private int DatabaseIndex { get; }
+		private ICacheSerializer Serializer { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="RedisCacheLayer"/> with the given <paramref name="connection"/> and <paramref name="databaseIndex"/>.
@@ -32,11 +33,18 @@ namespace CacheTower.Providers.Redis
 		/// The database index to use for Redis.
 		/// If not specified, uses the default database as configured on the <paramref name="connection"/>.
 		/// </param>
-		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1)
+		/// <param name="serializer">
+		/// Allows you to specify which encoding should be used by providing your own serializer
+		/// If one is not provided, ProtobufCacheSerializer will be used
+		/// </param>
+		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1, ICacheSerializer? serializer = null)
 		{
 			Connection = connection;
 			Database = connection.GetDatabase(databaseIndex);
 			DatabaseIndex = databaseIndex;
+
+			serializer ??= new ProtobufCacheSerializer();
+			Serializer = serializer;
 		}
 
 		/// <inheritdoc/>
@@ -106,11 +114,8 @@ namespace CacheTower.Providers.Redis
 				Value = cacheEntry.Value!
 			};
 
-			using (var stream = new MemoryStream())
+			using (var stream = Serializer.Serialize(redisCacheEntry))
 			{
-				Serializer.Serialize(stream, redisCacheEntry);
-				stream.Seek(0, SeekOrigin.Begin);
-
 				var redisValue = RedisValue.CreateFrom(stream);
 				await Database.StringSetAsync(cacheKey, redisValue, expiryOffset);
 			}
