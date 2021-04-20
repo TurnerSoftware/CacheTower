@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CacheTower
 {
@@ -21,10 +19,6 @@ namespace CacheTower
 		/// <summary>
 		/// Configures the cache entry to have a life of <paramref name="timeToLive"/>.
 		/// </summary>
-		/// <remarks>
-		/// As no stale time has been configured, the cache entry is always considered stale and will always perform a background refresh.
-		/// In most cases it is recommended to use <see cref="CacheSettings(TimeSpan, TimeSpan)"/> and set an appropriate stale after time.
-		/// </remarks>
 		/// <param name="timeToLive">
 		/// How long till a cache entry is considered expired.
 		/// Expired entries are removed from the cache and will force a foreground refresh if there is a cache miss.
@@ -32,7 +26,7 @@ namespace CacheTower
 		public CacheSettings(TimeSpan timeToLive)
 		{
 			TimeToLive = timeToLive;
-			StaleAfter = TimeSpan.Zero;
+			StaleAfter = timeToLive;
 		}
 
 		/// <summary>
@@ -48,7 +42,7 @@ namespace CacheTower
 		/// <para>
 		/// Setting this too low will cause potentially unnecessary background refreshes.
 		/// Setting this too high may limit the usefulness of a stale time.
-		/// You will need to decide on the appropraite value based on your own usage.
+		/// You will need to decide on the appropriate value based on your own usage.
 		/// </para>
 		/// </param>
 		public CacheSettings(TimeSpan timeToLive, TimeSpan staleAfter)
