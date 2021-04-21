@@ -91,7 +91,7 @@ namespace CacheTower.Extensions.Redis
 
 				//Last minute check to confirm whether waiting is required (in case the notification is missed)
 				var currentEntry = await RegisteredStack!.GetAsync<T>(cacheKey);
-				if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTime.UtcNow)
+				if (currentEntry != null && currentEntry.GetStaleDate(settings) > Internal.DateTimeProvider.Now)
 				{
 					UnlockWaitingTasks(cacheKey);
 					return currentEntry;
