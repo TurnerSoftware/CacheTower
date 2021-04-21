@@ -197,9 +197,9 @@ namespace CacheTower
 			if (cacheEntryPoint != default && cacheEntryPoint.CacheEntry.Expiry > currentTime)
 			{
 				var cacheEntry = cacheEntryPoint.CacheEntry;
-				if (cacheEntry.GetStaleDate(settings) < currentTime)
+				if (settings.StaleAfter.HasValue && cacheEntry.GetStaleDate(settings) < currentTime)
 				{
-					//Refresh the value in the background
+					//If the cache entry is stale, refresh the value in the background
 					_ = RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: false);
 				}
 				else if (cacheEntryPoint.LayerIndex > 0)

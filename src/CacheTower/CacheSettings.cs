@@ -14,7 +14,10 @@ namespace CacheTower
 		/// <summary>
 		/// How long till a cache entry is considered stale.
 		/// </summary>
-		public TimeSpan StaleAfter { get; }
+		/// <remarks>
+		/// While optional, the cache will not perform a background refresh if <see cref="StaleAfter"/> is not set.
+		/// </remarks>
+		public TimeSpan? StaleAfter { get; }
 
 		/// <summary>
 		/// Configures the cache entry to have a life of <paramref name="timeToLive"/>.
@@ -26,12 +29,15 @@ namespace CacheTower
 		public CacheSettings(TimeSpan timeToLive)
 		{
 			TimeToLive = timeToLive;
-			StaleAfter = timeToLive;
+			StaleAfter = null;
 		}
 
 		/// <summary>
 		/// Configures the cache entry to have a life of <paramref name="timeToLive"/> and to be considered stale after <paramref name="staleAfter"/>.
 		/// </summary>
+		/// <remarks>
+		/// When there is a cache hit on a stale cache item, a background refresh will be performed.
+		/// </remarks>
 		/// <param name="timeToLive">
 		/// How long till a cache entry is considered expired.
 		/// Expired entries are removed from the cache and will force a foreground refresh if there is a cache miss.

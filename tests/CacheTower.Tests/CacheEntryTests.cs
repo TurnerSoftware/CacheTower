@@ -11,13 +11,25 @@ namespace CacheTower.Tests
 	public class CacheEntryTests
 	{
 		[TestMethod]
-		public void GetStaleDate()
+		public void GetStaleDate_WithStaleAfter()
 		{
 			var expiry = DateTime.UtcNow;
 			var entry = new CacheEntry<int>(0, expiry);
-			Assert.IsTrue(expiry.AddDays(-3) - entry.GetStaleDate(new CacheSettings(TimeSpan.FromDays(3))) < TimeSpan.FromSeconds(1));
-			Assert.IsFalse(expiry - entry.GetStaleDate(new CacheSettings(TimeSpan.FromDays(3), TimeSpan.FromDays(2))) < TimeSpan.FromSeconds(1));
-			Assert.IsTrue(expiry.AddDays(-1) - entry.GetStaleDate(new CacheSettings(TimeSpan.FromDays(3), TimeSpan.FromDays(2))) < TimeSpan.FromSeconds(1));
+			expiry = entry.Expiry;
+
+			var staleDate = entry.GetStaleDate(new CacheSettings(TimeSpan.FromDays(3), TimeSpan.FromDays(2)));
+			Assert.AreEqual(expiry.AddDays(-1), staleDate);
+		}
+
+		[TestMethod]
+		public void GetStaleDate_WithoutStaleAfter()
+		{
+			var expiry = DateTime.UtcNow;
+			var entry = new CacheEntry<int>(0, expiry);
+			expiry = entry.Expiry;
+
+			var staleDate = entry.GetStaleDate(new CacheSettings(TimeSpan.FromDays(3)));
+			Assert.AreEqual(expiry, staleDate);
 		}
 
 		[TestMethod]

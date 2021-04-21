@@ -31,12 +31,22 @@ namespace CacheTower
 		/// <summary>
 		/// Calculates the stale date for the cache entry using the provided <paramref name="cacheSettings"/>.
 		/// </summary>
+		/// <remarks>
+		/// If <see cref="CacheSettings.StaleAfter"/> is not configured, the stale date is the expiry date.
+		/// </remarks>
 		/// <param name="cacheSettings">The cache settings to use for the calculation.</param>
 		/// <returns>The date that the cache entry can be considered stale.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public DateTime GetStaleDate(CacheSettings cacheSettings)
 		{
-			return Expiry - cacheSettings.TimeToLive + cacheSettings.StaleAfter;
+			if (cacheSettings.StaleAfter.HasValue)
+			{
+				return Expiry - cacheSettings.TimeToLive + cacheSettings.StaleAfter!.Value;
+			}
+			else
+			{
+				return Expiry;
+			}
 		}
 	}
 
@@ -61,7 +71,7 @@ namespace CacheTower
 		/// Creates a new <see cref="CacheEntry"/> with the given <paramref name="value"/> and <paramref name="expiry"/>.
 		/// </summary>
 		/// <param name="value">The value to cache.</param>
-		/// <param name="expiry">The expiry date of the cache entry.</param>
+		/// <param name="expiry">The expiry date of the cache entry. This will be rounded down to the second.</param>
 		public CacheEntry(T? value, DateTime expiry) : base(expiry)
 		{
 			Value = value;
