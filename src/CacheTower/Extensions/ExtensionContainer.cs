@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CacheTower.Extensions
 {
-	internal class ExtensionContainer : ICacheExtension, ICacheChangeExtension, ICacheRefreshCallSiteWrapperExtension, IAsyncDisposable
+	internal class ExtensionContainer : ICacheExtension, ICacheChangeExtension, ICacheRefreshCallSiteWrapperExtension, IAsyncDisposable, IDisposable
 	{
 		private bool Disposed;
 
@@ -121,6 +121,24 @@ namespace CacheTower.Extensions
 				else if (extension is IAsyncDisposable asyncDisposable)
 				{
 					await asyncDisposable.DisposeAsync();
+				}
+			}
+
+			Disposed = true;
+		}
+
+		public void Dispose()
+		{
+			if (Disposed)
+			{
+				return;
+			}
+
+			foreach (var extension in AllExtensions)
+			{
+				if (extension is IDisposable disposable)
+				{
+					disposable.Dispose();
 				}
 			}
 

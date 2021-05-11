@@ -13,7 +13,7 @@ namespace CacheTower.Extensions
 	/// Not all cache layers manage their own cleanup of expired entries.
 	/// This calls <see cref="ICacheStack.CleanupAsync"/> which triggers the cleanup on each layer.
 	/// </remarks>
-	public class AutoCleanupExtension : ICacheExtension, IAsyncDisposable
+	public class AutoCleanupExtension : ICacheExtension, IAsyncDisposable, IDisposable
 	{
 		/// <summary>
 		/// The frequency at which an automatic cleanup is performed.
@@ -79,6 +79,19 @@ namespace CacheTower.Extensions
 			if (BackgroundTask is not null)
 			{
 				await BackgroundTask;
+			}
+		}
+
+		/// <summary>
+		/// Cancels the automatic cleanup and releases all resources that were being used.
+		/// </summary>
+		public void Dispose()
+		{
+			TokenSource.Cancel();
+
+			if (BackgroundTask is not null)
+			{
+				BackgroundTask.Wait();
 			}
 		}
 	}
