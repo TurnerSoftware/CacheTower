@@ -11,7 +11,7 @@ namespace CacheTower
 	/// <inheritdoc/>
 	public class CacheStack<TContext> : CacheStack, ICacheStack<TContext>
 	{
-		private Func<TContext> ContextFactory { get; }
+		private readonly ICacheContextActivator CacheContextActivator;
 
 		/// <summary>
 		/// Creates a new <see cref="CacheStack{TContext}"/> with the given <paramref name="contextFactory"/>, <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
@@ -21,7 +21,20 @@ namespace CacheTower
 		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
 		public CacheStack(Func<TContext> contextFactory, ICacheLayer[] cacheLayers, ICacheExtension[] extensions) : base(cacheLayers, extensions)
 		{
-			ContextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
+			CacheContextActivator =
+				new FuncCacheContextActivator<TContext>(contextFactory ??
+				                                        throw new ArgumentNullException(nameof(contextFactory)));
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="CacheStack{TContext}"/> with the given <paramref name="contextFactory"/>, <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
+		/// </summary>
+		/// <param name="cacheContextActivator">The activator that provides the context. This is called for every cache item refresh.</param>
+		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
+		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
+		public CacheStack(ICacheContextActivator cacheContextActivator, ICacheLayer[] cacheLayers, ICacheExtension[] extensions) : base(cacheLayers, extensions)
+		{
+			CacheContextActivator = cacheContextActivator ?? throw new ArgumentNullException(nameof(cacheContextActivator));
 		}
 
 		/// <inheritdoc/>
@@ -41,7 +54,8 @@ namespace CacheTower
 
 			return await GetOrSetAsync<T>(cacheKey, async (old) =>
 			{
-				var context = ContextFactory();
+				using var scope = CacheContextActivator.BeginScope();
+				var context = (TContext)scope.Resolve(typeof(TContext));
 				return await getter(old, context);
 			}, settings);
 		}

@@ -14,7 +14,7 @@ namespace CacheTower.Tests
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ConstructorThrowsOnNullContextFactory()
 		{
-			new CacheStack<object>(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			new CacheStack<object>((Func<object>) null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
