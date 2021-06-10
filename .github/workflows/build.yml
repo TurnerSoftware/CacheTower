@@ -2,8 +2,10 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request: 
+  release:
+    types: [ published ]
 
 env:
   # Disable the .NET logo in the console output.
@@ -36,6 +38,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Setup dotnet 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+    - name: Setup dotnet 5.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x' 
     - name: Install dependencies
       run: dotnet restore
     - name: Build
@@ -73,3 +83,39 @@ jobs:
       with:
         name: coverage-report
         path: Cobertura.xml
+
+  push-to-github-packages:
+    name: 'Push GitHub Packages'
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+    environment:
+      name: 'GitHub Packages'
+      url: https://github.com/TurnerSoftware/CacheTower/packages
+    permissions:
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download build'
+        uses: actions/download-artifact@v2
+        with:
+          name: 'ubuntu-latest'
+      - name: 'Add NuGet source'
+        run: dotnet nuget add source https://nuget.pkg.github.com/TurnerSoftware/index.json --name GitHub --username Turnerj --password ${{secrets.GITHUB_TOKEN}} --store-password-in-clear-text
+      - name: 'Upload NuGet package'
+        run: dotnet nuget push *.nupkg --api-key ${{secrets.GH_PACKAGE_REGISTRY_API_KEY}} --source GitHub --skip-duplicate --no-symbols true
+
+  push-to-nuget:
+    name: 'Push NuGet Packages'
+    needs: build
+    if: github.event_name == 'release'
+    environment:
+      name: 'NuGet'
+      url: https://www.nuget.org/packages/CacheTower
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download build'
+        uses: actions/download-artifact@v2
+        with:
+          name: 'ubuntu-latest'
+      - name: 'Upload NuGet package and symbols'
+        run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}
