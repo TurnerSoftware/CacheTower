@@ -5,13 +5,9 @@
 
     <PackageId>$(AssemblyName)</PackageId>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseFile>License.txt</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TurnerSoftware/CacheTower</PackageProjectUrl>
     <PackageBaseTags>caching</PackageBaseTags>
-    
-    <RepositoryUrl>https://github.com/TurnerSoftware/CacheTower.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryBranch>master</RepositoryBranch>
 
     <!-- SourceLink Support -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -28,8 +24,4 @@
     <PackageReference Include="TurnerSoftware.BuildVersioning" Version="0.2.1" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\License.txt" Pack="true" PackagePath="$(PackageLicenseFile)"/>
-  </ItemGroup>
-  
 </Project>
