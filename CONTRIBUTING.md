@@ -1,6 +1,6 @@
 ﻿# Choose Your Own Contributing Adventure
 
-Did you [**find a bug**](#bug), have an idea for a [**new feature or change**](#idea) or just [**want to help out**](#help)?
+Did you [**find a bug**](#bug), have an idea for a [**new feature or change**](#idea) or just [**want to help out**](#help-out)?
 
 <br><br><br><br>
 
@@ -112,7 +112,7 @@ If you still want to go ahead, [**submit your feature request**](https://github.
 
 <br><br><br><br><br><br>
 
-## 🙋‍ I just want to help out!
+## <a id="help-out" /> 🙋‍ I just want to help out!
 
 Helpers are always welcome! Feel free to [**triage any open issues**](https://github.com/TurnerSoftware/CacheTower/issues) or make sure the documentation is up-to-date!
 
