@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "global", "global", "{28E0B5
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		CodeCoverage.runsettings = CodeCoverage.runsettings
+		CONTRIBUTING.md = CONTRIBUTING.md
 		License.txt = License.txt
 		README.md = README.md
 	EndProjectSection
@@ -41,9 +42,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.AlternativesBenc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{FD0B0385-93AD-4DDF-9FE7-C7325B05B6B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Serializers.Protobuf", "src\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj", "{BF88C037-493A-47F2-9B85-C293FC786BEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Serializers.Protobuf", "src\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj", "{BF88C037-493A-47F2-9B85-C293FC786BEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Serializers.NewtonsoftJson", "src\CacheTower.Serializers.NewtonsoftJson\CacheTower.Serializers.NewtonsoftJson.csproj", "{E9066C1E-C042-4707-987E-CF77B311ADB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Serializers.NewtonsoftJson", "src\CacheTower.Serializers.NewtonsoftJson\CacheTower.Serializers.NewtonsoftJson.csproj", "{E9066C1E-C042-4707-987E-CF77B311ADB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
