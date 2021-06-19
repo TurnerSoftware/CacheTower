@@ -1,4 +1,4 @@
-﻿# Choose Your Own Contributing Adventure
+﻿# 🗺 Choose Your Own Contributing Adventure
 
 Did you [**find a bug**](#bug), have an idea for a [**new feature or change**](#idea) or just [**want to help out**](#help-out)?
 
