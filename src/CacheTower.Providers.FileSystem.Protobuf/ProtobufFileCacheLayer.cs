@@ -1,8 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using ProtoBuf;
-using ProtoBuf.Meta;
+using CacheTower.Serializers.Protobuf;
 
 namespace CacheTower.Providers.FileSystem.Protobuf
 {
@@ -14,36 +11,13 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 	/// </para>
 	/// </remarks>
 	/// <inheritdoc/>
-	public class ProtobufFileCacheLayer : FileCacheLayerBase<ProtobufManifestEntry>
+	[Obsolete("Use FileCacheLayer directly and specify the ProtobufCacheSerializer. This cache layer (and the associated package) will be discontinued in a future release.")]
+	public class ProtobufFileCacheLayer : FileCacheLayer
 	{
-		private static readonly object RuntimeTypeLock = new object();
-
 		/// <summary>
 		/// Creates a <see cref="ProtobufFileCacheLayer"/>, using the given <paramref name="directoryPath"/> as the location to store the cache.
 		/// </summary>
 		/// <param name="directoryPath"></param>
-		public ProtobufFileCacheLayer(string directoryPath) : base(directoryPath, ".bin")
-		{
-			lock (RuntimeTypeLock)
-			{
-				if (!RuntimeTypeModel.Default.IsDefined(typeof(IManifestEntry)))
-				{
-					RuntimeTypeModel.Default.Add(typeof(IManifestEntry))
-						.AddSubType(1, typeof(ProtobufManifestEntry));
-				}
-			}
-		}
-
-		/// <inheritdoc/>
-		protected override T Deserialize<T>(Stream stream)
-		{
-			return Serializer.Deserialize<T>(stream);
-		}
-
-		/// <inheritdoc/>
-		protected override void Serialize<T>(Stream stream, T value)
-		{
-			Serializer.Serialize(stream, value);
-		}
+		public ProtobufFileCacheLayer(string directoryPath) : base(new ProtobufCacheSerializer(), directoryPath, ".bin") { }
 	}
 }

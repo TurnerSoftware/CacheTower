@@ -4,12 +4,18 @@ using System.Text;
 
 namespace CacheTower.Providers.FileSystem
 {
-	/// <inheritdoc/>
-	public class ManifestEntry : IManifestEntry
+	/// <summary>
+	/// The manifest entry for a file system based cache.
+	/// </summary>
+	public class ManifestEntry
 	{
-		/// <inheritdoc/>
+		/// <summary>
+		/// The file name that contains the cached data.
+		/// </summary>
 		public string? FileName { get; set; }
-		/// <inheritdoc/>
+		/// <summary>
+		/// The expiry date of the cached value.
+		/// </summary>
 		public DateTime Expiry { get; set; }
 	}
 }

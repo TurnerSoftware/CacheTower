@@ -1,42 +1,51 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using CacheTower.Providers.Redis.Entities;
-using ProtoBuf;
+using CacheTower.Serializers.Protobuf;
 using StackExchange.Redis;
 
 namespace CacheTower.Providers.Redis
 {
-	/// <remarks>
-	/// The <see cref="RedisCacheLayer"/> allows caching data in Redis. Data will be serialized to Protobuf using <a href="https://github.com/protobuf-net/protobuf-net">protobuf-net</a>.
-	/// <para>
-	/// When caching custom types, you will need to <a href="https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes">decorate your class</a> with <c>[ProtoContact]</c> and <c>[ProtoMember]</c> attributes per protobuf-net's documentation.<br/>
-	/// Additionally, as the Protobuf format doesn't have a way to represent an empty collection, these will be returned as <c>null</c>.
-	/// </para>
-	/// <para>
-	/// While this can be inconvienent, using Protobuf ensures high performance and low allocations for serializing.
-	/// </para>
-	/// </remarks>
 	/// <inheritdoc cref="ICacheLayer"/>
 	public class RedisCacheLayer : ICacheLayer
 	{
 		private IConnectionMultiplexer Connection { get; }
 		private IDatabaseAsync Database { get; }
 		private int DatabaseIndex { get; }
+		private ICacheSerializer Serializer { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="RedisCacheLayer"/> with the given <paramref name="connection"/> and <paramref name="databaseIndex"/>.
+		/// If using this constructor, Protobuf encoding will be used.
 		/// </summary>
 		/// <param name="connection">The primary connection to Redis where the cache will be stored.</param>
 		/// <param name="databaseIndex">
 		/// The database index to use for Redis.
 		/// If not specified, uses the default database as configured on the <paramref name="connection"/>.
 		/// </param>
-		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1)
+		[Obsolete("Use other constructor. Specifying cache serializers will become the default behaviour going forward.")]
+		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1) : this(connection, new ProtobufCacheSerializer(), databaseIndex)
+		{
+		}
+
+		/// <summary>
+		/// Creates a new instance of <see cref="RedisCacheLayer"/> with the given <paramref name="connection"/> and <paramref name="databaseIndex"/>.
+		/// </summary>
+		/// <param name="connection">The primary connection to Redis where the cache will be stored.</param>
+		/// <param name="serializer">
+		/// Allows you to specify which encoding should be used by providing your own serializer
+		/// If one is not provided, ProtobufCacheSerializer will be used
+		/// </param>
+		/// <param name="databaseIndex">
+		/// The database index to use for Redis.
+		/// If not specified, uses the default database as configured on the <paramref name="connection"/>.
+		/// </param>
+		public RedisCacheLayer(IConnectionMultiplexer connection, ICacheSerializer serializer, int databaseIndex = -1)
 		{
 			Connection = connection;
 			Database = connection.GetDatabase(databaseIndex);
 			DatabaseIndex = databaseIndex;
+			Serializer = serializer;
 		}
 
 		/// <inheritdoc/>
@@ -77,8 +86,7 @@ namespace CacheTower.Providers.Redis
 			{
 				using (var stream = new MemoryStream(redisValue))
 				{
-					var redisCacheEntry = Serializer.Deserialize<RedisCacheEntry<T>>(stream);
-					return new CacheEntry<T>(redisCacheEntry.Value, redisCacheEntry.Expiry);
+					return Serializer.Deserialize<CacheEntry<T>>(stream);
 				}
 			}
 
@@ -100,17 +108,10 @@ namespace CacheTower.Providers.Redis
 				return;
 			}
 
-			var redisCacheEntry = new RedisCacheEntry<T>
-			{
-				Expiry = cacheEntry.Expiry,
-				Value = cacheEntry.Value!
-			};
-
 			using (var stream = new MemoryStream())
 			{
-				Serializer.Serialize(stream, redisCacheEntry);
+				Serializer.Serialize(stream, cacheEntry);
 				stream.Seek(0, SeekOrigin.Begin);
-
 				var redisValue = RedisValue.CreateFrom(stream);
 				await Database.StringSetAsync(cacheKey, redisValue, expiryOffset);
 			}

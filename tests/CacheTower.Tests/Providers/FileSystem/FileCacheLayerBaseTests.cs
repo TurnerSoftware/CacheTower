@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,23 +9,20 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace CacheTower.Tests.Providers.FileSystem
 {
 	[TestClass]
-	public class FileCacheLayerBaseTests : TestBase
+	public class FileCacheLayerTests : TestBase
 	{
-		private class TestFileCacheLayer : FileCacheLayerBase<ManifestEntry>
+		private class TestCacheSerializer : ICacheSerializer
 		{
-			public TestFileCacheLayer(string directoryPath, string fileExtension) : base(directoryPath, fileExtension) { }
-
 			public int SerializeCount { get; private set; }
 			public int DeserializeCount { get; private set; }
 
-
-			protected override T Deserialize<T>(Stream stream)
+			public T Deserialize<T>(Stream stream)
 			{
 				DeserializeCount++;
 				return default;
 			}
 
-			protected override void Serialize<T>(Stream stream, T value)
+			public void Serialize<T>(Stream stream, T value)
 			{
 				SerializeCount++;
 			}
@@ -47,23 +42,25 @@ namespace CacheTower.Tests.Providers.FileSystem
 		[TestMethod]
 		public async Task CanLoadExistingManifest()
 		{
-			var cacheLayer = new TestFileCacheLayer(DirectoryPath, ".test");
+			var testSerializer = new TestCacheSerializer();
+			var cacheLayer = new FileCacheLayer(testSerializer, DirectoryPath, ".test");
 			await using (cacheLayer)
 			{
 				//IsAvailableAsync triggers load of manifest which in turn creates it because it doesn't exist
 				Assert.IsTrue(await cacheLayer.IsAvailableAsync("AnyKey"));
 				//Disposing will do any other final saves to the manifest
 			}
-			Assert.AreEqual(2, cacheLayer.SerializeCount);
-			Assert.AreEqual(0, cacheLayer.DeserializeCount);
+			Assert.AreEqual(2, testSerializer.SerializeCount);
+			Assert.AreEqual(0, testSerializer.DeserializeCount);
 
-			cacheLayer = new TestFileCacheLayer(DirectoryPath, ".test");
+			testSerializer = new TestCacheSerializer();
+			cacheLayer = new FileCacheLayer(testSerializer, DirectoryPath, ".test");
 			await using (cacheLayer)
 			{
 				Assert.IsTrue(await cacheLayer.IsAvailableAsync("AnyKey"));
 			}
-			Assert.AreEqual(1, cacheLayer.SerializeCount);
-			Assert.AreEqual(1, cacheLayer.DeserializeCount);
+			Assert.AreEqual(1, testSerializer.SerializeCount);
+			Assert.AreEqual(1, testSerializer.DeserializeCount);
 		}
 
 
@@ -80,7 +77,8 @@ namespace CacheTower.Tests.Providers.FileSystem
 		[TestMethod]
 		public async Task NoFileExtension()
 		{
-			await using var cacheLayer = new TestFileCacheLayer(DirectoryPath, null);
+			var testSerializer = new TestCacheSerializer();
+			await using var cacheLayer = new FileCacheLayer(testSerializer, DirectoryPath, ".test");
 			await cacheLayer.SetAsync("NoFileExtension", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 
 			var md5String = GetMD5String("NoFileExtension");
@@ -90,7 +88,8 @@ namespace CacheTower.Tests.Providers.FileSystem
 		[TestMethod]
 		public async Task CustomFileExtension()
 		{
-			await using var cacheLayer = new TestFileCacheLayer(DirectoryPath, ".mycustomfileextension");
+			var testSerializer = new TestCacheSerializer();
+			await using var cacheLayer = new FileCacheLayer(testSerializer, DirectoryPath, ".mycustomfileextension");
 			await cacheLayer.SetAsync("CustomFileExtension", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
 
 			var md5String = GetMD5String("CustomFileExtension");
