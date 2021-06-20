@@ -4,35 +4,25 @@ using Newtonsoft.Json;
 
 namespace CacheTower.Serializers.NewtonsoftJson
 {
-	/// <inheritdoc />
+	/// <summary>
+	/// Allows serializing to and from JSON via Newtonsoft.Json
+	/// </summary>
 	public class NewtonsoftJsonCacheSerializer : ICacheSerializer
 	{
-		private JsonSerializer Serializer { get; }
-
-		/// <summary>
-		/// An implementation of ICacheSerializer that uses Newtonsoft.Json
-		/// </summary>
-		public NewtonsoftJsonCacheSerializer()
-		{
-			Serializer = new JsonSerializer();
-		}
+		private JsonSerializer Serializer { get; } = new JsonSerializer();
 
 		/// <inheritdoc />
-		public MemoryStream Serialize<T>(T cacheEntry)
+		public void Serialize<T>(Stream stream, T value)
 		{
-			var stream = new MemoryStream();
-
 			using (var streamWriter = new StreamWriter(stream, Encoding.UTF8, 1024, true))
 			using (var jsonWriter = new JsonTextWriter(streamWriter))
 			{
-				Serializer.Serialize(jsonWriter, cacheEntry);
+				Serializer.Serialize(jsonWriter, value);
 			}
-
-			return stream;
 		}
 
 		/// <inheritdoc />
-		public T Deserialize<T>(MemoryStream stream)
+		public T Deserialize<T>(Stream stream)
 		{
 			using (var streamReader = new StreamReader(stream, Encoding.UTF8, false, 1024))
 			using (var jsonReader = new JsonTextReader(streamReader))

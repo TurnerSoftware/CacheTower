@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.IO;
 
 namespace CacheTower
@@ -7,20 +8,21 @@ namespace CacheTower
     /// </summary>
     public interface ICacheSerializer
     {
-        /// <summary>
-        /// Serialize a cache entry onto a MemoryStream
-        /// </summary>
-        /// <param name="cacheEntry"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        MemoryStream Serialize<T>(T cacheEntry);
+		/// <summary>
+		/// Serializes a <paramref name="value"/> to the specified <paramref name="stream"/>.
+		/// </summary>
+		/// <param name="stream"></param>
+		/// <param name="value"></param>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		void Serialize<T>(Stream stream, T value);
 
         /// <summary>
-        /// Deserialize a cache entry from a MemoryStream
+        /// Deserializes <typeparamref name="T"/> from the specified <paramref name="stream"/>.
         /// </summary>
         /// <param name="stream"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        T Deserialize<T>(MemoryStream stream);
+        T Deserialize<T>(Stream stream);
     }
 }
