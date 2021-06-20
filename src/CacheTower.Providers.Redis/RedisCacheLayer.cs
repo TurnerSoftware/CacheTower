@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using CacheTower.Providers.Redis.Entities;
 using CacheTower.Serializers.Protobuf;
 using StackExchange.Redis;
 
@@ -24,6 +23,7 @@ namespace CacheTower.Providers.Redis
 		/// The database index to use for Redis.
 		/// If not specified, uses the default database as configured on the <paramref name="connection"/>.
 		/// </param>
+		[Obsolete("Use other constructor. Specifying cache serializers will become the default behaviour going forward.")]
 		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1) : this(connection, new ProtobufCacheSerializer(), databaseIndex)
 		{
 		}
@@ -86,8 +86,7 @@ namespace CacheTower.Providers.Redis
 			{
 				using (var stream = new MemoryStream(redisValue))
 				{
-					var redisCacheEntry = Serializer.Deserialize<RedisCacheEntry<T>>(stream);
-					return new CacheEntry<T>(redisCacheEntry.Value, redisCacheEntry.Expiry);
+					return Serializer.Deserialize<CacheEntry<T>>(stream);
 				}
 			}
 
@@ -109,14 +108,10 @@ namespace CacheTower.Providers.Redis
 				return;
 			}
 
-			var redisCacheEntry = new RedisCacheEntry<T>
+			using (var stream = new MemoryStream())
 			{
-				Expiry = cacheEntry.Expiry,
-				Value = cacheEntry.Value!
-			};
-
-			using (var stream = Serializer.Serialize(redisCacheEntry))
-			{
+				Serializer.Serialize(stream, cacheEntry);
+				stream.Seek(0, SeekOrigin.Begin);
 				var redisValue = RedisValue.CreateFrom(stream);
 				await Database.StringSetAsync(cacheKey, redisValue, expiryOffset);
 			}
