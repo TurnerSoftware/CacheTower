@@ -15,7 +15,7 @@ namespace CacheTower.Providers.FileSystem
 	/// The individual cache entries are stored within their own files.
 	/// </summary>
 	/// <typeparam name="TManifest"></typeparam>
-	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IAsyncDisposable where TManifest : IManifestEntry, new()
+	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IAsyncDisposable, IDisposable where TManifest : IManifestEntry, new()
 	{
 		private bool Disposed = false;
 		private string DirectoryPath { get; }
@@ -81,6 +81,17 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
+		private void SerializeFile<T>(string path, T value)
+		{
+			using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1024))
+			using (var memStream = new MemoryStream())
+			{
+				Serialize(memStream, value);
+				memStream.Seek(0, SeekOrigin.Begin);
+				memStream.CopyTo(stream);
+			}
+		}
+
 		private async Task TryLoadManifestAsync()
 		{
 			//Avoid unnecessary lock contention way after manifest is loaded by checking before lock
@@ -130,6 +141,23 @@ namespace CacheTower.Providers.FileSystem
 				}
 
 				await SerializeFileAsync(ManifestPath, CacheManifest);
+			}
+			finally
+			{
+				ManifestLock.Release();
+			}
+		}
+		public void SaveManifest()
+		{
+			ManifestLock.Lock();
+			try
+			{
+				if (!Directory.Exists(DirectoryPath))
+				{
+					Directory.CreateDirectory(DirectoryPath);
+				}
+
+				SerializeFile(ManifestPath, CacheManifest);
 			}
 			finally
 			{
@@ -339,6 +367,23 @@ namespace CacheTower.Providers.FileSystem
 			}
 
 			await SaveManifestAsync();
+			ManifestLock.Dispose();
+			FileNameHashAlgorithm.Dispose();
+
+			Disposed = true;
+		}
+
+		/// <summary>
+		/// Synchronously saves the manifest to the file system and releases all resources associated.
+		/// </summary>
+		public void Dispose()
+		{
+			if (Disposed)
+			{
+				return;
+			}
+
+			SaveManifest();
 			ManifestLock.Dispose();
 			FileNameHashAlgorithm.Dispose();
 
