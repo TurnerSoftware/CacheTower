@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CacheTower\CacheTower.csproj" />
-    <ProjectReference Include="..\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj" />
   </ItemGroup>
 
 </Project>
