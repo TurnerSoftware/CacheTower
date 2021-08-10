@@ -28,7 +28,7 @@ namespace CacheTower.Extensions.Redis
 		/// <param name="connection">The primary connection to the Redis instance where the messages will be broadcast and received through.</param>
 		/// <param name="evictFromLayers">The cache layers to either evict or flush when a message is received from Redis.</param>
 		/// <param name="channelPrefix">The channel prefix to use for the Redis communication.</param>
-		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, ICacheLayer[] evictFromLayers, string channelPrefix = "CacheTower")
+		public RedisRemoteEvictionExtension(IConnectionMultiplexer connection, ICacheLayer[] evictFromLayers, string channelPrefix = "CacheTower")
 		{
 			if (connection == null)
 			{
