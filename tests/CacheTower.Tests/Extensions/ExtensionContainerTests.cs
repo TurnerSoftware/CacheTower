@@ -60,11 +60,11 @@ namespace CacheTower.Tests.Extensions
 
 			var expiry = DateTime.UtcNow.AddDays(1);
 
-			await container.OnCacheUpdateAsync("CacheChangeKey", expiry);
+			await container.OnCacheUpdateAsync("CacheChangeKey", expiry, CacheUpdateType.AddEntry);
 
 			valueRefreshMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
 			valueRefreshMock.Verify(e =>
-				e.OnCacheUpdateAsync("CacheChangeKey", expiry),
+				e.OnCacheUpdateAsync("CacheChangeKey", expiry, CacheUpdateType.AddEntry),
 				Times.Once
 			);
 		}

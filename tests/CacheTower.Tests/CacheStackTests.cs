@@ -199,7 +199,7 @@ namespace CacheTower.Tests
 			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, new[] { mockExtension.Object });
 			var cacheEntry = await cacheStack.SetAsync("Set_TriggersCacheChangeExtension", 42, TimeSpan.FromDays(1));
 
-			mockExtension.Verify(e => e.OnCacheUpdateAsync("Set_TriggersCacheChangeExtension", cacheEntry.Expiry), Times.Once);
+			mockExtension.Verify(e => e.OnCacheUpdateAsync("Set_TriggersCacheChangeExtension", cacheEntry.Expiry, CacheUpdateType.AddOrUpdateEntry), Times.Once);
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]

@@ -102,9 +102,13 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			var expiry = DateTimeProvider.Now + timeToLive;
-			var cacheEntry = new CacheEntry<T>(value, expiry);
-			await SetAsync(cacheKey, cacheEntry);
+			if (cacheKey == null)
+			{
+				throw new ArgumentNullException(nameof(cacheKey));
+			}
+
+			var cacheEntry = new CacheEntry<T>(value, timeToLive);
+			await InternalSetAsync(cacheKey, cacheEntry, CacheUpdateType.AddOrUpdateEntry);
 			return cacheEntry;
 		}
 
@@ -123,13 +127,18 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheEntry));
 			}
 
+			await InternalSetAsync(cacheKey, cacheEntry, CacheUpdateType.AddOrUpdateEntry);
+		}
+
+		private async ValueTask InternalSetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry, CacheUpdateType cacheUpdateType)
+		{
 			for (int i = 0, l = CacheLayers.Length; i < l; i++)
 			{
 				var layer = CacheLayers[i];
 				await layer.SetAsync(cacheKey, cacheEntry);
 			}
 
-			await Extensions.OnCacheUpdateAsync(cacheKey, cacheEntry.Expiry);
+			await Extensions.OnCacheUpdateAsync(cacheKey, cacheEntry.Expiry, cacheUpdateType);
 		}
 
 		/// <inheritdoc/>
@@ -297,7 +306,9 @@ namespace CacheTower
 						}
 
 						var value = await getter(oldValue!);
-						var refreshedEntry = await SetAsync(cacheKey, value, settings.TimeToLive);
+						var refreshedEntry = new CacheEntry<T>(value, settings.TimeToLive);
+						var cacheUpdateType = noExistingValueAvailable ? CacheUpdateType.AddEntry : CacheUpdateType.AddOrUpdateEntry;
+						await InternalSetAsync(cacheKey, refreshedEntry, cacheUpdateType);
 
 						UnlockWaitingTasks(cacheKey, refreshedEntry);
 

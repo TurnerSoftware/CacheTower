@@ -28,7 +28,7 @@ namespace CacheTower.Extensions.Redis
 		/// <param name="connection">The primary connection to the Redis instance where the messages will be broadcast and received through.</param>
 		/// <param name="evictFromLayers">The cache layers to either evict or flush when a message is received from Redis.</param>
 		/// <param name="channelPrefix">The channel prefix to use for the Redis communication.</param>
-		public RedisRemoteEvictionExtension(ConnectionMultiplexer connection, ICacheLayer[] evictFromLayers, string channelPrefix = "CacheTower")
+		public RedisRemoteEvictionExtension(IConnectionMultiplexer connection, ICacheLayer[] evictFromLayers, string channelPrefix = "CacheTower")
 		{
 			if (connection == null)
 			{
@@ -51,9 +51,13 @@ namespace CacheTower.Extensions.Redis
 		/// This will broadcast to Redis that the cache entry belonging to <paramref name="cacheKey"/> is now out-of-date and should be evicted.
 		/// </remarks>
 		/// <inheritdoc/>
-		public ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry)
+		public ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry, CacheUpdateType cacheUpdateType)
 		{
-			return FlagEvictionAsync(cacheKey);
+			if (cacheUpdateType == CacheUpdateType.AddOrUpdateEntry)
+			{
+				return FlagEvictionAsync(cacheKey);
+			}
+			return default;
 		}
 		/// <remarks>
 		/// This will broadcast to Redis that the cache entry belonging to <paramref name="cacheKey"/> is to be evicted.
