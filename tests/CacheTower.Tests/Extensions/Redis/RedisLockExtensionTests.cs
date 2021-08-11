@@ -41,7 +41,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task CustomLockTimeout()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 
 			var extension = new RedisLockExtension(RedisHelper.GetConnection(), new RedisLockOptions(lockTimeout: TimeSpan.FromDays(1)));
 			var refreshWaiterTask = new TaskCompletionSource<bool>();
@@ -76,7 +76,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task RefreshValueNotifiesChannelSubscribers()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 
 			var connection = RedisHelper.GetConnection();
 
@@ -117,7 +117,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task ObservedLockSingle()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 
 			var connection = RedisHelper.GetConnection();
 
@@ -160,7 +160,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task ObservedLockMultiple()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 
 			var connection = RedisHelper.GetConnection();
 

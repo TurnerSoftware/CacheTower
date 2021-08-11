@@ -45,7 +45,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task RemoteEvictionOccursOnRefresh()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 
 			var connection = RedisHelper.GetConnection();
 
@@ -88,7 +88,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task RemoteEvictionOccursOnLocalEviction()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 
 			var connection = RedisHelper.GetConnection();
 
@@ -135,7 +135,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task RemoteFlush()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 
 			var connection = RedisHelper.GetConnection();
 
@@ -182,7 +182,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod]
 		public async Task NoEvictionOnNewEntries()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 
 			var realConnection = RedisHelper.GetConnection();
 

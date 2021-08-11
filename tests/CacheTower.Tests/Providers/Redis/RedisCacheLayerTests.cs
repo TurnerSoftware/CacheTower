@@ -17,7 +17,7 @@ namespace CacheTower.Tests.Providers.Redis
 		[TestInitialize]
 		public void Setup()
 		{
-			RedisHelper.FlushDatabase();
+			RedisHelper.ResetState();
 		}
 
 		[TestMethod]
