@@ -53,7 +53,11 @@ namespace CacheTower.Extensions.Redis
 		/// <inheritdoc/>
 		public ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry, CacheUpdateType cacheUpdateType)
 		{
-			return FlagEvictionAsync(cacheKey);
+			if (cacheUpdateType == CacheUpdateType.AddOrUpdateEntry)
+			{
+				return FlagEvictionAsync(cacheKey);
+			}
+			return default;
 		}
 		/// <remarks>
 		/// This will broadcast to Redis that the cache entry belonging to <paramref name="cacheKey"/> is to be evicted.
