@@ -17,7 +17,7 @@ namespace CacheTower.Benchmarks.Extensions
 		public async Task OnCacheUpdate()
 		{
 			var extension = CacheExtension as ICacheChangeExtension;
-			await extension.OnCacheUpdateAsync("OnCacheUpdate_CacheKey", BenchmarkValue);
+			await extension.OnCacheUpdateAsync("OnCacheUpdate_CacheKey", BenchmarkValue, CacheUpdateType.AddOrUpdateEntry);
 		}
 
 		[Benchmark]

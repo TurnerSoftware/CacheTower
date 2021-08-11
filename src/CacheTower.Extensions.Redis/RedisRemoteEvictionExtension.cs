@@ -51,7 +51,7 @@ namespace CacheTower.Extensions.Redis
 		/// This will broadcast to Redis that the cache entry belonging to <paramref name="cacheKey"/> is now out-of-date and should be evicted.
 		/// </remarks>
 		/// <inheritdoc/>
-		public ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry)
+		public ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry, CacheUpdateType cacheUpdateType)
 		{
 			return FlagEvictionAsync(cacheKey);
 		}

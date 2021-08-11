@@ -70,13 +70,13 @@ namespace CacheTower.Extensions
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public async ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry)
+		public async ValueTask OnCacheUpdateAsync(string cacheKey, DateTime expiry, CacheUpdateType cacheUpdateType)
 		{
 			if (HasCacheChangeExtensions)
 			{
 				foreach (var extension in CacheChangeExtensions)
 				{
-					await extension.OnCacheUpdateAsync(cacheKey, expiry);
+					await extension.OnCacheUpdateAsync(cacheKey, expiry, cacheUpdateType);
 				}
 			}
 		}

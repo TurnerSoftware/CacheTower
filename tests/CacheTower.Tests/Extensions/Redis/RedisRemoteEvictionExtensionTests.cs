@@ -73,7 +73,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			});
 
 			var expiry = DateTime.UtcNow.AddDays(1);
-			await extensionOne.OnCacheUpdateAsync("TestKey", expiry);
+			await extensionOne.OnCacheUpdateAsync("TestKey", expiry, CacheUpdateType.AddOrUpdateEntry);
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
 			Assert.AreEqual(completionSource.Task, succeedingTask, "Subscriber response took too long");
