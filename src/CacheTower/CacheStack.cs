@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
 using CacheTower.Internal;
+using CacheTower.Monitoring;
 
 namespace CacheTower
 {
@@ -20,12 +21,14 @@ namespace CacheTower
 
 		private ExtensionContainer Extensions { get; }
 
+		private ICacheMonitor CacheMonitor { get; }
+
 		/// <summary>
 		/// Creates a new <see cref="CacheStack"/> with the given <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
 		/// </summary>
 		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
 		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
-		public CacheStack(ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
+		public CacheStack(ICacheLayer[] cacheLayers, ICacheExtension[] extensions, ICacheMonitor? cacheMonitor = null)
 		{
 			if (cacheLayers == null || cacheLayers.Length == 0)
 			{
@@ -38,6 +41,8 @@ namespace CacheTower
 			Extensions.Register(this);
 
 			WaitingKeyRefresh = new Dictionary<string, TaskCompletionSource<CacheEntry>?>(StringComparer.Ordinal);
+
+			CacheMonitor = cacheMonitor ?? new NoOpCacheMonitor();
 		}
 
 		/// <summary>
@@ -51,7 +56,7 @@ namespace CacheTower
 				throw new ObjectDisposedException("CacheStack is disposed");
 			}
 		}
-
+		
 		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{
@@ -91,7 +96,12 @@ namespace CacheTower
 			for (int i = 0, l = CacheLayers.Length; i < l; i++)
 			{
 				var layer = CacheLayers[i];
-				await layer.EvictAsync(cacheKey);
+
+				await TimingUtils.Time(async t =>
+				{
+					await layer.EvictAsync(cacheKey);
+					await CacheMonitor.Evict(layer.Name, cacheKey, t.TimeElapsed);
+				});
 			}
 
 			await Extensions.OnCacheEvictionAsync(cacheKey);
@@ -135,7 +145,12 @@ namespace CacheTower
 			for (int i = 0, l = CacheLayers.Length; i < l; i++)
 			{
 				var layer = CacheLayers[i];
-				await layer.SetAsync(cacheKey, cacheEntry);
+
+				await TimingUtils.Time(async t =>
+				{
+					await layer.SetAsync(cacheKey, cacheEntry);
+					await CacheMonitor.Set(layer.Name, cacheKey, t.TimeElapsed);
+				});
 			}
 
 			await Extensions.OnCacheUpdateAsync(cacheKey, cacheEntry.Expiry, cacheUpdateType);
@@ -156,10 +171,25 @@ namespace CacheTower
 				var layer = CacheLayers[layerIndex];
 				if (await layer.IsAvailableAsync(cacheKey))
 				{
-					var cacheEntry = await layer.GetAsync<T>(cacheKey);
-					if (cacheEntry != default)
+					var entry = await TimingUtils.Time(async t =>
 					{
+						var cacheEntry = await layer.GetAsync<T>(cacheKey);
+
+						if (cacheEntry != default)
+						{
+							await CacheMonitor.GetHit(layer.Name, cacheKey, t.TimeElapsed);
+						}
+						else
+						{
+							await CacheMonitor.GetMiss(layer.Name, cacheKey, t.TimeElapsed);
+						}
+
 						return cacheEntry;
+					});
+
+					if (entry != default)
+					{
+						return entry;
 					}
 				}
 			}
@@ -175,10 +205,25 @@ namespace CacheTower
 				var layer = CacheLayers[layerIndex];
 				if (await layer.IsAvailableAsync(cacheKey))
 				{
-					var cacheEntry = await layer.GetAsync<T>(cacheKey);
-					if (cacheEntry != default)
+					var entry = await TimingUtils.Time(async t =>
 					{
-						return (layerIndex, cacheEntry);
+						var cacheEntry = await layer.GetAsync<T>(cacheKey);
+
+						if (cacheEntry != default)
+						{
+							await CacheMonitor.GetHit(layer.Name, cacheKey, t.TimeElapsed);
+						}
+						else
+						{
+							await CacheMonitor.GetMiss(layer.Name, cacheKey, t.TimeElapsed);
+						}
+
+						return cacheEntry;
+					});
+
+					if (entry != default)
+					{
+						return (layerIndex, entry);
 					}
 				}
 			}
@@ -209,21 +254,32 @@ namespace CacheTower
 				if (settings.StaleAfter.HasValue && cacheEntry.GetStaleDate(settings) < currentTime)
 				{
 					//If the cache entry is stale, refresh the value in the background
-					_ = RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: false);
+					_ = TimingUtils.Time(async t =>
+					{
+						await RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: false);
+						await CacheMonitor.RefreshBackground(cacheKey, t.TimeElapsed);
+					});
 				}
 				else if (cacheEntryPoint.LayerIndex > 0)
 				{
 					//If a lower-level cache is missing the latest data, attempt to set it in the background
-					_ = BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry);
+					_ = TimingUtils.Time(async t =>
+					{
+						await BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry);
+						await CacheMonitor.BackPopulate(cacheKey, t.TimeElapsed);
+					});
 				}
 
 				return cacheEntry.Value!;
 			}
-			else
+
+			//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
+			return await TimingUtils.Time(async t =>
 			{
-				//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
-				return (await RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: true))!.Value!;
-			}
+				var value = (await RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: true))!.Value!;
+				await CacheMonitor.RefreshForeground(cacheKey, t.TimeElapsed);
+				return value;
+			});
 		}
 
 		private async ValueTask BackPopulateCacheAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
@@ -321,7 +377,8 @@ namespace CacheTower
 					throw;
 				}
 			}
-			else if (noExistingValueAvailable)
+
+			if (noExistingValueAvailable)
 			{
 				TaskCompletionSource<CacheEntry> completionSource;
 

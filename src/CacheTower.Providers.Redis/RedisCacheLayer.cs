@@ -55,6 +55,8 @@ namespace CacheTower.Providers.Redis
 			await Database.KeyDeleteAsync(cacheKey);
 		}
 
+		public string Name => nameof(RedisCacheLayer);
+
 		/// <inheritdoc/>
 		/// <remarks>
 		/// Flushing the <see cref="RedisCacheLayer"/> performs a database flush in Redis.

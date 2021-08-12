@@ -54,6 +54,8 @@ namespace CacheTower.Providers.Database.MongoDB
 			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new EvictCommand(cacheKey) }, default);
 		}
 
+		public string Name => nameof(MongoDbCacheLayer);
+
 		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{
