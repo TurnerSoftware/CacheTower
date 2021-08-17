@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
@@ -87,7 +88,13 @@ namespace CacheTower.Extensions.Redis
 			}
 			else
 			{
-				var completionSource = LockedOnKeyRefresh.GetOrAdd(cacheKey, key => new TaskCompletionSource<bool>());
+				var completionSource = LockedOnKeyRefresh.GetOrAdd(cacheKey, key =>
+				{
+					var tcs = new TaskCompletionSource<bool>();
+					var cts = new CancellationTokenSource(Options.LockTimeout);
+					cts.Token.Register(() => tcs.TrySetCanceled(), useSynchronizationContext: false);
+					return tcs;
+				});
 
 				//Last minute check to confirm whether waiting is required (in case the notification is missed)
 				var currentEntry = await RegisteredStack!.GetAsync<T>(cacheKey);
