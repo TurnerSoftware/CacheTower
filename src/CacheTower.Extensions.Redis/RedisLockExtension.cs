@@ -92,7 +92,7 @@ namespace CacheTower.Extensions.Redis
 				{
 					var tcs = new TaskCompletionSource<bool>();
 					var cts = new CancellationTokenSource(Options.LockTimeout);
-					cts.Token.Register(() => tcs.TrySetCanceled(), useSynchronizationContext: false);
+					cts.Token.Register(tcs => ((TaskCompletionSource<bool>)tcs).TrySetCanceled(), tcs, useSynchronizationContext: false);
 					return tcs;
 				});
 
