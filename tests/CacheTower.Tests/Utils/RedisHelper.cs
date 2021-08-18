@@ -43,6 +43,7 @@ namespace CacheTower.Tests.Utils
 		public static void ResetState()
 		{
 			GetConnection().GetServer(Endpoint).FlushDatabase();
+			GetConnection().GetSubscriber().UnsubscribeAll();
 			
 			//.NET Framework doesn't support `Clear()` on Errors so we do it manually
 			while (!Errors.IsEmpty)
