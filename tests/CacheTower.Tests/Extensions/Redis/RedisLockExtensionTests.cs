@@ -249,5 +249,51 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			cacheStackMock.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(1), "One checks to the cache stack are expected as it will fail to resolve lock");
 		}
+
+
+
+		[TestMethod]
+		public async Task BusyLockCheckWorksWhenSubscriberFails()
+		{
+			RedisHelper.ResetState();
+
+			var connection = RedisHelper.GetConnection();
+
+			var cacheStackMock = new Mock<ICacheStack>();
+			var extension = new RedisLockExtension(connection, new RedisLockOptions(null, "CacheTower.CacheLock", "Lock:{0}", -1, TimeSpan.FromMilliseconds(50)));
+			extension.Register(cacheStackMock.Object);
+
+			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
+
+			//Establish lock
+			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
+
+			var refreshTask = extension.WithRefreshAsync("TestKey",
+					() =>
+					{
+						return new ValueTask<CacheEntry<int>>(cacheEntry);
+					},
+					new CacheSettings(TimeSpan.FromDays(1))
+				).AsTask();
+
+			//Delay to allow for Redis check and self-entry into lock
+			await Task.Delay(TimeSpan.FromSeconds(1));
+
+			Assert.IsTrue(extension.LockedOnKeyRefresh.ContainsKey("TestKey"), "Lock was not established");
+
+			//Trigger the end of the lock
+			await connection.GetDatabase().KeyDeleteAsync("Lock:TestKey");
+
+			//Note we don't publish the value was refreshed
+
+			var succeedingTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(10)));
+			if (!succeedingTask.Equals(refreshTask))
+			{
+				RedisHelper.DebugInfo(connection);
+				Assert.Fail("Refresh has timed out - something has gone very wrong");
+			}
+
+			cacheStackMock.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Two checks to the cache stack are expected");
+		}
 	}
 }
