@@ -91,12 +91,15 @@ namespace CacheTower.Extensions.Redis
 				var completionSource = LockedOnKeyRefresh.GetOrAdd(cacheKey, key =>
 				{
 					var tcs = new TaskCompletionSource<bool>();
-					var cts = new CancellationTokenSource(Options.LockTimeout);
-					cts.Token.Register(tcs => ((TaskCompletionSource<bool>)tcs).TrySetCanceled(), tcs, useSynchronizationContext: false);
-
+			
 					if (Options.UseBusyLockCheck)
 					{
 						_ = TestLock(tcs);
+					}
+					else
+					{
+						var cts = new CancellationTokenSource(Options.LockTimeout);
+						cts.Token.Register(tcs => ((TaskCompletionSource<bool>)tcs).TrySetCanceled(), tcs, useSynchronizationContext: false);
 					}
 
 					return tcs;
