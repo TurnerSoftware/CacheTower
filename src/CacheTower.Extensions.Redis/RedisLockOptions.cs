@@ -19,23 +19,17 @@ namespace CacheTower.Extensions.Redis
 		/// - <see cref="SpinTime"/>: <i>Unused.</i>
 		/// </para>
 		/// </remarks>
-		public static readonly RedisLockOptions Default = new RedisLockOptions();
-
-		/// <summary>
-		/// The database index used for the Redis lock.
-		/// If not specified, uses the default database as configured on the connection.
-		/// </summary>
-		public int DatabaseIndex { get; }
-
-		/// <summary>
-		/// The Redis channel to communicate unlocking events across.
-		/// </summary>
-		public string RedisChannel { get; }
+		public static readonly RedisLockOptions Default = new();
 
 		/// <summary>
 		/// How long to wait on the lock before having it expire.
 		/// </summary>
 		public TimeSpan LockTimeout { get; }
+
+		/// <summary>
+		/// The Redis channel to communicate unlocking events across.
+		/// </summary>
+		public string RedisChannel { get; }
 
 		/// <summary>
 		/// A <see cref="string.Format(string, object[])"/> compatible string used to create the lock key stored in Redis.
@@ -44,20 +38,19 @@ namespace CacheTower.Extensions.Redis
 		public string KeyFormat { get; }
 
 		/// <summary>
-		/// Is the busy lock check enabled
+		/// The database index used for the Redis lock.
+		/// If not specified, uses the default database as configured on the connection.
 		/// </summary>
-		public bool UseBusyLockCheck { get; }
+		public int DatabaseIndex { get; }
 
 		/// <summary>
-		/// How open to recheck the lock when we were not the context that acquired the lock
+		/// How often to recheck the lock when we were not the context that acquired the lock.
 		/// </summary>
 		public TimeSpan SpinTime { get; }
 
-		/// <summary>
-		/// Number of attempts to check the lock before giving up
-		/// </summary>
-		public int SpinAttempts { get; }
+		internal bool UseBusyLockCheck { get; }
 
+		internal int SpinAttempts { get; }
 
 		/// <summary>
 		/// Creates a new instance of the <see cref="RedisLockOptions"/>.
@@ -74,8 +67,8 @@ namespace CacheTower.Extensions.Redis
 		/// If not specified, uses the default database as configured on the connection.
 		/// </param>
 		/// <param name="spinTime">
-		/// The waiter on the lock also performs a tight loop to check for lock release
-		/// This can avoid the situation of a missed message on redis pub/sub
+		/// The waiter on the lock also performs a tight loop to check for lock release.
+		/// This can avoid the situation of a missed message on Redis pub/sub.
 		/// </param>
 		public RedisLockOptions(
 			TimeSpan? lockTimeout = default, 
@@ -89,9 +82,13 @@ namespace CacheTower.Extensions.Redis
 			RedisChannel = redisChannel ?? throw new ArgumentNullException(nameof(redisChannel));
 			KeyFormat = keyFormat ?? throw new ArgumentNullException(nameof(keyFormat));
 			DatabaseIndex = databaseIndex;
-			UseBusyLockCheck = spinTime.HasValue;
-			SpinTime = spinTime ?? TimeSpan.FromMilliseconds(100);
-			SpinAttempts = (int)Math.Ceiling(LockTimeout.TotalMilliseconds / SpinTime.TotalMilliseconds);
+
+			if (spinTime.HasValue)
+			{
+				UseBusyLockCheck = true;
+				SpinTime = spinTime.Value;
+				SpinAttempts = (int)Math.Ceiling(LockTimeout.TotalMilliseconds / SpinTime.TotalMilliseconds);
+			}
 		}
 	}
 }
