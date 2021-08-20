@@ -260,7 +260,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisLockExtension(connection, new RedisLockOptions(null, "CacheTower.CacheLock", "Lock:{0}", -1, TimeSpan.FromMilliseconds(50)));
+			var extension = new RedisLockExtension(connection, new RedisLockOptions(spinTime: TimeSpan.FromMilliseconds(50)));
 			extension.Register(cacheStackMock.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
