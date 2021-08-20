@@ -316,6 +316,10 @@ You can use this context to hold any of the other objects or properties you need
 |:-|
 |You can specify your own context factory via the `AddCacheStack` methods on the services collection or via the `CacheStack<TContext>` constructor.<br/><br/><pre lang="csharp">services.AddCacheStack(() => new MyContext(), ... );</pre>|
 
+|ℹ Want to resolve your context via any IoC container? |
+|:-|
+|If you are using complex IoC configurations and require scopes to be controlled. You can inherit from `ICacheContextActivator` and provide this as the context factory. To see a complete example, see [this integration for SimpleInjector](https://github.com/mgoodfellow/CacheTower.ContextActivators.SimpleInjector)|
+
 ## <a id="extensions" /> 🏗 Cache Tower Extensions
 
 To allow more flexibility, Cache Tower uses an extension system to enhance functionality.
