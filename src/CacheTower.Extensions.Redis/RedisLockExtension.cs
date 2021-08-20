@@ -91,9 +91,43 @@ namespace CacheTower.Extensions.Redis
 				var completionSource = LockedOnKeyRefresh.GetOrAdd(cacheKey, key =>
 				{
 					var tcs = new TaskCompletionSource<bool>();
-					var cts = new CancellationTokenSource(Options.LockTimeout);
-					cts.Token.Register(tcs => ((TaskCompletionSource<bool>)tcs).TrySetCanceled(), tcs, useSynchronizationContext: false);
+			
+					if (Options.UseBusyLockCheck)
+					{
+						_ = TestLock(tcs);
+					}
+					else
+					{
+						var cts = new CancellationTokenSource(Options.LockTimeout);
+						cts.Token.Register(tcs => ((TaskCompletionSource<bool>)tcs).TrySetCanceled(), tcs, useSynchronizationContext: false);
+					}
+
 					return tcs;
+
+					async Task TestLock(TaskCompletionSource<bool> taskCompletionSource)
+					{
+						var spinAttempt = 0;
+
+						while (spinAttempt <= Options.SpinAttempts && 
+						       !taskCompletionSource.Task.IsCanceled && 
+						       !taskCompletionSource.Task.IsCompleted)
+						{
+							spinAttempt++;
+
+							var lockExists = await Database.KeyExistsAsync(lockKey);
+
+							if (lockExists)
+							{
+								await Task.Delay(Options.SpinTime);
+								continue;
+							}
+
+							taskCompletionSource.TrySetResult(true);
+							return;
+						}
+
+						taskCompletionSource.TrySetCanceled();
+					}
 				});
 
 				//Last minute check to confirm whether waiting is required (in case the notification is missed)

@@ -324,7 +324,7 @@ namespace CacheTower
 			else if (noExistingValueAvailable)
 			{
 				TaskCompletionSource<CacheEntry> completionSource;
-
+					
 				lock (WaitingKeyRefresh)
 				{
 					if (!WaitingKeyRefresh.TryGetValue(cacheKey, out completionSource!) || completionSource == null)
