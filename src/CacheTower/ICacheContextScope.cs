@@ -3,7 +3,7 @@
 namespace CacheTower
 {
 	/// <remarks>
-	/// A scope for resolving <typeparamref name="TContext"/>
+	/// A scope for resolving a <see cref="CacheStack{TContext}"/> context.
 	/// </remarks>
 	/// <inheritdoc/>
 	public interface ICacheContextScope : IDisposable

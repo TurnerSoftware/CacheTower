@@ -27,7 +27,7 @@ namespace CacheTower
 		}
 
 		/// <summary>
-		/// Creates a new <see cref="CacheStack{TContext}"/> with the given <paramref name="contextFactory"/>, <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
+		/// Creates a new <see cref="CacheStack{TContext}"/> with the given <paramref name="cacheContextActivator"/>, <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
 		/// </summary>
 		/// <param name="cacheContextActivator">The activator that provides the context. This is called for every cache item refresh.</param>
 		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
