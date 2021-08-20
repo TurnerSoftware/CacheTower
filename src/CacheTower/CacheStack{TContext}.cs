@@ -21,9 +21,8 @@ namespace CacheTower
 		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
 		public CacheStack(Func<TContext> contextFactory, ICacheLayer[] cacheLayers, ICacheExtension[] extensions) : base(cacheLayers, extensions)
 		{
-			CacheContextActivator =
-				new FuncCacheContextActivator<TContext>(contextFactory ??
-				                                        throw new ArgumentNullException(nameof(contextFactory)));
+			var factory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
+			CacheContextActivator = new FuncCacheContextActivator<TContext>(factory);
 		}
 
 		/// <summary>

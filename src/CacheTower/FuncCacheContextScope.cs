@@ -13,7 +13,7 @@ namespace CacheTower
 
 		public object Resolve(Type type)
 		{
-			return Resolver();
+			return Resolver()!;
 		}
 
 		public void Dispose()
