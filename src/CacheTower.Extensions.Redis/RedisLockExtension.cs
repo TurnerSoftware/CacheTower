@@ -111,9 +111,9 @@ namespace CacheTower.Extensions.Redis
 						{
 							spinAttempt++;
 
-							var lockQuery = await Database.LockQueryAsync(lockKey);
+							var lockExists = await Database.KeyExistsAsync(lockKey);
 
-							if (lockQuery.HasValue)
+							if (lockExists)
 							{
 								await Task.Delay(Options.SpinTime);
 								continue;
