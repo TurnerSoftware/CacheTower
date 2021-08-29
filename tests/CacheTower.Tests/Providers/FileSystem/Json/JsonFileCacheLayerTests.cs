@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Threading.Tasks;
-using CacheTower.Providers.FileSystem;
 using CacheTower.Providers.FileSystem.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,6 +17,12 @@ namespace CacheTower.Tests.Providers.FileSystem.Json
 			{
 				Directory.Delete(DirectoryPath, true);
 			}
+		}
+
+		[TestMethod]
+		public async Task PersistentGetSetCache()
+		{
+			await AssertPersistentGetSetCacheAsync(() => new JsonFileCacheLayer(DirectoryPath));
 		}
 
 		[TestMethod]

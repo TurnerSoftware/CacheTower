@@ -7,6 +7,19 @@ namespace CacheTower.Tests.Providers
 {
 	public abstract class BaseCacheLayerTests : TestBase
 	{
+		protected static async Task AssertPersistentGetSetCacheAsync<TCacheLayer>(Func<TCacheLayer> cacheLayerFactory) where TCacheLayer : ICacheLayer, IAsyncDisposable
+		{
+			await using (var cacheLayerOne = cacheLayerFactory())
+			{
+				var cacheEntry = new CacheEntry<int>(12, TimeSpan.FromDays(1));
+				await cacheLayerOne.SetAsync("AssertPersistentGetSetCache", cacheEntry);
+			}
+
+			await using var cacheLayerTwo = cacheLayerFactory();
+			var persistedCacheEntry = await cacheLayerTwo.GetAsync<int>("AssertPersistentGetSetCache");
+			Assert.AreEqual(12, persistedCacheEntry.Value);
+		}
+
 		protected static async Task AssertGetSetCacheAsync(ICacheLayer cacheLayer)
 		{
 			var cacheEntry = new CacheEntry<int>(12, TimeSpan.FromDays(1));

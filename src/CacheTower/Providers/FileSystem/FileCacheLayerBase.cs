@@ -27,7 +27,7 @@ namespace CacheTower.Providers.FileSystem
 
 		private HashAlgorithm FileNameHashAlgorithm { get; } = MD5.Create();
 
-		private ConcurrentDictionary<string?, IManifestEntry>? CacheManifest { get; set; }
+		private ConcurrentDictionary<string?, TManifest>? CacheManifest { get; set; }
 		private ConcurrentDictionary<string?, AsyncReaderWriterLock> FileLock { get; }
 
 		/// <summary>
@@ -94,7 +94,7 @@ namespace CacheTower.Providers.FileSystem
 					{
 						if (File.Exists(ManifestPath))
 						{
-							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string?, IManifestEntry>>(ManifestPath);
+							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string?, TManifest>>(ManifestPath);
 						}
 						else
 						{
@@ -103,7 +103,7 @@ namespace CacheTower.Providers.FileSystem
 								Directory.CreateDirectory(DirectoryPath);
 							}
 
-							CacheManifest = new ConcurrentDictionary<string?, IManifestEntry>();
+							CacheManifest = new ConcurrentDictionary<string?, TManifest>();
 							await SerializeFileAsync(ManifestPath, CacheManifest);
 						}
 					}

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Threading.Tasks;
 using CacheTower.Providers.FileSystem.Protobuf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,6 +17,12 @@ namespace CacheTower.Tests.Providers.FileSystem.Protobuf
 			{
 				Directory.Delete(DirectoryPath, true);
 			}
+		}
+
+		[TestMethod]
+		public async Task PersistentGetSetCache()
+		{
+			await AssertPersistentGetSetCacheAsync(() => new ProtobufFileCacheLayer(DirectoryPath));
 		}
 
 		[TestMethod]
