@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// <param name="cleanupFrequency">The frequency at which cache stack cleanup will be performed.</param>
 		public static void AddCacheStack(this IServiceCollection services, ICacheLayer[] layers, TimeSpan cleanupFrequency)
 		{
-			services.AddSingleton<ICacheStack>(new CacheStack(layers, new[] { new AutoCleanupExtension(cleanupFrequency) }));
+			services.AddSingleton<ICacheStack>(sp => new CacheStack(layers, new[] { new AutoCleanupExtension(cleanupFrequency) }));
 		}
 
 		/// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// <param name="extensions">The cache extensions to use.</param>
 		public static void AddCacheStack(this IServiceCollection services, ICacheLayer[] layers, ICacheExtension[] extensions)
 		{
-			services.AddSingleton<ICacheStack>(new CacheStack(layers, extensions));
+			services.AddSingleton<ICacheStack>(sp => new CacheStack(layers, extensions));
 		}
 
 		/// <summary>
