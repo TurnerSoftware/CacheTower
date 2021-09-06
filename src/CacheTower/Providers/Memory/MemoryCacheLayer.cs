@@ -42,6 +42,8 @@ namespace CacheTower.Providers.Memory
 			return new ValueTask();
 		}
 
+		public string Name => nameof(MemoryCacheLayer);
+
 		/// <inheritdoc/>
 		public ValueTask FlushAsync()
 		{

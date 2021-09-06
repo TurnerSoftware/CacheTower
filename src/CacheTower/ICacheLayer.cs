@@ -8,6 +8,8 @@ namespace CacheTower
 	/// </summary>
 	public interface ICacheLayer
 	{
+		string Name { get; }
+
 		/// <summary>
 		/// Flushes the cache layer, removing every item from the cache.
 		/// </summary>

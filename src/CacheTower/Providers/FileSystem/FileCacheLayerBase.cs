@@ -235,6 +235,8 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
+		public string Name => "FileCacheLayer";
+
 		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{
