@@ -98,6 +98,10 @@ namespace CacheTower.Tests.Extensions.Redis
 				}
 			});
 
+			// Delay to avoid race condition with pub/sub
+			// See: https://github.com/StackExchange/StackExchange.Redis/issues/1827
+			await Task.Delay(TimeSpan.FromMilliseconds(250));
+
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 
 			await extension.WithRefreshAsync("TestKey",
