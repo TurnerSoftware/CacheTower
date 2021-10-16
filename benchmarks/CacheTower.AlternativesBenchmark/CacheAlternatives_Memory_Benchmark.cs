@@ -16,6 +16,7 @@ namespace CacheTower.AlternativesBenchmark
 		private readonly DefaultInMemoryCachingProvider EasyCaching;
 		private readonly CachingService LazyCache;
 		private readonly FusionCache FusionCache;
+		private readonly IntelligentHack.IntelligentCache.MemoryCache IntelligentCache;
 
 		public CacheAlternatives_Memory_Benchmark()
 		{
@@ -31,6 +32,7 @@ namespace CacheTower.AlternativesBenchmark
 			);
 			LazyCache = new CachingService();
 			FusionCache = new FusionCache(new FusionCacheOptions());
+			IntelligentCache = new IntelligentHack.IntelligentCache.MemoryCache(string.Empty);
 		}
 
 		[Benchmark(Baseline = true)]
@@ -67,6 +69,12 @@ namespace CacheTower.AlternativesBenchmark
 		public string FusionCache_MemoryProvider()
 		{
 			return FusionCache.GetOrSet("GetOrSet_TestKey", (cancellationToken) => "Hello World", TimeSpan.FromDays(1));
+		}
+
+		[Benchmark]
+		public string IntelligentCache_MemoryCache()
+		{
+			return IntelligentCache.GetSet("GetOrSet_TestKey", () => "Hello World", TimeSpan.FromDays(1));
 		}
 	}
 }

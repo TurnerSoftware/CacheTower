@@ -15,6 +15,7 @@ namespace CacheTower.AlternativesBenchmark
 		private readonly CacheStack CacheTower;
 		private readonly ICacheManager<ProtobufCacheItem> CacheManager;
 		private readonly DefaultRedisCachingProvider EasyCaching;
+		private readonly IntelligentHack.IntelligentCache.RedisCache IntelligentCache;
 
 		public CacheAlternatives_Redis_Benchmark()
 		{
@@ -38,6 +39,7 @@ namespace CacheTower.AlternativesBenchmark
 				new[] { new DefaultProtobufSerializer("EasyCaching") }, 
 				easyCachingRedisOptions
 			);
+			IntelligentCache = new IntelligentHack.IntelligentCache.RedisCache(RedisHelper.GetConnection(), string.Empty);
 		}
 
 		[GlobalSetup]
@@ -79,6 +81,12 @@ namespace CacheTower.AlternativesBenchmark
 		public async Task<string> EasyCaching_Redis()
 		{
 			return (await EasyCaching.GetAsync("GetOrSet_TestKey", () => Task.FromResult("Hello World"), TimeSpan.FromDays(1))).Value;
+		}
+
+		[Benchmark]
+		public async Task<string> IntelligentCache_Redis()
+		{
+			return await IntelligentCache.GetSetAsync("GetOrSet_TestKey", (cancellationToken) => Task.FromResult("Hello World"), TimeSpan.FromDays(1));
 		}
 	}
 }
