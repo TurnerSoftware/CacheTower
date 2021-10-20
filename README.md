@@ -1,9 +1,13 @@
-﻿# Cache Tower
+﻿<div align="center">
+
+![Icon](images/icon.png)
+# Cache Tower
 An efficient multi-layered caching system for .NET
 
 [![AppVeyor](https://img.shields.io/appveyor/ci/Turnerj/cachetower/main.svg)](https://ci.appveyor.com/project/Turnerj/cachetower)
 [![Codecov](https://img.shields.io/codecov/c/github/turnersoftware/cachetower/main.svg)](https://codecov.io/gh/TurnerSoftware/CacheTower)
 [![NuGet](https://img.shields.io/nuget/v/CacheTower.svg)](https://www.nuget.org/packages/CacheTower/)
+</div>
 
 ## Overview
 
@@ -29,6 +33,14 @@ Stack Overflow use a custom 2-layer caching solution with in-memory and Redis.
 - [Distributed evictions](#Distributed-Eviction-via-Redis), helping to keep caches across multiple application instances the same.
 - All-async API, ready for high performance workloads.
 - [Targets minimum .NET Standard 2.0 for wide compatibility (.NET Framework 4.6.1+, .NET Core 2.0+, .NET 5.0+)](https://docs.microsoft.com/en-us/dotnet/standard/net-standard#net-implementation-support).
+
+## 🤝 Licensing and Support
+
+Cache Tower is licensed under the MIT license. It is free to use in personal and commercial projects.
+
+There are [support plans](https://turnersoftware.com.au/support-plans) available that cover all active [Turner Software OSS projects](https://github.com/TurnerSoftware).
+Support plans provide private email support, expert usage advice for our projects, priority bug fixes and more.
+These support plans help fund our OSS commitments to provide better software for everyone.
 
 ## 📖 Table of Contents
 
