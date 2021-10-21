@@ -4,7 +4,7 @@
 # Cache Tower
 An efficient multi-layered caching system for .NET
 
-[![AppVeyor](https://img.shields.io/appveyor/ci/Turnerj/cachetower/main.svg)](https://ci.appveyor.com/project/Turnerj/cachetower)
+![Build](https://img.shields.io/github/workflow/status/TurnerSoftware/CacheTower/Build)
 [![Codecov](https://img.shields.io/codecov/c/github/turnersoftware/cachetower/main.svg)](https://codecov.io/gh/TurnerSoftware/CacheTower)
 [![NuGet](https://img.shields.io/nuget/v/CacheTower.svg)](https://www.nuget.org/packages/CacheTower/)
 </div>
@@ -66,12 +66,12 @@ To add additional cache layers, you will need to install the appropriate package
 
 | Package | NuGet | Downloads |
 | ------- | ----- | --------- |
-| [CacheTower](https://www.nuget.org/packages/CacheTower/)<br><small>The core library with in-memory caching support.</small> | [![NuGet](https://img.shields.io/nuget/v/CacheTower.svg)](https://www.nuget.org/packages/CacheTower/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.svg)](https://www.nuget.org/packages/CacheTower/) |
-| [CacheTower.Extensions.Redis](https://www.nuget.org/packages/CacheTower.Extensions.Redis/)<br><small>Provides distributed locking &amp; eviction via Redis.</small> | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Extensions.Redis.svg)](https://www.nuget.org/packages/CacheTower.Extensions.Redis/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Extensions.Redis.svg)](https://www.nuget.org/packages/CacheTower.Extensions.Redis/) |
-| [CacheTower.Providers.Database.MongoDB](https://www.nuget.org/packages/CacheTower.Providers.Database.MongoDB/)<br><small>Provides a cache layer for MongoDB.</small> | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.Database.MongoDB.svg)](https://www.nuget.org/packages/CacheTower.Providers.Database.MongoDB/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.Database.MongoDB.svg)](https://www.nuget.org/packages/CacheTower.Providers.Database.MongoDB/) |
-| [CacheTower.Providers.FileSystem.Json](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Json/)<br><small>Provides a file-based cache layer using JSON.</small> | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.FileSystem.Json.svg)](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Json/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.FileSystem.Json.svg)](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Json/) |
-| [CacheTower.Providers.FileSystem.Protobuf](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/)<br><small>Provides a file-based cache layer using Protobuf.</small> | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.FileSystem.Protobuf.svg)](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.FileSystem.Protobuf.svg)](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/) |
-| [CacheTower.Providers.Redis](https://www.nuget.org/packages/CacheTower.Providers.Redis/)<br><small>Provides a cache layer for Redis.</small> | [![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.Redis.svg)](https://www.nuget.org/packages/CacheTower.Providers.Redis/) | [![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.Redis.svg)](https://www.nuget.org/packages/CacheTower.Providers.Redis/) |
+| [CacheTower](https://www.nuget.org/packages/CacheTower/)<br><small>The core library with in-memory caching support.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.svg) |
+| [CacheTower.Extensions.Redis](https://www.nuget.org/packages/CacheTower.Extensions.Redis/)<br><small>Provides distributed locking &amp; eviction via Redis.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Extensions.Redis.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Extensions.Redis.svg) |
+| [CacheTower.Providers.Database.MongoDB](https://www.nuget.org/packages/CacheTower.Providers.Database.MongoDB/)<br><small>Provides a cache layer for MongoDB.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.Database.MongoDB.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.Database.MongoDB.svg) |
+| [CacheTower.Providers.FileSystem.Json](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Json/)<br><small>Provides a file-based cache layer using JSON.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.FileSystem.Json.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.FileSystem.Json.svg) |
+| [CacheTower.Providers.FileSystem.Protobuf](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/)<br><small>Provides a file-based cache layer using Protobuf.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.FileSystem.Protobuf.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.FileSystem.Protobuf.svg) |
+| [CacheTower.Providers.Redis](https://www.nuget.org/packages/CacheTower.Providers.Redis/)<br><small>Provides a cache layer for Redis.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.Redis.svg)| ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.Redis.svg) |
 
 ## <a id="understanding-multi-layer-caching" /> 🎓 Understanding a Multi-Layer Caching System
 
