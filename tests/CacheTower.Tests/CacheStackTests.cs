@@ -365,7 +365,7 @@ namespace CacheTower.Tests
 			Assert.AreEqual(1, getterCallCount);
 			foreach (var task in tasks)
 			{
-				Assert.AreSame(expectedException, task.Exception);
+				Assert.AreSame(expectedException, task.Exception.InnerException);
 			}
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
