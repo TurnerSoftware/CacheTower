@@ -70,7 +70,7 @@ namespace CacheTower
 		public async ValueTask CleanupAsync()
 		{
 			ThrowIfDisposed();
-			
+
 			for (int i = 0, l = CacheLayers.Length; i < l; i++)
 			{
 				var layer = CacheLayers[i];
@@ -315,16 +315,16 @@ namespace CacheTower
 						return refreshedEntry;
 					}, settings);
 				}
-				catch
+				catch (Exception e)
 				{
-					UnlockWaitingTasks(cacheKey, null!);
+					UnlockWaitingTasks(cacheKey, e);
 					throw;
 				}
 			}
 			else if (noExistingValueAvailable)
 			{
 				TaskCompletionSource<CacheEntry> completionSource;
-					
+
 				lock (WaitingKeyRefresh)
 				{
 					if (!WaitingKeyRefresh.TryGetValue(cacheKey, out completionSource!) || completionSource == null)
@@ -358,6 +358,18 @@ namespace CacheTower
 				{
 					WaitingKeyRefresh.Remove(cacheKey);
 					completionSource?.TrySetResult(cacheEntry);
+				}
+			}
+		}
+
+		private void UnlockWaitingTasks(string cacheKey, Exception exception)
+		{
+			lock (WaitingKeyRefresh)
+			{
+				if (WaitingKeyRefresh.TryGetValue(cacheKey, out var completionSource))
+				{
+					WaitingKeyRefresh.Remove(cacheKey);
+					completionSource?.SetException(exception);
 				}
 			}
 		}
