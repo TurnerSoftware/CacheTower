@@ -343,7 +343,7 @@ namespace CacheTower.Tests
 					async _ =>
 					{
 						Interlocked.Increment(ref getterCallCount);
-						await Task.Delay(250);
+						await Task.Delay(100);
 						throw expectedException;
 					},
 					new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero)
@@ -358,14 +358,52 @@ namespace CacheTower.Tests
 			{
 				await Task.WhenAll(tasks);
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+				Assert.IsInstanceOfType(e, expectedException.GetType());
 			}
 
 			Assert.AreEqual(1, getterCallCount);
 			foreach (var task in tasks)
 			{
 				Assert.AreSame(expectedException, task.Exception.InnerException);
+			}
+		}
+		[TestMethod]
+		[DataRow(null)]
+		[DataRow(42)]
+		public async Task GetOrSet_ConcurrentAccess_SameResultForAllTasks(int? expectedResult)
+		{
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+
+			Internal.DateTimeProvider.UpdateTime();
+			var getterCallCount = 0;
+
+			async Task<int?> act()
+			{
+				return await cacheStack.GetOrSetAsync<int?>(
+					"GetOrSet_ConcurrentAccess_SameResultForAllTasks",
+					async _ =>
+					{
+						Interlocked.Increment(ref getterCallCount);
+						await Task.Delay(100);
+						return expectedResult;
+					},
+					new CacheSettings(TimeSpan.FromDays(2), TimeSpan.Zero)
+				);
+			}
+
+			var tasks = Enumerable.Range(1, 4)
+								  .Select(i => act())
+								  .ToArray();
+
+			var whenAll = Task.WhenAll(tasks);
+			await Task.WhenAny(whenAll, Task.Delay(TimeSpan.FromSeconds(1)));
+
+			Assert.AreEqual(1, getterCallCount);
+			foreach (var task in tasks)
+			{
+				Assert.AreEqual(expectedResult, task.Result);
 			}
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
