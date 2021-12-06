@@ -333,7 +333,7 @@ namespace CacheTower
 					throw;
 				}
 			}
-			else if (entryStatus == CacheEntryStatus.Miss)
+			else if (entryStatus != CacheEntryStatus.Stale)
 			{
 				TaskCompletionSource<CacheEntry> completionSource;
 
