@@ -295,7 +295,7 @@ namespace CacheTower
 				try
 				{
 					var previousEntry = await GetAsync<T>(cacheKey);
-					if (previousEntry != default && entryStatus == CacheEntryStatus.Miss && previousEntry.Expiry < DateTimeProvider.Now)
+					if (previousEntry != default && entryStatus == CacheEntryStatus.Miss && previousEntry.Expiry >= DateTimeProvider.Now)
 					{
 						//The Cache Stack will always return an unexpired value if one exists.
 						//If we are told to refresh because one doesn't and we find one, we return the existing value, ignoring the refresh.
