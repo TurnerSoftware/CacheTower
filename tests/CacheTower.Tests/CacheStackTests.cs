@@ -451,5 +451,19 @@ namespace CacheTower.Tests
 			Assert.AreEqual(42, await awaitingTasks[1]);
 			Assert.AreEqual(42, await awaitingTasks[2]);
 		}
+		[TestMethod]
+		public async Task GetOrSet_ExpiredCacheHit()
+		{
+			await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await cacheStack.SetAsync("GetOrSet_CacheHit", 17, TimeSpan.FromDays(-1));
+
+			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheHit", (oldValue) =>
+			{
+				Assert.AreEqual(17, oldValue);
+				return Task.FromResult(27);
+			}, new CacheSettings(TimeSpan.FromDays(1)));
+
+			Assert.AreEqual(27, result);
+		}
 	}
 }
