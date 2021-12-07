@@ -203,26 +203,34 @@ namespace CacheTower
 
 			var currentTime = DateTimeProvider.Now;
 			var cacheEntryPoint = await GetWithLayerIndexAsync<T>(cacheKey);
-			if (cacheEntryPoint != default && cacheEntryPoint.CacheEntry.Expiry > currentTime)
+			if (cacheEntryPoint != default)
 			{
-				var cacheEntry = cacheEntryPoint.CacheEntry;
-				if (settings.StaleAfter.HasValue && cacheEntry.GetStaleDate(settings) < currentTime)
+				if (cacheEntryPoint.CacheEntry.Expiry > currentTime)
 				{
-					//If the cache entry is stale, refresh the value in the background
-					_ = RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: false);
-				}
-				else if (cacheEntryPoint.LayerIndex > 0)
-				{
-					//If a lower-level cache is missing the latest data, attempt to set it in the background
-					_ = BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry);
-				}
+					var cacheEntry = cacheEntryPoint.CacheEntry;
+					if (settings.StaleAfter.HasValue && cacheEntry.GetStaleDate(settings) < currentTime)
+					{
+						//If the cache entry is stale, refresh the value in the background
+						_ = RefreshValueAsync(cacheKey, getter, settings, CacheEntryStatus.Stale);
+					}
+					else if (cacheEntryPoint.LayerIndex > 0)
+					{
+						//If a lower-level cache is missing the latest data, attempt to set it in the background
+						_ = BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntry);
+					}
 
-				return cacheEntry.Value!;
+					return cacheEntry.Value!;
+				}
+				else
+				{
+					//Refresh the value in the current thread because we only have expired data (we never return expired data)
+					return (await RefreshValueAsync(cacheKey, getter, settings, CacheEntryStatus.Expired))!.Value!;
+				}
 			}
 			else
 			{
-				//Refresh the value in the current thread though because we have no old cache value, we have to lock and wait
-				return (await RefreshValueAsync(cacheKey, getter, settings, noExistingValueAvailable: true))!.Value!;
+				//Refresh the value in the current thread because we have no existing data
+				return (await RefreshValueAsync(cacheKey, getter, settings, CacheEntryStatus.Miss))!.Value!;
 			}
 		}
 
@@ -264,7 +272,7 @@ namespace CacheTower
 			}
 		}
 
-		private async ValueTask<CacheEntry<T>?> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings, bool noExistingValueAvailable)
+		private async ValueTask<CacheEntry<T>?> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings, CacheEntryStatus entryStatus)
 		{
 			ThrowIfDisposed();
 
@@ -287,7 +295,7 @@ namespace CacheTower
 				try
 				{
 					var previousEntry = await GetAsync<T>(cacheKey);
-					if (previousEntry != default && noExistingValueAvailable && previousEntry.Expiry < DateTimeProvider.Now)
+					if (previousEntry != default && entryStatus == CacheEntryStatus.Miss && previousEntry.Expiry >= DateTimeProvider.Now)
 					{
 						//The Cache Stack will always return an unexpired value if one exists.
 						//If we are told to refresh because one doesn't and we find one, we return the existing value, ignoring the refresh.
@@ -307,7 +315,11 @@ namespace CacheTower
 
 						var value = await getter(oldValue!);
 						var refreshedEntry = new CacheEntry<T>(value, settings.TimeToLive);
-						var cacheUpdateType = noExistingValueAvailable ? CacheUpdateType.AddEntry : CacheUpdateType.AddOrUpdateEntry;
+						var cacheUpdateType = entryStatus switch
+						{
+							CacheEntryStatus.Miss => CacheUpdateType.AddEntry,
+							_ => CacheUpdateType.AddOrUpdateEntry
+						};
 						await InternalSetAsync(cacheKey, refreshedEntry, cacheUpdateType);
 
 						UnlockWaitingTasks(cacheKey, refreshedEntry);
@@ -321,7 +333,7 @@ namespace CacheTower
 					throw;
 				}
 			}
-			else if (noExistingValueAvailable)
+			else if (entryStatus != CacheEntryStatus.Stale)
 			{
 				TaskCompletionSource<CacheEntry> completionSource;
 
