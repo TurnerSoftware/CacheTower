@@ -23,6 +23,11 @@ namespace CacheTower.Serializers.Protobuf
 				.Add(2, nameof(ManifestEntry.Expiry));
 		}
 
+		/// <summary>
+		/// An existing instance of <see cref="ProtobufCacheSerializer"/>.
+		/// </summary>
+		public static ProtobufCacheSerializer Instance { get; } = new();
+
 		//Because we can't use an open generic for protobuf-net (see https://github.com/protobuf-net/protobuf-net/issues/802)
 		//we instead use/abuse a static class with a generic parameter to dynamically create the serialization config for us.
 		private static class SerializerConfig<T>
@@ -42,14 +47,14 @@ namespace CacheTower.Serializers.Protobuf
 		}
 
 		/// <inheritdoc />
-		public void Serialize<T>(Stream stream, T value)
+		public void Serialize<T>(Stream stream, T? value)
 		{
 			SerializerConfig<T>.EnsureConfigured();
 			Serializer.Serialize(stream, value);
 		}
 
 		/// <inheritdoc />
-		public T Deserialize<T>(Stream stream)
+		public T? Deserialize<T>(Stream stream)
 		{
 			SerializerConfig<T>.EnsureConfigured();
 			return Serializer.Deserialize<T>(stream);

@@ -9,26 +9,27 @@ namespace CacheTower.Serializers.NewtonsoftJson
 	/// </summary>
 	public class NewtonsoftJsonCacheSerializer : ICacheSerializer
 	{
+		/// <summary>
+		/// An existing instance of <see cref="NewtonsoftJsonCacheSerializer"/>.
+		/// </summary>
+		public static NewtonsoftJsonCacheSerializer Instance { get; } = new();
+
 		private JsonSerializer Serializer { get; } = new JsonSerializer();
 
 		/// <inheritdoc />
-		public void Serialize<T>(Stream stream, T value)
+		public void Serialize<T>(Stream stream, T? value)
 		{
-			using (var streamWriter = new StreamWriter(stream, Encoding.UTF8, 1024, true))
-			using (var jsonWriter = new JsonTextWriter(streamWriter))
-			{
-				Serializer.Serialize(jsonWriter, value);
-			}
+			using var streamWriter = new StreamWriter(stream, Encoding.UTF8, 1024, true);
+			using var jsonWriter = new JsonTextWriter(streamWriter);
+			Serializer.Serialize(jsonWriter, value);
 		}
 
 		/// <inheritdoc />
-		public T Deserialize<T>(Stream stream)
+		public T? Deserialize<T>(Stream stream)
 		{
-			using (var streamReader = new StreamReader(stream, Encoding.UTF8, false, 1024))
-			using (var jsonReader = new JsonTextReader(streamReader))
-			{
-				return Serializer.Deserialize<T>(jsonReader);
-			}
+			using var streamReader = new StreamReader(stream, Encoding.UTF8, false, 1024);
+			using var jsonReader = new JsonTextReader(streamReader);
+			return Serializer.Deserialize<T>(jsonReader);
 		}
 	}
 }

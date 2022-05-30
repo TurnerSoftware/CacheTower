@@ -15,7 +15,7 @@ namespace CacheTower
 		/// <param name="value"></param>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
-		void Serialize<T>(Stream stream, T value);
+		void Serialize<T>(Stream stream, T? value);
 
         /// <summary>
         /// Deserializes <typeparamref name="T"/> from the specified <paramref name="stream"/>.
@@ -23,6 +23,6 @@ namespace CacheTower
         /// <param name="stream"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        T Deserialize<T>(Stream stream);
+        T? Deserialize<T>(Stream stream);
     }
 }
