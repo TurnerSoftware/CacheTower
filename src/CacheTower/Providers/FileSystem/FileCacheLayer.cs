@@ -21,7 +21,6 @@ namespace CacheTower.Providers.FileSystem
 		private ICacheSerializer Serializer { get; }
 		private string DirectoryPath { get; }
 		private string ManifestPath { get; }
-		private string? FileExtension { get; }
 
 		private SemaphoreSlim ManifestLock { get; } = new SemaphoreSlim(1, 1);
 		private bool? IsManifestAvailable { get; set; }
@@ -32,17 +31,15 @@ namespace CacheTower.Providers.FileSystem
 		private ConcurrentDictionary<string?, AsyncReaderWriterLock> FileLock { get; }
 
 		/// <summary>
-		/// Initialises the file cache layer with the given <paramref name="directoryPath"/> and <paramref name="fileExtension"/>.
+		/// Initialises the file cache layer with the given <paramref name="directoryPath"/>.
 		/// </summary>
 		/// <param name="serializer">The serializer to use for the data.</param>
 		/// <param name="directoryPath">The directory to store the cache.</param>
-		/// <param name="fileExtension">(Optional) The file extension of the cache entries.</param>
-		public FileCacheLayer(ICacheSerializer serializer, string directoryPath, string? fileExtension)
+		public FileCacheLayer(ICacheSerializer serializer, string directoryPath)
 		{
 			Serializer = serializer;
 			DirectoryPath = directoryPath ?? throw new ArgumentNullException(nameof(directoryPath));
-			FileExtension = fileExtension;
-			ManifestPath = Path.Combine(directoryPath, "manifest" + fileExtension);
+			ManifestPath = Path.Combine(directoryPath, "manifest");
 			FileLock = new ConcurrentDictionary<string?, AsyncReaderWriterLock>(StringComparer.Ordinal);
 		}
 
@@ -142,8 +139,6 @@ namespace CacheTower.Providers.FileSystem
 			FileNameHashAlgorithm.TryComputeHash(bytes, hashBytes, out var _);
 #endif
 
-			var fileExtensionLength = FileExtension?.Length ?? 0;
-
 			//Based on byte conversion implementation in BitConverter (but with the dash stripped)
 			//https://github.com/dotnet/coreclr/blob/fbc11ea6afdaa2fe7b9377446d6bb0bd447d5cb5/src/mscorlib/shared/System/BitConverter.cs#L409-L440
 			static char GetHexValue(int i)
@@ -156,7 +151,7 @@ namespace CacheTower.Providers.FileSystem
 				return (char)(i - 10 + 'A');
 			}
 
-			var charArrayLength = 32 + fileExtensionLength;
+			var charArrayLength = 32;
 			var charArrayPtr = stackalloc char[charArrayLength];
 
 			var charPtr = charArrayPtr;
@@ -165,11 +160,6 @@ namespace CacheTower.Providers.FileSystem
 				var hashByte = hashBytes[i];
 				*charPtr++ = GetHexValue(hashByte >> 4);
 				*charPtr++ = GetHexValue(hashByte & 0xF);
-			}
-
-			for (var i = 0; i < fileExtensionLength; i++)
-			{
-				*charPtr++ = FileExtension![i];
 			}
 
 			return new string(charArrayPtr, 0, charArrayLength);
