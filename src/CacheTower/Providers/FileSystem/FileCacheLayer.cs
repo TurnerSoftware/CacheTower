@@ -59,7 +59,7 @@ namespace CacheTower.Providers.FileSystem
 
 		private async Task SerializeFileAsync<T>(string path, T value)
 		{
-			using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1024))
+			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 1024))
 			using (var memStream = new MemoryStream())
 			{
 				Serializer.Serialize(memStream, value);
