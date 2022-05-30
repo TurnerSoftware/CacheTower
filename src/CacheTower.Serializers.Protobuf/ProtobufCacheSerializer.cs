@@ -21,22 +21,37 @@ namespace CacheTower.Serializers.Protobuf
 			RuntimeTypeModel.Default.Add<ManifestEntry>()
 				.Add(1, nameof(ManifestEntry.FileName))
 				.Add(2, nameof(ManifestEntry.Expiry));
+		}
 
-			//TODO: This doesn't work! See https://github.com/protobuf-net/protobuf-net/issues/802
-			RuntimeTypeModel.Default.Add(typeof(CacheEntry<>))
-				.Add(1, nameof(CacheEntry<object>.Expiry))
-				.Add(2, nameof(CacheEntry<object>.Value));
+		//Because we can't use an open generic for protobuf-net (see https://github.com/protobuf-net/protobuf-net/issues/802)
+		//we instead use/abuse a static class with a generic parameter to dynamically create the serialization config for us.
+		private static class SerializerConfig<T>
+		{
+			static SerializerConfig()
+			{
+				if (typeof(T).IsSubclassOf(typeof(CacheEntry)))
+				{
+					RuntimeTypeModel.Default.Add(typeof(T))
+						.Add(1, nameof(CacheEntry<object>.Expiry))
+						.Add(2, nameof(CacheEntry<object>.Value));
+				}
+			}
+
+			//This method is only here to make the action more explicit
+			public static void EnsureConfigured() { }
 		}
 
 		/// <inheritdoc />
-		public void Serialize<T>(Stream stream, T cacheEntry)
+		public void Serialize<T>(Stream stream, T value)
 		{
-			Serializer.Serialize(stream, cacheEntry);
+			SerializerConfig<T>.EnsureConfigured();
+			Serializer.Serialize(stream, value);
 		}
 
 		/// <inheritdoc />
 		public T Deserialize<T>(Stream stream)
 		{
+			SerializerConfig<T>.EnsureConfigured();
 			return Serializer.Deserialize<T>(stream);
 		}
 	}
