@@ -66,12 +66,12 @@ To add additional cache layers, you will need to install the appropriate package
 
 | Package | NuGet | Downloads |
 | ------- | ----- | --------- |
-| [CacheTower](https://www.nuget.org/packages/CacheTower/)<br><small>The core library with in-memory caching support.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.svg) |
+| [CacheTower](https://www.nuget.org/packages/CacheTower/)<br><small>The core library with in-memory and file caching support.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.svg) |
 | [CacheTower.Extensions.Redis](https://www.nuget.org/packages/CacheTower.Extensions.Redis/)<br><small>Provides distributed locking &amp; eviction via Redis.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Extensions.Redis.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Extensions.Redis.svg) |
 | [CacheTower.Providers.Database.MongoDB](https://www.nuget.org/packages/CacheTower.Providers.Database.MongoDB/)<br><small>Provides a cache layer for MongoDB.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.Database.MongoDB.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.Database.MongoDB.svg) |
-| [CacheTower.Providers.FileSystem.Json](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Json/)<br><small>Provides a file-based cache layer using JSON.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.FileSystem.Json.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.FileSystem.Json.svg) |
-| [CacheTower.Providers.FileSystem.Protobuf](https://www.nuget.org/packages/CacheTower.Providers.FileSystem.Protobuf/)<br><small>Provides a file-based cache layer using Protobuf.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.FileSystem.Protobuf.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.FileSystem.Protobuf.svg) |
 | [CacheTower.Providers.Redis](https://www.nuget.org/packages/CacheTower.Providers.Redis/)<br><small>Provides a cache layer for Redis.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Providers.Redis.svg)| ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Providers.Redis.svg) |
+| [CacheTower.Serializers.NewtonsoftJson](https://www.nuget.org/packages/CacheTower.Serializers.NewtonsoftJson/)<br><small>Provides a JSON serializer using Newtonsoft.Json.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Serializers.NewtonsoftJson.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Serializers.NewtonsoftJson.svg) |
+| [CacheTower.Serializers.Protobuf](https://www.nuget.org/packages/CacheTower.Serializers.Protobuf/)<br><small>Provides a Protobuf serializer using protobuf-net.</small> | ![NuGet](https://img.shields.io/nuget/v/CacheTower.Serializers.Protobuf.svg) | ![NuGet](https://img.shields.io/nuget/dt/CacheTower.Serializers.Protobuf.svg) |
 
 ## <a id="understanding-multi-layer-caching" /> 🎓 Understanding a Multi-Layer Caching System
 
@@ -161,23 +161,48 @@ The data is kept as a reference in memory and _not serialized_.
 It is strongly recommended to treat the cached instance as immutable.
 Modification of an in-memory cached value won't be updated to other cache layers.
 
-### JsonFileCacheLayer
+### FileCacheLayer
 
-```powershell
-PM> Install-Package CacheTower.Providers.FileSystem.Json
-```
+> Bundled with Cache Tower
 
-Using [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json/), provides a basic file-based caching solution.
+Provides a basic file-based caching solution using [your choice of serializer](#cache-serializers).
 It stores each serialized cache item into its own file and uses a singular manifest file to track the status of the cache.
 
-### ProtobufFileCacheLayer
+### MongoDbCacheLayer
 
 ```powershell
-PM> Install-Package CacheTower.Providers.FileSystem.Protobuf
+PM> Install-Package CacheTower.Providers.Database.MongoDB
 ```
 
-Using [protobuf-net](https://github.com/protobuf-net/protobuf-net), provides a basic file-based caching solution.
-It stores each serialized cache item into its own file and uses a singular manifest file to track the status of the cache.
+Allows caching through a MongoDB server.
+Cache entries are serialized to BSON using `MongoDB.Bson.Serialization.BsonSerializer`.
+
+### RedisCacheLayer
+
+```powershell
+PM> Install-Package CacheTower.Providers.Redis
+```
+
+Allows caching of data in Redis using [your choice of serializer](#cache-serializers).
+
+## <a id="cache-serializers" /> ✍ Cache Serializers
+
+The `FileCacheLayer` and `RedisCacheLayer` support custom serializers for caching data.
+Different serializers have different performance profiles as well as different tradeoffs for configuration.
+
+### NewtonsoftJsonCacheSerializer
+
+```powershell
+PM> Install-Package CacheTower.Serializers.NewtonsoftJson
+```
+
+Uses [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json/) to perform serialization.
+
+### ProtobufCacheSerializer
+
+```powershell
+PM> Install-Package CacheTower.Serializers.Protobuf
+```
 
 The use of [protobuf-net requires decorating the class](https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes) you want to cache with attributes `[ProtoContract]` and `[ProtoMember]`.
 
@@ -198,24 +223,7 @@ public class UserProfile
 Additionally, as the Protobuf format doesn't have a way to represent an empty collection, these will be returned as `null`.
 While this can be inconvienent, using Protobuf ensures high performance and low allocations for serializing.
 
-### MongoDbCacheLayer
 
-```powershell
-PM> Install-Package CacheTower.Providers.Database.MongoDB
-```
-
-Allows caching through a MongoDB server.
-Cache entries are serialized to BSON using `MongoDB.Bson.Serialization.BsonSerializer`.
-
-### RedisCacheLayer
-
-```powershell
-PM> Install-Package CacheTower.Providers.Redis
-```
-
-Allows caching of data in Redis. Data is serialized to Protobuf using [protobuf-net](https://github.com/protobuf-net/protobuf-net).
-
-Like the [ProtobufFileCacheLayer](#ProtobufFileCacheLayer), the use of [protobuf-net requires decorating the class](https://github.com/protobuf-net/protobuf-net#1-first-decorate-your-classes) you want to cache with attributes `[ProtoContract]` and `[ProtoMember]`.
 
 ## <a id="custom-cache-layers" /> 🔨 Making Your Own Cache Layer
 
