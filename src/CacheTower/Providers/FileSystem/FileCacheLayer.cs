@@ -45,24 +45,20 @@ namespace CacheTower.Providers.FileSystem
 
 		private async Task<T?> DeserializeFileAsync<T>(string path)
 		{
-			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024))
-			using (var memStream = new MemoryStream((int)stream.Length))
-			{
-				await stream.CopyToAsync(memStream);
-				memStream.Seek(0, SeekOrigin.Begin);
-				return Serializer.Deserialize<T>(memStream);
-			}
+			using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024);
+			using var memStream = new MemoryStream((int)stream.Length);
+			await stream.CopyToAsync(memStream);
+			memStream.Seek(0, SeekOrigin.Begin);
+			return Serializer.Deserialize<T>(memStream);
 		}
 
 		private async Task SerializeFileAsync<T>(string path, T value)
 		{
-			using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 1024))
-			using (var memStream = new MemoryStream())
-			{
-				Serializer.Serialize(memStream, value);
-				memStream.Seek(0, SeekOrigin.Begin);
-				await memStream.CopyToAsync(stream);
-			}
+			using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 1024);
+			using var memStream = new MemoryStream();
+			Serializer.Serialize(memStream, value);
+			memStream.Seek(0, SeekOrigin.Begin);
+			await memStream.CopyToAsync(stream);
 		}
 
 		private async Task TryLoadManifestAsync()
@@ -287,13 +283,22 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifestAsync();
 
-			var manifestEntry = CacheManifest!.GetOrAdd(cacheKey, (key) => new ManifestEntry
-			{
-				FileName = GetFileName(cacheKey)
-			});
-
 			//Update the manifest entry with the new expiry
-			manifestEntry.Expiry = cacheEntry.Expiry;
+			if (CacheManifest!.TryGetValue(cacheKey, out var manifestEntry))
+			{
+				manifestEntry = manifestEntry with
+				{
+					Expiry = cacheEntry.Expiry
+				};
+			}
+			else
+			{
+				manifestEntry = new(
+					GetFileName(cacheKey!),
+					cacheEntry.Expiry
+				);
+			}
+			CacheManifest[cacheKey] = manifestEntry;
 
 			var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, (name) => new AsyncReaderWriterLock());
 
