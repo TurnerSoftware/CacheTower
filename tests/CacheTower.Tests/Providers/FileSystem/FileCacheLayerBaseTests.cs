@@ -78,9 +78,9 @@ namespace CacheTower.Tests.Providers.FileSystem
 		public async Task NoFileExtension()
 		{
 			var testSerializer = new TestCacheSerializer();
-			await using var cacheLayer = new FileCacheLayer(testSerializer, DirectoryPath, ".test");
+			await using var cacheLayer = new FileCacheLayer(testSerializer, DirectoryPath, null);
 			await cacheLayer.SetAsync("NoFileExtension", new CacheEntry<int>(1, TimeSpan.FromDays(1)));
-
+	
 			var md5String = GetMD5String("NoFileExtension");
 			var expectedFilePath = Path.Combine(DirectoryPath, md5String);
 			Assert.IsTrue(File.Exists(expectedFilePath));
