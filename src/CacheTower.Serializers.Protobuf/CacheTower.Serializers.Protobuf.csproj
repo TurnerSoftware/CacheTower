@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Title>Protobuf Serializer for Cache Tower</Title>
+		<Description>Protobuf cache serialization for Cache Tower</Description>
+		<PackageTags>protobuf;$(PackageBaseTags)</PackageTags>
+		<Authors>James Turner</Authors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="protobuf-net" Version="3.1.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\CacheTower\CacheTower.csproj" />
+	</ItemGroup>
+
+</Project>
