@@ -7,7 +7,7 @@ namespace CacheTower.Providers.FileSystem
 	/// </summary>
 	/// <param name="FileName">The file name that contains the cached data.</param>
 	/// <param name="Expiry">The expiry date of the cached value.</param>
-	public record struct ManifestEntry(string? FileName, DateTime Expiry)
+	public readonly record struct ManifestEntry(string? FileName, DateTime Expiry)
 	{
 		/// <summary>
 		/// The file name that contains the cached data.
