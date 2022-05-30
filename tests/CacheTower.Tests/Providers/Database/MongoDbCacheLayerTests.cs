@@ -11,7 +11,7 @@ using MongoFramework;
 using MongoFramework.Infrastructure.Indexing;
 using Moq;
 
-namespace CacheTower.Tests.Providers.Database.MongoDB
+namespace CacheTower.Tests.Providers.Database
 {
 	[TestClass]
 	public class MongoDbCacheLayerTests : BaseCacheLayerTests

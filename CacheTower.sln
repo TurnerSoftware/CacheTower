@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29326.143
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32519.111
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower", "src\CacheTower\CacheTower.csproj", "{BF3D00C3-F61B-4271-8DC0-6FA5CB3B2B0C}"
 EndProject
@@ -41,6 +41,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.AlternativesBenchmark", "benchmarks\CacheTower.AlternativesBenchmark\CacheTower.AlternativesBenchmark.csproj", "{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{FD0B0385-93AD-4DDF-9FE7-C7325B05B6B0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Serializers.NewtonsoftJson", "src\CacheTower.Serializers.NewtonsoftJson\CacheTower.Serializers.NewtonsoftJson.csproj", "{06C698D6-51AB-4DA5-ABF3-5207115A38B9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Serializers.Protobuf", "src\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj", "{436A6DF0-3DD8-4342-ACC5-EF0B8D5DF9DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -84,6 +88,14 @@ Global
 		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06C698D6-51AB-4DA5-ABF3-5207115A38B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06C698D6-51AB-4DA5-ABF3-5207115A38B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06C698D6-51AB-4DA5-ABF3-5207115A38B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06C698D6-51AB-4DA5-ABF3-5207115A38B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{436A6DF0-3DD8-4342-ACC5-EF0B8D5DF9DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{436A6DF0-3DD8-4342-ACC5-EF0B8D5DF9DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{436A6DF0-3DD8-4342-ACC5-EF0B8D5DF9DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{436A6DF0-3DD8-4342-ACC5-EF0B8D5DF9DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +110,8 @@ Global
 		{3AD1549A-B386-4AAF-A5A8-FB53F6776CFC} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 		{3F2635AA-36AD-4CE3-BD5C-F2301D9351BA} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 		{7830CC14-9FF6-4C56-BBFE-8AE9B6C7AFFA} = {FD0B0385-93AD-4DDF-9FE7-C7325B05B6B0}
+		{06C698D6-51AB-4DA5-ABF3-5207115A38B9} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
+		{436A6DF0-3DD8-4342-ACC5-EF0B8D5DF9DD} = {E261C038-498E-4F5A-B2D7-B79AB36FFEB0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F159337A-B345-49EE-8D58-A72EF1643174}

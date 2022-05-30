@@ -66,7 +66,7 @@ namespace CacheTower
 		/// </summary>
 		/// <param name="value">The value to cache.</param>
 		/// <param name="timeToLive">The amount of time before the cache entry expires.</param>
-		public CacheEntry(T? value, TimeSpan timeToLive) : this(value, DateTimeProvider.Now + timeToLive) { }
+		internal CacheEntry(T? value, TimeSpan timeToLive) : this(value, DateTimeProvider.Now + timeToLive) { }
 		/// <summary>
 		/// Creates a new <see cref="CacheEntry"/> with the given <paramref name="value"/> and <paramref name="expiry"/>.
 		/// </summary>

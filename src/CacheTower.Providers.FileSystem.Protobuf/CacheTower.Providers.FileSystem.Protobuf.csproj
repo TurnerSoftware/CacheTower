@@ -9,10 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="protobuf-net" Version="3.0.73" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj" />
     <ProjectReference Include="..\CacheTower\CacheTower.csproj" />
   </ItemGroup>
 

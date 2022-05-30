@@ -14,71 +14,51 @@ namespace CacheTower.Providers.FileSystem
 	/// This uses a cache manifest file to keep track of the cache entries and their corresponding files.
 	/// The individual cache entries are stored within their own files.
 	/// </summary>
-	/// <typeparam name="TManifest"></typeparam>
-	public abstract class FileCacheLayerBase<TManifest> : ICacheLayer, IAsyncDisposable where TManifest : IManifestEntry, new()
+	public class FileCacheLayer : ICacheLayer, IAsyncDisposable
 	{
 		private bool Disposed = false;
+
+		private ICacheSerializer Serializer { get; }
 		private string DirectoryPath { get; }
 		private string ManifestPath { get; }
-		private string? FileExtension { get; }
 
 		private SemaphoreSlim ManifestLock { get; } = new SemaphoreSlim(1, 1);
 		private bool? IsManifestAvailable { get; set; }
 
 		private HashAlgorithm FileNameHashAlgorithm { get; } = MD5.Create();
 
-		private ConcurrentDictionary<string?, TManifest>? CacheManifest { get; set; }
+		private ConcurrentDictionary<string?, ManifestEntry>? CacheManifest { get; set; }
 		private ConcurrentDictionary<string?, AsyncReaderWriterLock> FileLock { get; }
 
 		/// <summary>
-		/// Initialises the file cache layer with the given <paramref name="directoryPath"/> and <paramref name="fileExtension"/>.
+		/// Initialises the file cache layer with the given <paramref name="directoryPath"/>.
 		/// </summary>
-		/// <param name="directoryPath"></param>
-		/// <param name="fileExtension"></param>
-		protected FileCacheLayerBase(string directoryPath, string? fileExtension)
+		/// <param name="serializer">The serializer to use for the data.</param>
+		/// <param name="directoryPath">The directory to store the cache.</param>
+		public FileCacheLayer(ICacheSerializer serializer, string directoryPath)
 		{
+			Serializer = serializer;
 			DirectoryPath = directoryPath ?? throw new ArgumentNullException(nameof(directoryPath));
-			FileExtension = fileExtension;
-			ManifestPath = Path.Combine(directoryPath, "manifest" + fileExtension);
+			ManifestPath = Path.Combine(directoryPath, "manifest");
 			FileLock = new ConcurrentDictionary<string?, AsyncReaderWriterLock>(StringComparer.Ordinal);
 		}
 
-		/// <summary>
-		/// Provides stream deserialization to <typeparamref name="T"/>.
-		/// </summary>
-		/// <typeparam name="T">The type to deserialize to.</typeparam>
-		/// <param name="stream">The stream to deserialize from.</param>
-		/// <returns></returns>
-		protected abstract T Deserialize<T>(Stream stream);
-
-		/// <summary>
-		/// Provides <typeparamref name="T"/> serialization to a stream.
-		/// </summary>
-		/// <typeparam name="T">The type for <paramref name="value"/> that will be serialized.</typeparam>
-		/// <param name="stream">The stream that the serialization is written to.</param>
-		/// <param name="value">The value to be serialized.</param>
-		protected abstract void Serialize<T>(Stream stream, T value);
-
 		private async Task<T?> DeserializeFileAsync<T>(string path)
 		{
-			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024))
-			using (var memStream = new MemoryStream((int)stream.Length))
-			{
-				await stream.CopyToAsync(memStream);
-				memStream.Seek(0, SeekOrigin.Begin);
-				return Deserialize<T>(memStream);
-			}
+			using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024);
+			using var memStream = new MemoryStream((int)stream.Length);
+			await stream.CopyToAsync(memStream);
+			memStream.Seek(0, SeekOrigin.Begin);
+			return Serializer.Deserialize<T>(memStream);
 		}
 
 		private async Task SerializeFileAsync<T>(string path, T value)
 		{
-			using (var stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, 1024))
-			using (var memStream = new MemoryStream())
-			{
-				Serialize(memStream, value);
-				memStream.Seek(0, SeekOrigin.Begin);
-				await memStream.CopyToAsync(stream);
-			}
+			using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 1024);
+			using var memStream = new MemoryStream();
+			Serializer.Serialize(memStream, value);
+			memStream.Seek(0, SeekOrigin.Begin);
+			await memStream.CopyToAsync(stream);
 		}
 
 		private async Task TryLoadManifestAsync()
@@ -94,7 +74,7 @@ namespace CacheTower.Providers.FileSystem
 					{
 						if (File.Exists(ManifestPath))
 						{
-							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string?, TManifest>>(ManifestPath);
+							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string?, ManifestEntry>>(ManifestPath);
 						}
 						else
 						{
@@ -103,7 +83,7 @@ namespace CacheTower.Providers.FileSystem
 								Directory.CreateDirectory(DirectoryPath);
 							}
 
-							CacheManifest = new ConcurrentDictionary<string?, TManifest>();
+							CacheManifest = new ConcurrentDictionary<string?, ManifestEntry>();
 							await SerializeFileAsync(ManifestPath, CacheManifest);
 						}
 					}
@@ -155,8 +135,6 @@ namespace CacheTower.Providers.FileSystem
 			FileNameHashAlgorithm.TryComputeHash(bytes, hashBytes, out var _);
 #endif
 
-			var fileExtensionLength = FileExtension?.Length ?? 0;
-
 			//Based on byte conversion implementation in BitConverter (but with the dash stripped)
 			//https://github.com/dotnet/coreclr/blob/fbc11ea6afdaa2fe7b9377446d6bb0bd447d5cb5/src/mscorlib/shared/System/BitConverter.cs#L409-L440
 			static char GetHexValue(int i)
@@ -169,7 +147,7 @@ namespace CacheTower.Providers.FileSystem
 				return (char)(i - 10 + 'A');
 			}
 
-			var charArrayLength = 32 + fileExtensionLength;
+			var charArrayLength = 32;
 			var charArrayPtr = stackalloc char[charArrayLength];
 
 			var charPtr = charArrayPtr;
@@ -178,11 +156,6 @@ namespace CacheTower.Providers.FileSystem
 				var hashByte = hashBytes[i];
 				*charPtr++ = GetHexValue(hashByte >> 4);
 				*charPtr++ = GetHexValue(hashByte & 0xF);
-			}
-
-			for (var i = 0; i < fileExtensionLength; i++)
-			{
-				*charPtr++ = FileExtension![i];
 			}
 
 			return new string(charArrayPtr, 0, charArrayLength);
@@ -310,13 +283,22 @@ namespace CacheTower.Providers.FileSystem
 		{
 			await TryLoadManifestAsync();
 
-			var manifestEntry = CacheManifest!.GetOrAdd(cacheKey, (key) => new TManifest
-			{
-				FileName = GetFileName(cacheKey)
-			});
-
 			//Update the manifest entry with the new expiry
-			manifestEntry.Expiry = cacheEntry.Expiry;
+			if (CacheManifest!.TryGetValue(cacheKey, out var manifestEntry))
+			{
+				manifestEntry = manifestEntry with
+				{
+					Expiry = cacheEntry.Expiry
+				};
+			}
+			else
+			{
+				manifestEntry = new(
+					GetFileName(cacheKey!),
+					cacheEntry.Expiry
+				);
+			}
+			CacheManifest[cacheKey] = manifestEntry;
 
 			var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, (name) => new AsyncReaderWriterLock());
 
