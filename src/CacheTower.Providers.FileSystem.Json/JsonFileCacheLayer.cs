@@ -17,6 +17,6 @@ namespace CacheTower.Providers.FileSystem.Json
 		/// Creates a <see cref="JsonFileCacheLayer"/>, using the given <paramref name="directoryPath"/> as the location to store the cache.
 		/// </summary>
 		/// <param name="directoryPath"></param>
-		public JsonFileCacheLayer(string directoryPath) : base(new NewtonsoftJsonCacheSerializer(), directoryPath) { }
+		public JsonFileCacheLayer(string directoryPath) : base(NewtonsoftJsonCacheSerializer.Instance, directoryPath) { }
 	}
 }
