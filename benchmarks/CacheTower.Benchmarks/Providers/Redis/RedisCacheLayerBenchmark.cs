@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using CacheTower.Benchmarks.Utils;
 using CacheTower.Providers.Redis;
-using StackExchange.Redis;
+using CacheTower.Serializers.Protobuf;
 
 namespace CacheTower.Benchmarks.Providers.Redis
 {
@@ -14,7 +10,7 @@ namespace CacheTower.Benchmarks.Providers.Redis
 		[GlobalSetup]
 		public void Setup()
 		{
-			CacheLayerProvider = () => new RedisCacheLayer(RedisHelper.GetConnection());
+			CacheLayerProvider = () => new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance);
 		}
 
 		[IterationSetup]

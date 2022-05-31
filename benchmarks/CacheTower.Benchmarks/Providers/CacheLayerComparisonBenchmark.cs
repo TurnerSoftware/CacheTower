@@ -3,21 +3,44 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using CacheTower.Benchmarks.Utils;
 using CacheTower.Providers.Database.MongoDB;
-using CacheTower.Providers.FileSystem.Json;
-using CacheTower.Providers.FileSystem.Protobuf;
+using CacheTower.Providers.FileSystem;
 using CacheTower.Providers.Memory;
 using CacheTower.Providers.Redis;
+using CacheTower.Serializers.NewtonsoftJson;
+using CacheTower.Serializers.Protobuf;
+using Perfolizer.Horology;
 using ProtoBuf;
 
 namespace CacheTower.Benchmarks.Providers
 {
-	[SimpleJob(RuntimeMoniker.NetCoreApp50), MemoryDiagnoser, Orderer(SummaryOrderPolicy.FastestToSlowest)]
+	[Config(typeof(ConfigSettings))]
 	public class CacheLayerComparisonBenchmark
 	{
+		public class ConfigSettings : ManualConfig
+		{
+			public ConfigSettings()
+			{
+				AddJob(Job.Default.WithRuntime(CoreRuntime.Core50));
+				AddDiagnoser(MemoryDiagnoser.Default);
+
+				WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest));
+
+				AddColumn(StatisticColumn.OperationsPerSecond);
+				SummaryStyle = BenchmarkDotNet.Reports.SummaryStyle.Default
+					.WithSizeUnit(SizeUnit.B)
+					.WithTimeUnit(TimeUnit.Nanosecond);
+			}
+		}
+
+
 		[Params(1, 10)]
 		public int WorkIterations { get; set; }
 
@@ -101,8 +124,8 @@ namespace CacheTower.Benchmarks.Providers
 		[Benchmark]
 		public async Task JsonFileCacheLayer()
 		{
-			var directoryPath = "CacheLayerComparison/JsonFileCacheLayer";
-			await using (var cacheLayer = new JsonFileCacheLayer(directoryPath))
+			var directoryPath = "CacheLayerComparison/NewtonsoftJson";
+			await using (var cacheLayer = new FileCacheLayer(NewtonsoftJsonCacheSerializer.Instance, directoryPath))
 			{
 				await BenchmarkWork(cacheLayer);
 			}
@@ -112,8 +135,8 @@ namespace CacheTower.Benchmarks.Providers
 		[Benchmark]
 		public async Task ProtobufFileCacheLayer()
 		{
-			var directoryPath = "CacheLayerComparison/ProtobufFileCacheLayer";
-			await using (var cacheLayer = new ProtobufFileCacheLayer(directoryPath))
+			var directoryPath = "CacheLayerComparison/Protobuf";
+			await using (var cacheLayer = new FileCacheLayer(ProtobufCacheSerializer.Instance, directoryPath))
 			{
 				await BenchmarkWork(cacheLayer);
 			}
@@ -131,7 +154,7 @@ namespace CacheTower.Benchmarks.Providers
 		[Benchmark]
 		public async Task RedisCacheLayer()
 		{
-			var cacheLayer = new RedisCacheLayer(RedisHelper.GetConnection());
+			var cacheLayer = new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance);
 			await BenchmarkWork(cacheLayer);
 			RedisHelper.FlushDatabase();
 		}

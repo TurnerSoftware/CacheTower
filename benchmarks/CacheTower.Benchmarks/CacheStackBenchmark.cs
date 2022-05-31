@@ -24,7 +24,10 @@ namespace CacheTower.Benchmarks
 				AddJob(Job.Default.WithRuntime(CoreRuntime.Core50).WithMaxIterationCount(50));
 				AddDiagnoser(MemoryDiagnoser.Default);
 
-				SummaryStyle = new BenchmarkDotNet.Reports.SummaryStyle(CultureInfo, true, SizeUnit.B, TimeUnit.Nanosecond);
+				AddColumn(StatisticColumn.OperationsPerSecond);
+				SummaryStyle = BenchmarkDotNet.Reports.SummaryStyle.Default
+					.WithSizeUnit(SizeUnit.B)
+					.WithTimeUnit(TimeUnit.Nanosecond);
 			}
 		}
 

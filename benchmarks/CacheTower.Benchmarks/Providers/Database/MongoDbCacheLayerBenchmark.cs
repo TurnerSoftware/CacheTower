@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using CacheTower.Benchmarks.Utils;
 using CacheTower.Providers.Database.MongoDB;
 using MongoFramework;
 
-namespace CacheTower.Benchmarks.Providers.Database.MongoDB
+namespace CacheTower.Benchmarks.Providers.Database
 {
 	public class MongoDbCacheLayerBenchmark : BaseCacheLayerBenchmark
 	{
