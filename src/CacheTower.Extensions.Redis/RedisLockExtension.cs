@@ -68,7 +68,7 @@ namespace CacheTower.Extensions.Redis
 		/// If it fails to set the key, it waits until notified that the cache is updated, retrieving it from the cache stack and returning the value.
 		/// </remarks>
 		/// <inheritdoc/>
-		public async ValueTask<CacheEntry<T>> WithRefreshAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
+		public async ValueTask<CacheEntry<TValue>> WithRefreshAsync<TValue, TState>(string cacheKey, Func<TState, ValueTask<CacheEntry<TValue>>> asyncValueFactory, TState state, CacheSettings settings)
 		{
 			var lockKey = string.Format(Options.KeyFormat, cacheKey);
 			var hasLock = await Database.StringSetAsync(lockKey, RedisValue.EmptyString, expiry: Options.LockTimeout, when: When.NotExists);
@@ -77,7 +77,7 @@ namespace CacheTower.Extensions.Redis
 			{
 				try
 				{
-					var cacheEntry = await valueProvider();
+					var cacheEntry = await asyncValueFactory(state);
 					return cacheEntry;
 				}
 				finally
@@ -131,7 +131,7 @@ namespace CacheTower.Extensions.Redis
 				});
 
 				//Last minute check to confirm whether waiting is required (in case the notification is missed)
-				var currentEntry = await RegisteredStack!.GetAsync<T>(cacheKey);
+				var currentEntry = await RegisteredStack!.GetAsync<TValue>(cacheKey);
 				if (currentEntry != null && currentEntry.GetStaleDate(settings) > Internal.DateTimeProvider.Now)
 				{
 					UnlockWaitingTasks(cacheKey);
@@ -142,7 +142,7 @@ namespace CacheTower.Extensions.Redis
 				await completionSource.Task;
 
 				//Get the updated value from the cache stack
-				return (await RegisteredStack.GetAsync<T>(cacheKey))!;
+				return (await RegisteredStack.GetAsync<TValue>(cacheKey))!;
 			}
 		}
 

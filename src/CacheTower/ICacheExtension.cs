@@ -73,11 +73,13 @@ namespace CacheTower
 		/// <summary>
 		/// Triggered when the cache entry needs to be refreshed, allowing control over the refreshing behaviour.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TValue"></typeparam>
+		/// <typeparam name="TState"></typeparam>
 		/// <param name="cacheKey">The cache key for the entry that is to be refreshed.</param>
-		/// <param name="valueProvider">A delegate that, when called, will return a refreshed value for the cache entry.</param>
+		/// <param name="asyncValueFactory">A delegate that, when called, will return a refreshed value for the cache entry.</param>
+		/// <param name="state">The state passed to the value factory.</param>
 		/// <param name="settings">The settings supplied for the cache refresh.</param>
 		/// <returns>A cache entry for the given <paramref name="cacheKey"/>.</returns>
-		ValueTask<CacheEntry<T>> WithRefreshAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings);
+		ValueTask<CacheEntry<TValue>> WithRefreshAsync<TValue, TState>(string cacheKey, Func<TState, ValueTask<CacheEntry<TValue>>> asyncValueFactory, TState state, CacheSettings settings);
 	}
 }

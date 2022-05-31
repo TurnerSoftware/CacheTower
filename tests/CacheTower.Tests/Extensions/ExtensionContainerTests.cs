@@ -35,15 +35,15 @@ namespace CacheTower.Tests.Extensions
 
 			var cacheEntry = new CacheEntry<int>(1, TimeSpan.FromDays(1));
 
-			var refreshedValue = await container.WithRefreshAsync("WrapperTestCacheKey", () =>
+			var refreshedValue = await container.WithRefreshAsync<int, object>("WrapperTestCacheKey", _ =>
 			{
 				return new ValueTask<CacheEntry<int>>(cacheEntry);
-			}, new CacheSettings(TimeSpan.FromDays(1)));
+			}, null, new CacheSettings(TimeSpan.FromDays(1)));
 
 			refreshWrapperMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
-			refreshWrapperMock.Verify(e => e.WithRefreshAsync(
+			refreshWrapperMock.Verify(e => e.WithRefreshAsync<int, object>(
 					"WrapperTestCacheKey",
-					It.IsAny<Func<ValueTask<CacheEntry<int>>>>(), new CacheSettings(TimeSpan.FromDays(1))
+					It.IsAny<Func<object, ValueTask<CacheEntry<int>>>>(), null, new CacheSettings(TimeSpan.FromDays(1))
 				),
 				Times.Once
 			);

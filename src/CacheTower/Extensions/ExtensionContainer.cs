@@ -57,15 +57,15 @@ namespace CacheTower.Extensions
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ValueTask<CacheEntry<T>> WithRefreshAsync<T>(string cacheKey, Func<ValueTask<CacheEntry<T>>> valueProvider, CacheSettings settings)
+		public ValueTask<CacheEntry<TValue>> WithRefreshAsync<TValue, TState>(string cacheKey, Func<TState, ValueTask<CacheEntry<TValue>>> asyncValueFactory, TState state, CacheSettings settings)
 		{
 			if (!HasCacheRefreshCallSiteWrapperExtension)
 			{
-				return valueProvider();
+				return asyncValueFactory(state);
 			}
 			else
 			{
-				return CacheRefreshCallSiteWrapperExtension!.WithRefreshAsync(cacheKey, valueProvider, settings);
+				return CacheRefreshCallSiteWrapperExtension!.WithRefreshAsync(cacheKey, asyncValueFactory, state, settings);
 			}
 		}
 

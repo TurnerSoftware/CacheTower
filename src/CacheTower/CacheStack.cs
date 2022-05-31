@@ -272,7 +272,7 @@ namespace CacheTower
 			}
 		}
 
-		private async ValueTask<CacheEntry<T>?> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings, CacheEntryStatus entryStatus)
+		private async ValueTask<CacheEntry<T>?> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> asyncValueFactory, CacheSettings settings, CacheEntryStatus entryStatus)
 		{
 			ThrowIfDisposed();
 
@@ -305,15 +305,16 @@ namespace CacheTower
 						return previousEntry;
 					}
 
-					return await Extensions.WithRefreshAsync(cacheKey, async () =>
+					return await Extensions.WithRefreshAsync(cacheKey, async state =>
 					{
+						var (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey) = state;
 						var oldValue = default(T);
 						if (previousEntry != default)
 						{
 							oldValue = previousEntry.Value;
 						}
 
-						var value = await getter(oldValue!);
+						var value = await asyncValueFactory(oldValue!);
 						var refreshedEntry = new CacheEntry<T>(value, settings.TimeToLive);
 						var cacheUpdateType = entryStatus switch
 						{
@@ -325,7 +326,7 @@ namespace CacheTower
 						UnlockWaitingTasks(cacheKey, refreshedEntry);
 
 						return refreshedEntry;
-					}, settings);
+					}, (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey), settings);
 				}
 				catch (Exception e)
 				{

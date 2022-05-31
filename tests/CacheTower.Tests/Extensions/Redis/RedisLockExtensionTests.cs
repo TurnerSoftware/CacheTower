@@ -47,12 +47,12 @@ namespace CacheTower.Tests.Extensions.Redis
 			var refreshWaiterTask = new TaskCompletionSource<bool>();
 			var lockWaiterTask = new TaskCompletionSource<bool>();
 
-			var refreshTask = extension.WithRefreshAsync("TestLock", async () =>
+			var refreshTask = extension.WithRefreshAsync<int, object>("TestLock", async _ =>
 			{
 				lockWaiterTask.SetResult(true);
 				await refreshWaiterTask.Task;
 				return new CacheEntry<int>(5, TimeSpan.FromDays(1));
-			}, new CacheSettings(TimeSpan.FromHours(3)));
+			}, null, new CacheSettings(TimeSpan.FromHours(3)));
 
 			await lockWaiterTask.Task;
 
@@ -104,8 +104,8 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 
-			await extension.WithRefreshAsync("TestKey",
-				() => new ValueTask<CacheEntry<int>>(cacheEntry), new CacheSettings(TimeSpan.FromDays(1)));
+			await extension.WithRefreshAsync<int, object>("TestKey",
+				_ => new ValueTask<CacheEntry<int>>(cacheEntry), null, new CacheSettings(TimeSpan.FromDays(1)));
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
 			if (!succeedingTask.Equals(completionSource.Task))
@@ -134,11 +134,12 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask = extension.WithRefreshAsync("TestKey",
-					() =>
+			var refreshTask = extension.WithRefreshAsync<int, object>("TestKey",
+					_ =>
 					{
 						return new ValueTask<CacheEntry<int>>(cacheEntry);
 					},
+					null,
 					new CacheSettings(TimeSpan.FromDays(1))
 				).AsTask();
 
@@ -177,21 +178,9 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask1 = extension.WithRefreshAsync("TestKey",
-					() =>
-					{
-						return new ValueTask<CacheEntry<int>>(cacheEntry);
-					},
-					new CacheSettings(TimeSpan.FromDays(1))
-				).AsTask();
+			var refreshTask1 = extension.WithRefreshAsync<int, object>("TestKey", _ => { return new ValueTask<CacheEntry<int>>(cacheEntry); }, null, new CacheSettings(TimeSpan.FromDays(1))).AsTask();
 
-			var refreshTask2 = extension.WithRefreshAsync("TestKey",
-					() =>
-					{
-						return new ValueTask<CacheEntry<int>>(cacheEntry);
-					},
-					new CacheSettings(TimeSpan.FromDays(1))
-				).AsTask();
+			var refreshTask2 = extension.WithRefreshAsync<int, object>("TestKey", _ => { return new ValueTask<CacheEntry<int>>(cacheEntry); }, null, new CacheSettings(TimeSpan.FromDays(1))).AsTask();
 
 			//Delay to allow for Redis check and self-entry into lock
 			await Task.Delay(TimeSpan.FromSeconds(2));
@@ -228,13 +217,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask = extension.WithRefreshAsync("TestKey",
-				() =>
-				{
-					return new ValueTask<CacheEntry<int>>(cacheEntry);
-				},
-				new CacheSettings(TimeSpan.FromDays(1))
-			).AsTask();
+			var refreshTask = extension.WithRefreshAsync<int, object>("TestKey", _ => { return new ValueTask<CacheEntry<int>>(cacheEntry); }, null, new CacheSettings(TimeSpan.FromDays(1))).AsTask();
 
 			//Delay to allow for Redis check and self-entry into lock
 			await Task.Delay(TimeSpan.FromSeconds(1));
@@ -272,13 +255,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask = extension.WithRefreshAsync("TestKey",
-					() =>
-					{
-						return new ValueTask<CacheEntry<int>>(cacheEntry);
-					},
-					new CacheSettings(TimeSpan.FromDays(1))
-				).AsTask();
+			var refreshTask = extension.WithRefreshAsync<int, object>("TestKey", _ => { return new ValueTask<CacheEntry<int>>(cacheEntry); }, null, new CacheSettings(TimeSpan.FromDays(1))).AsTask();
 
 			//Delay to allow for Redis check and self-entry into lock
 			await Task.Delay(TimeSpan.FromSeconds(1));
