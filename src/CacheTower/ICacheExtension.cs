@@ -64,7 +64,7 @@ namespace CacheTower
 	}
 
 	/// <remarks>
-	/// An <see cref="ICacheRefreshCallSiteWrapperExtension"/> allows control over the behavious of refreshing.
+	/// An <see cref="ICacheRefreshCallSiteWrapperExtension"/> allows control over the behaviour of refreshing.
 	/// This interface is used by the <c>RedisLockExtension</c> for providing a distributed lock.
 	/// </remarks>
 	/// <inheritdoc/>
