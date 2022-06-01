@@ -5,7 +5,7 @@ namespace CacheTower
 	/// <summary>
 	/// Cache settings used by a cache stack to evaluate whether a cache entry is stale or expired.
 	/// </summary>
-	public struct CacheSettings
+	public readonly record struct CacheSettings
 	{
 		/// <summary>
 		/// How long till a cache entry is considered expired.
