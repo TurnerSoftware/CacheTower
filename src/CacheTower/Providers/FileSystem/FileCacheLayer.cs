@@ -247,8 +247,18 @@ namespace CacheTower.Providers.FileSystem
 					if (CacheManifest.ContainsKey(cacheKey))
 					{
 						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
-						var value = await DeserializeFileAsync<T>(path);
-						return new CacheEntry<T>(value, manifestEntry.Expiry);
+						if (File.Exists(path))
+						{
+							var value = await DeserializeFileAsync<T>(path);
+							return new CacheEntry<T>(value, manifestEntry.Expiry);
+
+						}
+						else
+						{
+							//Mismatch between manifest and file system - remove from manifest
+							CacheManifest.TryRemove(cacheKey, out _);
+							FileLock.TryRemove(cacheKey, out _);
+						}
 					}
 				}
 			}
