@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CacheTower.Internal;
 using Nito.AsyncEx;
 
 namespace CacheTower.Providers.FileSystem
@@ -14,33 +13,48 @@ namespace CacheTower.Providers.FileSystem
 	/// This uses a cache manifest file to keep track of the cache entries and their corresponding files.
 	/// The individual cache entries are stored within their own files.
 	/// </summary>
-	public class FileCacheLayer : ICacheLayer, IAsyncDisposable
+	public sealed class FileCacheLayer : ICacheLayer, IAsyncDisposable
 	{
 		private bool Disposed = false;
+		private readonly FileCacheLayerOptions Options;
+		private readonly string ManifestPath;
 
-		private ICacheSerializer Serializer { get; }
-		private string DirectoryPath { get; }
-		private string ManifestPath { get; }
+		private readonly CancellationTokenSource ManifestSavingCancellationTokenSource;
+		private readonly Task BackgroundManifestSavingTask;
 
-		private SemaphoreSlim ManifestLock { get; } = new SemaphoreSlim(1, 1);
+		private readonly SemaphoreSlim ManifestLock = new(1, 1);
+
 		private bool? IsManifestAvailable { get; set; }
 
-		private HashAlgorithm FileNameHashAlgorithm { get; } = MD5.Create();
-
 		private ConcurrentDictionary<string?, ManifestEntry>? CacheManifest { get; set; }
-		private ConcurrentDictionary<string?, AsyncReaderWriterLock> FileLock { get; }
+		private readonly ConcurrentDictionary<string?, AsyncReaderWriterLock> FileLock;
 
 		/// <summary>
-		/// Initialises the file cache layer with the given <paramref name="directoryPath"/>.
+		/// Initialises the <see cref="FileCacheLayer"/> with the provided <paramref name="options"/>.
 		/// </summary>
-		/// <param name="serializer">The serializer to use for the data.</param>
-		/// <param name="directoryPath">The directory to store the cache.</param>
-		public FileCacheLayer(ICacheSerializer serializer, string directoryPath)
+		/// <param name="options">Various options that control the behaviour of the <see cref="FileCacheLayer"/>.</param>
+		public FileCacheLayer(FileCacheLayerOptions options)
 		{
-			Serializer = serializer;
-			DirectoryPath = directoryPath ?? throw new ArgumentNullException(nameof(directoryPath));
-			ManifestPath = Path.Combine(directoryPath, "manifest");
+			Options = options;
+			ManifestPath = Path.Combine(options.DirectoryPath, "manifest");
 			FileLock = new ConcurrentDictionary<string?, AsyncReaderWriterLock>(StringComparer.Ordinal);
+
+			ManifestSavingCancellationTokenSource = new();
+			BackgroundManifestSavingTask = BackgroundManifestSaving();
+		}
+
+		private async Task BackgroundManifestSaving()
+		{
+			try
+			{
+				var cancellationToken = ManifestSavingCancellationTokenSource.Token;
+				while (!cancellationToken.IsCancellationRequested)
+				{
+					await Task.Delay(Options.ManifestSaveInterval, cancellationToken);
+					await SaveManifestAsync();
+				}
+			}
+			catch (OperationCanceledException) { }
 		}
 
 		private async Task<T?> DeserializeFileAsync<T>(string path)
@@ -49,14 +63,14 @@ namespace CacheTower.Providers.FileSystem
 			using var memStream = new MemoryStream((int)stream.Length);
 			await stream.CopyToAsync(memStream);
 			memStream.Seek(0, SeekOrigin.Begin);
-			return Serializer.Deserialize<T>(memStream);
+			return Options.Serializer.Deserialize<T>(memStream);
 		}
 
 		private async Task SerializeFileAsync<T>(string path, T value)
 		{
 			using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 1024);
 			using var memStream = new MemoryStream();
-			Serializer.Serialize(memStream, value);
+			Options.Serializer.Serialize(memStream, value);
 			memStream.Seek(0, SeekOrigin.Begin);
 			await memStream.CopyToAsync(stream);
 		}
@@ -78,9 +92,9 @@ namespace CacheTower.Providers.FileSystem
 						}
 						else
 						{
-							if (!Directory.Exists(DirectoryPath))
+							if (!Directory.Exists(Options.DirectoryPath))
 							{
-								Directory.CreateDirectory(DirectoryPath);
+								Directory.CreateDirectory(Options.DirectoryPath);
 							}
 
 							CacheManifest = new ConcurrentDictionary<string?, ManifestEntry>();
@@ -104,9 +118,9 @@ namespace CacheTower.Providers.FileSystem
 			await ManifestLock.WaitAsync();
 			try
 			{
-				if (!Directory.Exists(DirectoryPath))
+				if (!Directory.Exists(Options.DirectoryPath))
 				{
-					Directory.CreateDirectory(DirectoryPath);
+					Directory.CreateDirectory(Options.DirectoryPath);
 				}
 
 				await SerializeFileAsync(ManifestPath, CacheManifest);
@@ -117,56 +131,12 @@ namespace CacheTower.Providers.FileSystem
 			}
 		}
 
-#if NETSTANDARD2_0
-		private unsafe string GetFileName(string cacheKey)
-		{
-			var bytes = Encoding.UTF8.GetBytes(cacheKey);
-			var hashBytes = FileNameHashAlgorithm.ComputeHash(bytes);
-		
-#elif NETSTANDARD2_1
-		private unsafe string GetFileName(ReadOnlySpan<char> cacheKey)
-		{
-			var encoding = Encoding.UTF8;
-			var bytesRequired = encoding.GetByteCount(cacheKey);
-			Span<byte> bytes = stackalloc byte[bytesRequired];
-			encoding.GetBytes(cacheKey, bytes);
-
-			Span<byte> hashBytes = stackalloc byte[16];
-			FileNameHashAlgorithm.TryComputeHash(bytes, hashBytes, out var _);
-#endif
-
-			//Based on byte conversion implementation in BitConverter (but with the dash stripped)
-			//https://github.com/dotnet/coreclr/blob/fbc11ea6afdaa2fe7b9377446d6bb0bd447d5cb5/src/mscorlib/shared/System/BitConverter.cs#L409-L440
-			static char GetHexValue(int i)
-			{
-				if (i < 10)
-				{
-					return (char)(i + '0');
-				}
-
-				return (char)(i - 10 + 'A');
-			}
-
-			var charArrayLength = 32;
-			var charArrayPtr = stackalloc char[charArrayLength];
-
-			var charPtr = charArrayPtr;
-			for (var i = 0; i < 16; i++)
-			{
-				var hashByte = hashBytes[i];
-				*charPtr++ = GetHexValue(hashByte >> 4);
-				*charPtr++ = GetHexValue(hashByte & 0xF);
-			}
-
-			return new string(charArrayPtr, 0, charArrayLength);
-		}
-
 		/// <inheritdoc/>
 		public async ValueTask CleanupAsync()
 		{
 			await TryLoadManifestAsync();
 
-			var currentTime = DateTime.UtcNow;
+			var currentTime = DateTimeProvider.Now;
 			foreach (var cachePair in CacheManifest!)
 			{
 				var manifestEntry = cachePair.Value;
@@ -176,7 +146,7 @@ namespace CacheTower.Providers.FileSystem
 					{
 						using (await lockObj.WriterLockAsync())
 						{
-							var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
+							var path = Path.Combine(Options.DirectoryPath, manifestEntry.FileName);
 							if (File.Exists(path))
 							{
 								File.Delete(path);
@@ -198,7 +168,7 @@ namespace CacheTower.Providers.FileSystem
 				{
 					using (await lockObj.WriterLockAsync())
 					{
-						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
+						var path = Path.Combine(Options.DirectoryPath, manifestEntry.FileName);
 						if (File.Exists(path))
 						{
 							File.Delete(path);
@@ -219,7 +189,7 @@ namespace CacheTower.Providers.FileSystem
 				{
 					using (await lockObj.WriterLockAsync())
 					{
-						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
+						var path = Path.Combine(Options.DirectoryPath, manifestEntry.FileName);
 						if (File.Exists(path))
 						{
 							File.Delete(path);
@@ -246,7 +216,7 @@ namespace CacheTower.Providers.FileSystem
 					//By the time we have the lock, confirm we still have a cache
 					if (CacheManifest.ContainsKey(cacheKey))
 					{
-						var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
+						var path = Path.Combine(Options.DirectoryPath, manifestEntry.FileName);
 						if (File.Exists(path))
 						{
 							var value = await DeserializeFileAsync<T>(path);
@@ -304,7 +274,7 @@ namespace CacheTower.Providers.FileSystem
 			else
 			{
 				manifestEntry = new(
-					GetFileName(cacheKey!),
+					MD5HashUtility.ComputeHash(cacheKey!),
 					cacheEntry.Expiry
 				);
 			}
@@ -314,7 +284,7 @@ namespace CacheTower.Providers.FileSystem
 
 			using (await lockObj.WriterLockAsync())
 			{
-				var path = Path.Combine(DirectoryPath, manifestEntry.FileName);
+				var path = Path.Combine(Options.DirectoryPath, manifestEntry.FileName);
 				await SerializeFileAsync(path, cacheEntry.Value);
 			}
 		}
@@ -330,9 +300,14 @@ namespace CacheTower.Providers.FileSystem
 				return;
 			}
 
+			ManifestSavingCancellationTokenSource.Cancel();
+			if (!BackgroundManifestSavingTask.IsFaulted)
+			{
+				await BackgroundManifestSavingTask;
+			}
 			await SaveManifestAsync();
+
 			ManifestLock.Dispose();
-			FileNameHashAlgorithm.Dispose();
 
 			Disposed = true;
 		}
