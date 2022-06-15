@@ -10,7 +10,7 @@ namespace CacheTower.Benchmarks.Providers.FileSystem
 		public void Setup()
 		{
 			DirectoryPath = "FileCache/Protobuf";
-			CacheLayerProvider = () => new FileCacheLayer(ProtobufCacheSerializer.Instance, DirectoryPath);
+			CacheLayerProvider = () => new FileCacheLayer(new(DirectoryPath, ProtobufCacheSerializer.Instance));
 		}
 	}
 }

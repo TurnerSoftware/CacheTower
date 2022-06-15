@@ -41,7 +41,7 @@ namespace CacheTower.Tests.Providers.FileSystem
 		public async Task CanLoadExistingManifest()
 		{
 			var testSerializer = new TestCacheSerializer();
-			var cacheLayer = new FileCacheLayer(testSerializer, DirectoryPath);
+			var cacheLayer = new FileCacheLayer(new(DirectoryPath, testSerializer));
 			await using (cacheLayer)
 			{
 				//IsAvailableAsync triggers load of manifest which in turn creates it because it doesn't exist
@@ -52,7 +52,7 @@ namespace CacheTower.Tests.Providers.FileSystem
 			Assert.AreEqual(0, testSerializer.DeserializeCount);
 
 			testSerializer = new TestCacheSerializer();
-			cacheLayer = new FileCacheLayer(testSerializer, DirectoryPath);
+			cacheLayer = new FileCacheLayer(new(DirectoryPath, testSerializer));
 			await using (cacheLayer)
 			{
 				Assert.IsTrue(await cacheLayer.IsAvailableAsync("AnyKey"));
@@ -64,48 +64,48 @@ namespace CacheTower.Tests.Providers.FileSystem
 		[TestMethod]
 		public async Task PersistentGetSetCache()
 		{
-			await AssertPersistentGetSetCacheAsync(() => new FileCacheLayer(new NewtonsoftJsonCacheSerializer(), DirectoryPath));
+			await AssertPersistentGetSetCacheAsync(() => new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance)));
 		}
 
 		[TestMethod]
 		public async Task GetSetCache()
 		{
-			await using var cacheLayer = new FileCacheLayer(new NewtonsoftJsonCacheSerializer(), DirectoryPath);
+			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
 			await AssertGetSetCacheAsync(cacheLayer);
 		}
 
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
-			await using var cacheLayer = new FileCacheLayer(new NewtonsoftJsonCacheSerializer(), DirectoryPath);
+			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
 			await AssertCacheAvailabilityAsync(cacheLayer, true);
 		}
 
 		[TestMethod]
 		public async Task EvictFromCache()
 		{
-			await using var cacheLayer = new FileCacheLayer(new NewtonsoftJsonCacheSerializer(), DirectoryPath);
+			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
 			await AssertCacheEvictionAsync(cacheLayer);
 		}
 
 		[TestMethod]
 		public async Task FlushFromCache()
 		{
-			await using var cacheLayer = new FileCacheLayer(new NewtonsoftJsonCacheSerializer(), DirectoryPath);
+			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
 			await AssertCacheFlushAsync(cacheLayer);
 		}
 
 		[TestMethod]
 		public async Task CacheCleanup()
 		{
-			await using var cacheLayer = new FileCacheLayer(new NewtonsoftJsonCacheSerializer(), DirectoryPath);
+			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
 			await AssertCacheCleanupAsync(cacheLayer);
 		}
 
 		[TestMethod]
 		public async Task CachingComplexTypes()
 		{
-			await using var cacheLayer = new FileCacheLayer(new NewtonsoftJsonCacheSerializer(), DirectoryPath);
+			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
 			await AssertComplexTypeCachingAsync(cacheLayer);
 		}
 	}

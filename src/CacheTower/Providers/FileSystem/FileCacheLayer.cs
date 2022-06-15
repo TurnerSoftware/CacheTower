@@ -13,7 +13,7 @@ namespace CacheTower.Providers.FileSystem
 	/// This uses a cache manifest file to keep track of the cache entries and their corresponding files.
 	/// The individual cache entries are stored within their own files.
 	/// </summary>
-	public sealed class FileCacheLayer : ICacheLayer, IAsyncDisposable
+	public class FileCacheLayer : ICacheLayer, IAsyncDisposable
 	{
 		private bool Disposed = false;
 		private readonly FileCacheLayerOptions Options;

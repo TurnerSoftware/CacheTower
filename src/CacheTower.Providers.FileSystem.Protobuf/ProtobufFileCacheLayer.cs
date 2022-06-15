@@ -18,6 +18,6 @@ namespace CacheTower.Providers.FileSystem.Protobuf
 		/// Creates a <see cref="ProtobufFileCacheLayer"/>, using the given <paramref name="directoryPath"/> as the location to store the cache.
 		/// </summary>
 		/// <param name="directoryPath"></param>
-		public ProtobufFileCacheLayer(string directoryPath) : base(ProtobufCacheSerializer.Instance, directoryPath) { }
+		public ProtobufFileCacheLayer(string directoryPath) : base(new FileCacheLayerOptions(directoryPath, ProtobufCacheSerializer.Instance)) { }
 	}
 }
