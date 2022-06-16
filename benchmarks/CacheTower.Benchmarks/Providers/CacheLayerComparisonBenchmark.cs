@@ -125,7 +125,7 @@ namespace CacheTower.Benchmarks.Providers
 		public async Task JsonFileCacheLayer()
 		{
 			var directoryPath = "CacheLayerComparison/NewtonsoftJson";
-			await using (var cacheLayer = new FileCacheLayer(NewtonsoftJsonCacheSerializer.Instance, directoryPath))
+			await using (var cacheLayer = new FileCacheLayer(new FileCacheLayerOptions(directoryPath, NewtonsoftJsonCacheSerializer.Instance)))
 			{
 				await BenchmarkWork(cacheLayer);
 			}
@@ -136,7 +136,7 @@ namespace CacheTower.Benchmarks.Providers
 		public async Task ProtobufFileCacheLayer()
 		{
 			var directoryPath = "CacheLayerComparison/Protobuf";
-			await using (var cacheLayer = new FileCacheLayer(ProtobufCacheSerializer.Instance, directoryPath))
+			await using (var cacheLayer = new FileCacheLayer(new FileCacheLayerOptions(directoryPath, ProtobufCacheSerializer.Instance)))
 			{
 				await BenchmarkWork(cacheLayer);
 			}

@@ -10,7 +10,7 @@ namespace CacheTower.Benchmarks.Providers.FileSystem
 		public void Setup()
 		{
 			DirectoryPath = "FileCache/NewtonsoftJson";
-			CacheLayerProvider = () => new FileCacheLayer(NewtonsoftJsonCacheSerializer.Instance, DirectoryPath);
+			CacheLayerProvider = () => new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
 		}
 	}
 }

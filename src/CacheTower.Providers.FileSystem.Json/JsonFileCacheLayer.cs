@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Text;
-using Newtonsoft.Json;
-using CacheTower.Serializers.NewtonsoftJson;
+﻿using CacheTower.Serializers.NewtonsoftJson;
 using System;
 
 namespace CacheTower.Providers.FileSystem.Json
@@ -17,6 +14,6 @@ namespace CacheTower.Providers.FileSystem.Json
 		/// Creates a <see cref="JsonFileCacheLayer"/>, using the given <paramref name="directoryPath"/> as the location to store the cache.
 		/// </summary>
 		/// <param name="directoryPath"></param>
-		public JsonFileCacheLayer(string directoryPath) : base(NewtonsoftJsonCacheSerializer.Instance, directoryPath) { }
+		public JsonFileCacheLayer(string directoryPath) : base(new FileCacheLayerOptions(directoryPath, NewtonsoftJsonCacheSerializer.Instance)) { }
 	}
 }
