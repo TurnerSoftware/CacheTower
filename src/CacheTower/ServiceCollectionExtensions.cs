@@ -20,19 +20,19 @@ public interface ICacheStackBuilder
 	/// <summary>
 	/// A collection of cache layers the <see cref="CacheStack"/> will use in order of priority.
 	/// </summary>
-	ICollection<ICacheLayer> CacheLayers { get; }
+	IList<ICacheLayer> CacheLayers { get; }
 	/// <summary>
 	/// A collection of the cache extensions the <see cref="CacheStack"/> will use.
 	/// </summary>
-	ICollection<ICacheExtension> Extensions { get; }
+	IList<ICacheExtension> Extensions { get; }
 }
 
 internal sealed class CacheStackBuilder : ICacheStackBuilder
 {
 	/// <inheritdoc/>
-	public ICollection<ICacheLayer> CacheLayers { get; } = new List<ICacheLayer>();
+	public IList<ICacheLayer> CacheLayers { get; } = new List<ICacheLayer>();
 	/// <inheritdoc/>
-	public ICollection<ICacheExtension> Extensions { get; } = new List<ICacheExtension>();
+	public IList<ICacheExtension> Extensions { get; } = new List<ICacheExtension>();
 }
 
 
