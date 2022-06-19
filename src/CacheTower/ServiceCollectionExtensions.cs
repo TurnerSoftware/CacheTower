@@ -37,20 +37,44 @@ internal sealed class CacheStackBuilder : ICacheStackBuilder
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+	private static void ThrowIfInvalidBuilder(ICacheStackBuilder builder)
+	{
+		if (builder.CacheLayers.Count == 0)
+		{
+			throw new InvalidOperationException("No cache layers have been configured");
+		}
+	}
+
+	/// <summary>
+	/// Adds a <see cref="CacheStack"/> to the service collection.
+	/// </summary>
+	/// <param name="services"></param>
+	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
 	public static void AddCacheStack(this IServiceCollection services, Action<ICacheStackBuilder> configureBuilder)
 	{
 		var builder = new CacheStackBuilder();
 		configureBuilder(builder);
+		ThrowIfInvalidBuilder(builder);
 		services.AddSingleton<ICacheStack>(sp => new CacheStack(
 			builder.CacheLayers.ToArray(),
 			builder.Extensions.ToArray()
 		));
 	}
 
+	/// <summary>
+	/// Adds a <see cref="CacheStack{TContext}"/> to the service collection.
+	/// </summary>
+	/// <remarks>
+	/// The <typeparamref name="TContext"/> will be provided by the service collection for every cache refresh.
+	/// </remarks>
+	/// <typeparam name="TContext"></typeparam>
+	/// <param name="services"></param>
+	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
 	public static void AddCacheStack<TContext>(this IServiceCollection services, Action<ICacheStackBuilder> configureBuilder)
 	{
 		var builder = new CacheStackBuilder();
 		configureBuilder(builder);
+		ThrowIfInvalidBuilder(builder);
 		services.AddSingleton<ICacheStack<TContext>>(sp => new CacheStack<TContext>(
 			new ServiceProviderContextActivator(sp),
 			builder.CacheLayers.ToArray(),
@@ -58,10 +82,18 @@ public static class ServiceCollectionExtensions
 		));
 	}
 
+	/// <summary>
+	/// Adds a <see cref="CacheStack{TContext}"/> to the service collection with the specified <paramref name="contextActivator"/>.
+	/// </summary>
+	/// <typeparam name="TContext"></typeparam>
+	/// <param name="services"></param>
+	/// <param name="contextActivator">The activator to instantiate the <typeparamref name="TContext"/> during cache refreshing.</param>
+	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
 	public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheContextActivator contextActivator, Action<ICacheStackBuilder> configureBuilder)
 	{
 		var builder = new CacheStackBuilder();
 		configureBuilder(builder);
+		ThrowIfInvalidBuilder(builder);
 		services.AddSingleton<ICacheStack<TContext>>(sp => new CacheStack<TContext>(
 			contextActivator,
 			builder.CacheLayers.ToArray(),
@@ -69,18 +101,35 @@ public static class ServiceCollectionExtensions
 		));
 	}
 
+	/// <summary>
+	/// Adds a <see cref="MemoryCacheLayer"/> to the <see cref="CacheStack"/>.
+	/// </summary>
+	/// <param name="builder"></param>
+	/// <returns></returns>
 	public static ICacheStackBuilder AddMemoryCacheLayer(this ICacheStackBuilder builder)
 	{
 		builder.CacheLayers.Add(new MemoryCacheLayer());
 		return builder;
 	}
 
+	/// <summary>
+	/// Adds a <see cref="FileCacheLayer"/> to the <see cref="CacheStack"/> with the specified <paramref name="options"/>.
+	/// </summary>
+	/// <param name="builder"></param>
+	/// <param name="options">The <see cref="FileCacheLayer"/> options for configuring directory, serializer and more.</param>
+	/// <returns></returns>
 	public static ICacheStackBuilder AddFileCacheLayer(this ICacheStackBuilder builder, FileCacheLayerOptions options)
 	{
 		builder.CacheLayers.Add(new FileCacheLayer(options));
 		return builder;
 	}
 
+	/// <summary>
+	/// Adds the <see cref="AutoCleanupExtension"/> to the <see cref="CacheStack"/> with the specified <paramref name="frequency"/>.
+	/// </summary>
+	/// <param name="builder"></param>
+	/// <param name="frequency">How frequent the auto-cleanup process is run.</param>
+	/// <returns></returns>
 	public static ICacheStackBuilder WithCleanupFrequency(this ICacheStackBuilder builder, TimeSpan frequency)
 	{
 		builder.Extensions.Add(new AutoCleanupExtension(frequency));
