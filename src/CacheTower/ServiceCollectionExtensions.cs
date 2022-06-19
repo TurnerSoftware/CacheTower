@@ -11,6 +11,10 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// A <see cref="CacheStack"/> builder, allowing the configuration of cache layers and extensions.
 /// </summary>
+/// <remarks>
+/// The order of cache layers added is important - the first layer you add will be the first layer hit for a cache lookup.
+/// For example, if you want a memory cache layer and a file cache layer, add the memory cache layer first.
+/// </remarks>
 public interface ICacheStackBuilder
 {
 	/// <summary>
