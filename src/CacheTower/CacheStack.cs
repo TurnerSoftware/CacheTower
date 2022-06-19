@@ -10,7 +10,7 @@ namespace CacheTower
 	/// <summary>
 	/// A <see cref="CacheStack"/> is the backbone of caching for Cache Tower. This manages coordination between the various cache layers, manages the cache extensions and handles background refreshing.
 	/// </summary>
-	public class CacheStack : ICacheStack, IFlushableCacheStack, IAsyncDisposable
+	public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheStack, IAsyncDisposable
 	{
 		private bool Disposed;
 
@@ -52,8 +52,8 @@ namespace CacheTower
 			}
 		}
 
-		//This is a temporary measure to expose cache layers to the RedisRemoteEvictionExtension
-		internal IReadOnlyList<ICacheLayer> GetCacheLayers()
+		/// <inheritdoc/>
+		public IReadOnlyList<ICacheLayer> GetCacheLayers()
 		{
 			return CacheLayers;
 		}

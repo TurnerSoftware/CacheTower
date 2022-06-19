@@ -87,6 +87,23 @@ namespace CacheTower
 	}
 
 	/// <remarks>
+	/// An <see cref="IExtendableCacheStack"/> exposes an extra method to access the cache layers that make up a cache stack.
+	/// <para>
+	/// This is intentionally exposed as a separate interface in an attempt to prevent developers from directly interfacing with cache layers.
+	/// This interface then is designed for extensions like the <c>RedisRemoteEvictionExtension</c> where access to the cache layers is directly required.
+	/// </para>
+	/// </remarks>
+	/// <inheritdoc/>
+	public interface IExtendableCacheStack : ICacheStack
+	{
+		/// <summary>
+		/// Provides a list of the <see cref="ICacheLayer"/> instances that make up the cache stack.
+		/// </summary>
+		/// <returns></returns>
+		IReadOnlyList<ICacheLayer> GetCacheLayers();
+	}
+
+	/// <remarks>
 	/// An <see cref="ICacheStack{TContext}"/> provides an additional <c>GetOrSetAsync</c> method that passes in a context object.
 	/// This context allows easier access to inject dependencies like database contexts or any other type needed to help generate the item to cache.
 	/// </remarks>

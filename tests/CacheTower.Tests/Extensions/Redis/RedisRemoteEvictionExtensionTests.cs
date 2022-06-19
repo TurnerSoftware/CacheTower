@@ -49,15 +49,15 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var connection = RedisHelper.GetConnection();
 
-			var cacheStackMockOne = new Mock<CacheStack>();
-			var cacheLayerOne = new Mock<ICacheLayer>();
+			var cacheStackMockOne = new Mock<IExtendableCacheStack>();
+			var cacheLayerOne = new Mock<ILocalCacheLayer>();
 			cacheStackMockOne.Setup(c => c.GetCacheLayers())
 				.Returns(new[] { cacheLayerOne.Object });
 			var extensionOne = new RedisRemoteEvictionExtension(connection);
 			extensionOne.Register(cacheStackMockOne.Object);
 
-			var cacheStackMockTwo = new Mock<CacheStack>();
-			var cacheLayerTwo = new Mock<ICacheLayer>();
+			var cacheStackMockTwo = new Mock<IExtendableCacheStack>();
+			var cacheLayerTwo = new Mock<ILocalCacheLayer>();
 			cacheStackMockTwo.Setup(c => c.GetCacheLayers())
 				.Returns(new[] { cacheLayerTwo.Object });
 			var extensionTwo = new RedisRemoteEvictionExtension(connection);
@@ -100,15 +100,15 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var connection = RedisHelper.GetConnection();
 
-			var cacheStackMockOne = new Mock<CacheStack>();
-			var cacheLayerOne = new Mock<ICacheLayer>();
+			var cacheStackMockOne = new Mock<IExtendableCacheStack>();
+			var cacheLayerOne = new Mock<ILocalCacheLayer>();
 			cacheStackMockOne.Setup(c => c.GetCacheLayers())
 				.Returns(new[] { cacheLayerOne.Object });
 			var extensionOne = new RedisRemoteEvictionExtension(connection);
 			extensionOne.Register(cacheStackMockOne.Object);
 
-			var cacheStackMockTwo = new Mock<CacheStack>();
-			var cacheLayerTwo = new Mock<ICacheLayer>();
+			var cacheStackMockTwo = new Mock<IExtendableCacheStack>();
+			var cacheLayerTwo = new Mock<ILocalCacheLayer>();
 			cacheStackMockTwo.Setup(c => c.GetCacheLayers())
 				.Returns(new[] { cacheLayerTwo.Object });
 			var extensionTwo = new RedisRemoteEvictionExtension(connection);
@@ -155,15 +155,15 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var connection = RedisHelper.GetConnection();
 
-			var cacheStackMockOne = new Mock<CacheStack>();
-			var cacheLayerOne = new Mock<ICacheLayer>();
+			var cacheStackMockOne = new Mock<IExtendableCacheStack>();
+			var cacheLayerOne = new Mock<ILocalCacheLayer>();
 			cacheStackMockOne.Setup(c => c.GetCacheLayers())
 				.Returns(new[] { cacheLayerOne.Object });
 			var extensionOne = new RedisRemoteEvictionExtension(connection);
 			extensionOne.Register(cacheStackMockOne.Object);
 
-			var cacheStackMockTwo = new Mock<CacheStack>();
-			var cacheLayerTwo = new Mock<ICacheLayer>();
+			var cacheStackMockTwo = new Mock<IExtendableCacheStack>();
+			var cacheLayerTwo = new Mock<ILocalCacheLayer>();
 			cacheStackMockTwo.Setup(c => c.GetCacheLayers())
 				.Returns(new[] { cacheLayerTwo.Object });
 			var extensionTwo = new RedisRemoteEvictionExtension(connection);
@@ -220,7 +220,7 @@ namespace CacheTower.Tests.Extensions.Redis
 				.Setup(connection => connection.GetSubscriber(It.IsAny<object>()))
 				.Returns(subscriberMock.Object);
 
-			var cacheLayerOne = new Mock<ICacheLayer>();
+			var cacheLayerOne = new Mock<ILocalCacheLayer>();
 			var extensionOne = new RedisRemoteEvictionExtension(connectionMock.Object);
 			var cacheStackOne = new CacheStack(new[] { cacheLayerOne.Object }, new[] { extensionOne });
 

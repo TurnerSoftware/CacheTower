@@ -111,7 +111,7 @@ namespace CacheTower.Extensions.Redis
 
 					if (shouldEvictLocally)
 					{
-						var cacheLayers = ((CacheStack)cacheStack).GetCacheLayers();
+						var cacheLayers = ((IExtendableCacheStack)cacheStack).GetCacheLayers();
 						for (var i = 0; i < cacheLayers.Count; i++)
 						{
 							var cacheLayer = cacheLayers[i];
@@ -135,7 +135,7 @@ namespace CacheTower.Extensions.Redis
 
 					if (shouldFlushLocally)
 					{
-						var cacheLayers = ((CacheStack)cacheStack).GetCacheLayers();
+						var cacheLayers = ((IExtendableCacheStack)cacheStack).GetCacheLayers();
 						for (var i = 0; i < cacheLayers.Count; i++)
 						{
 							var cacheLayer = cacheLayers[i];
