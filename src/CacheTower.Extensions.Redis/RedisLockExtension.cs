@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using StackExchange.Redis;
@@ -92,9 +90,9 @@ namespace CacheTower.Extensions.Redis
 				{
 					var tcs = new TaskCompletionSource<bool>();
 			
-					if (Options.UseBusyLockCheck)
+					if (Options.LockCheckStrategy.UseSpinLock)
 					{
-						_ = TestLock(tcs);
+						_ = TestLock(tcs, Options);
 					}
 					else
 					{
@@ -104,11 +102,11 @@ namespace CacheTower.Extensions.Redis
 
 					return tcs;
 
-					async Task TestLock(TaskCompletionSource<bool> taskCompletionSource)
+					async Task TestLock(TaskCompletionSource<bool> taskCompletionSource, RedisLockOptions options)
 					{
 						var spinAttempt = 0;
-
-						while (spinAttempt <= Options.SpinAttempts && 
+						var maxSpinAttempts = options.LockCheckStrategy.CalculateSpinAttempts(options.LockTimeout);
+						while (spinAttempt <= maxSpinAttempts && 
 						       !taskCompletionSource.Task.IsCanceled && 
 						       !taskCompletionSource.Task.IsCompleted)
 						{
@@ -118,7 +116,7 @@ namespace CacheTower.Extensions.Redis
 
 							if (lockExists)
 							{
-								await Task.Delay(Options.SpinTime);
+								await Task.Delay(options.LockCheckStrategy.SpinTime);
 								continue;
 							}
 

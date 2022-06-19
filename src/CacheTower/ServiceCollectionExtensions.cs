@@ -33,7 +33,7 @@ internal sealed class CacheStackBuilder : ICacheStackBuilder
 
 
 /// <summary>
-/// Microsoft <see cref="IServiceCollection"/> extensions for Cache Tower
+/// Microsoft <see cref="IServiceCollection"/> extensions for Cache Tower.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
