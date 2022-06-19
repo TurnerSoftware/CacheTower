@@ -52,6 +52,12 @@ namespace CacheTower
 			}
 		}
 
+		//This is a temporary measure to expose cache layers to the RedisRemoteEvictionExtension
+		internal IReadOnlyList<ICacheLayer> GetCacheLayers()
+		{
+			return CacheLayers;
+		}
+
 		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{

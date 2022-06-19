@@ -32,4 +32,20 @@ public static class ServiceCollectionExtensions
 		builder.Extensions.Add(new RedisLockExtension(connection, options));
 		return builder;
 	}
+
+	/// <summary>
+	/// Adds the <see cref="RedisRemoteEvictionExtension"/> to the <see cref="CacheStack"/> with the specified <paramref name="connection"/> and <paramref name="channelPrefix"/>.
+	/// </summary>
+	/// <remarks>
+	/// The extension will only evict from cache layers in the <see cref="CacheStack"/> that implement <see cref="ILocalCacheLayer"/>.
+	/// </remarks>
+	/// <param name="builder"></param>
+	/// <param name="connection">The connection to the Redis server.</param>
+	/// <param name="channelPrefix">The channel prefix to use for the pub/sub calls to other <see cref="RedisRemoteEvictionExtension"/> instances.</param>
+	/// <returns></returns>
+	public static ICacheStackBuilder WithRedisRemoteEviction(this ICacheStackBuilder builder, IConnectionMultiplexer connection, string channelPrefix = "CacheTower")
+	{
+		builder.Extensions.Add(new RedisRemoteEvictionExtension(connection, channelPrefix));
+		return builder;
+	}
 }

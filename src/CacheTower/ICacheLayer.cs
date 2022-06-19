@@ -47,4 +47,18 @@ namespace CacheTower
 		/// <returns></returns>
 		ValueTask<bool> IsAvailableAsync(string cacheKey);
 	}
+
+	/// <inheritdoc/>
+	/// <remarks>
+	/// A local cache layer represents a cache not shared with multiple instances of your application.
+	/// For example, an in-memory cache layer would be an example of a local cache layer.
+	/// </remarks>
+	public interface ILocalCacheLayer : ICacheLayer { }
+
+	/// <inheritdoc/>
+	/// <remarks>
+	/// A distributed cache layer represents a cache that is shared with multiple instances of your application.
+	/// For example, a Redis cache layer would be an example of a distributed cache layer.
+	/// </remarks>
+	public interface IDistributedCacheLayer : ICacheLayer { }
 }
