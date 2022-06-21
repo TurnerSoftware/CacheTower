@@ -14,7 +14,7 @@ namespace CacheTower.Providers.Memory
 	/// </para>
 	/// </remarks>
 	/// <inheritdoc cref="ICacheLayer"/>
-	public class MemoryCacheLayer : ICacheLayer
+	public class MemoryCacheLayer : ILocalCacheLayer
 	{
 		private ConcurrentDictionary<string, CacheEntry> Cache { get; } = new ConcurrentDictionary<string, CacheEntry>(StringComparer.Ordinal);
 

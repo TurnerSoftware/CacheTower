@@ -21,44 +21,44 @@ namespace CacheTower.Tests.Providers.Redis
 		[TestMethod]
 		public async Task GetSetCache()
 		{
-			await AssertGetSetCacheAsync(new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance));
+			await AssertGetSetCacheAsync(new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)));
 		}
 
 		[TestMethod]
 		public async Task IsCacheAvailable()
 		{
-			await AssertCacheAvailabilityAsync(new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance), true);
+			await AssertCacheAvailabilityAsync(new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)), true);
 
 			var connectionMock = new Mock<IConnectionMultiplexer>();
 			var databaseMock = new Mock<IDatabase>();
 			connectionMock.Setup(cm => cm.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(databaseMock.Object);
 			databaseMock.Setup(db => db.PingAsync(It.IsAny<CommandFlags>())).Throws<Exception>();
 
-			await AssertCacheAvailabilityAsync(new RedisCacheLayer(connectionMock.Object, ProtobufCacheSerializer.Instance), false);
+			await AssertCacheAvailabilityAsync(new RedisCacheLayer(connectionMock.Object, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)), false);
 		}
 
 		[TestMethod]
 		public async Task EvictFromCache()
 		{
-			await AssertCacheEvictionAsync(new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance));
+			await AssertCacheEvictionAsync(new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)));
 		}
 
 		[TestMethod]
 		public async Task FlushFromCache()
 		{
-			await AssertCacheFlushAsync(new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance));
+			await AssertCacheFlushAsync(new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)));
 		}
 
 		[TestMethod]
 		public async Task CacheCleanup()
 		{
-			await AssertCacheCleanupAsync(new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance));
+			await AssertCacheCleanupAsync(new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)));
 		}
 
 		[TestMethod]
 		public async Task CachingComplexTypes()
 		{
-			await AssertComplexTypeCachingAsync(new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance));
+			await AssertComplexTypeCachingAsync(new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)));
 		}
 	}
 }

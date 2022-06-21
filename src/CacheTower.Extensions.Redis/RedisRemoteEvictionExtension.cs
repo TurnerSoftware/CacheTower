@@ -20,15 +20,13 @@ namespace CacheTower.Extensions.Redis
 		private readonly object LockObj = new object();
 		private HashSet<string> FlaggedEvictions { get; }
 		private bool HasFlushTriggered { get; set; }
-		private ICacheLayer[] EvictFromLayers { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="RedisRemoteEvictionExtension"/>.
 		/// </summary>
 		/// <param name="connection">The primary connection to the Redis instance where the messages will be broadcast and received through.</param>
-		/// <param name="evictFromLayers">The cache layers to either evict or flush when a message is received from Redis.</param>
 		/// <param name="channelPrefix">The channel prefix to use for the Redis communication.</param>
-		public RedisRemoteEvictionExtension(IConnectionMultiplexer connection, ICacheLayer[] evictFromLayers, string channelPrefix = "CacheTower")
+		public RedisRemoteEvictionExtension(IConnectionMultiplexer connection, string channelPrefix = "CacheTower")
 		{
 			if (connection == null)
 			{
@@ -44,7 +42,6 @@ namespace CacheTower.Extensions.Redis
 			FlushChannel = $"{channelPrefix}.RemoteFlush";
 			EvictionChannel = $"{channelPrefix}.RemoteEviction";
 			FlaggedEvictions = new HashSet<string>(StringComparer.Ordinal);
-			EvictFromLayers = evictFromLayers ?? throw new ArgumentNullException(nameof(evictFromLayers));
 		}
 
 		/// <remarks>
@@ -114,9 +111,14 @@ namespace CacheTower.Extensions.Redis
 
 					if (shouldEvictLocally)
 					{
-						for (var i = 0; i < EvictFromLayers.Length; i++)
+						var cacheLayers = ((IExtendableCacheStack)cacheStack).GetCacheLayers();
+						for (var i = 0; i < cacheLayers.Count; i++)
 						{
-							await EvictFromLayers[i].EvictAsync(cacheKey);
+							var cacheLayer = cacheLayers[i];
+							if (cacheLayer is ILocalCacheLayer)
+							{
+								await cacheLayer.EvictAsync(cacheKey);
+							}
 						}
 					}
 				});
@@ -133,9 +135,14 @@ namespace CacheTower.Extensions.Redis
 
 					if (shouldFlushLocally)
 					{
-						for (var i = 0; i < EvictFromLayers.Length; i++)
+						var cacheLayers = ((IExtendableCacheStack)cacheStack).GetCacheLayers();
+						for (var i = 0; i < cacheLayers.Count; i++)
 						{
-							await EvictFromLayers[i].FlushAsync();
+							var cacheLayer = cacheLayers[i];
+							if (cacheLayer is ILocalCacheLayer)
+							{
+								await cacheLayer.FlushAsync();
+							}
 						}
 					}
 				});

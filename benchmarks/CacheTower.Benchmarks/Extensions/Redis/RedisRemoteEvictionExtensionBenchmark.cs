@@ -1,7 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using CacheTower.Benchmarks.Utils;
 using CacheTower.Extensions.Redis;
-using CacheTower.Providers.Memory;
 
 namespace CacheTower.Benchmarks.Extensions.Redis
 {
@@ -11,7 +10,7 @@ namespace CacheTower.Benchmarks.Extensions.Redis
 		{
 			base.SetupBenchmark();
 
-			CacheExtension = new RedisRemoteEvictionExtension(RedisHelper.GetConnection(), new ICacheLayer[] { new MemoryCacheLayer() });
+			CacheExtension = new RedisRemoteEvictionExtension(RedisHelper.GetConnection());
 			RedisHelper.FlushDatabase();
 		}
 

@@ -7,12 +7,11 @@ using StackExchange.Redis;
 namespace CacheTower.Providers.Redis
 {
 	/// <inheritdoc cref="ICacheLayer"/>
-	public class RedisCacheLayer : ICacheLayer
+	public class RedisCacheLayer : IDistributedCacheLayer
 	{
 		private IConnectionMultiplexer Connection { get; }
 		private IDatabaseAsync Database { get; }
-		private int DatabaseIndex { get; }
-		private ICacheSerializer Serializer { get; }
+		private readonly RedisCacheLayerOptions Options;
 
 		/// <summary>
 		/// Creates a new instance of <see cref="RedisCacheLayer"/> with the given <paramref name="connection"/> and <paramref name="databaseIndex"/>.
@@ -24,28 +23,20 @@ namespace CacheTower.Providers.Redis
 		/// If not specified, uses the default database as configured on the <paramref name="connection"/>.
 		/// </param>
 		[Obsolete("Use other constructor. Specifying cache serializers will become the default behaviour going forward.")]
-		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1) : this(connection, new ProtobufCacheSerializer(), databaseIndex)
+		public RedisCacheLayer(IConnectionMultiplexer connection, int databaseIndex = -1) : this(connection, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance, databaseIndex))
 		{
 		}
 
 		/// <summary>
-		/// Creates a new instance of <see cref="RedisCacheLayer"/> with the given <paramref name="connection"/> and <paramref name="databaseIndex"/>.
+		/// Creates a new instance of <see cref="RedisCacheLayer"/> with the given <paramref name="connection"/> and <paramref name="options"/>.
 		/// </summary>
 		/// <param name="connection">The primary connection to Redis where the cache will be stored.</param>
-		/// <param name="serializer">
-		/// Allows you to specify which encoding should be used by providing your own serializer
-		/// If one is not provided, ProtobufCacheSerializer will be used
-		/// </param>
-		/// <param name="databaseIndex">
-		/// The database index to use for Redis.
-		/// If not specified, uses the default database as configured on the <paramref name="connection"/>.
-		/// </param>
-		public RedisCacheLayer(IConnectionMultiplexer connection, ICacheSerializer serializer, int databaseIndex = -1)
+		/// <param name="options">Various options that control the behaviour of the <see cref="RedisCacheLayer"/>.</param>
+		public RedisCacheLayer(IConnectionMultiplexer connection, RedisCacheLayerOptions options)
 		{
 			Connection = connection;
-			Database = connection.GetDatabase(databaseIndex);
-			DatabaseIndex = databaseIndex;
-			Serializer = serializer;
+			Database = connection.GetDatabase(options.DatabaseIndex);
+			Options = options;
 		}
 
 		/// <inheritdoc/>
@@ -74,7 +65,7 @@ namespace CacheTower.Providers.Redis
 			var redisEndpoints = Connection.GetEndPoints();
 			foreach (var endpoint in redisEndpoints)
 			{
-				await Connection.GetServer(endpoint).FlushDatabaseAsync(DatabaseIndex);
+				await Connection.GetServer(endpoint).FlushDatabaseAsync(Options.DatabaseIndex);
 			}
 		}
 
@@ -86,7 +77,7 @@ namespace CacheTower.Providers.Redis
 			{
 				using (var stream = new MemoryStream(redisValue))
 				{
-					return Serializer.Deserialize<CacheEntry<T>>(stream);
+					return Options.Serializer.Deserialize<CacheEntry<T>>(stream);
 				}
 			}
 
@@ -110,7 +101,7 @@ namespace CacheTower.Providers.Redis
 
 			using (var stream = new MemoryStream())
 			{
-				Serializer.Serialize(stream, cacheEntry);
+				Options.Serializer.Serialize(stream, cacheEntry);
 				stream.Seek(0, SeekOrigin.Begin);
 				var redisValue = RedisValue.CreateFrom(stream);
 				await Database.StringSetAsync(cacheKey, redisValue, expiryOffset);

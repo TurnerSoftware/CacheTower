@@ -10,7 +10,7 @@ namespace CacheTower.Benchmarks.Providers.Redis
 		[GlobalSetup]
 		public void Setup()
 		{
-			CacheLayerProvider = () => new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance);
+			CacheLayerProvider = () => new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance));
 		}
 
 		[IterationSetup]

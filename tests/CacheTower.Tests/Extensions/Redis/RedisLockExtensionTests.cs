@@ -20,13 +20,13 @@ namespace CacheTower.Tests.Extensions.Redis
 		[TestMethod, ExpectedException(typeof(ArgumentOutOfRangeException))]
 		public void ThrowForInvalidDatabaseIndex()
 		{
-			new RedisLockExtension(RedisHelper.GetConnection(), new RedisLockOptions(databaseIndex: -10));
+			new RedisLockExtension(RedisHelper.GetConnection(), RedisLockOptions.Default with { DatabaseIndex = -10 });
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public void ThrowForNullChannel()
 		{
-			new RedisLockExtension(RedisHelper.GetConnection(), new RedisLockOptions(redisChannel: null));
+			new RedisLockExtension(RedisHelper.GetConnection(), RedisLockOptions.Default with { RedisChannel = null });
 		}
 
 		[TestMethod, ExpectedException(typeof(InvalidOperationException))]
@@ -43,7 +43,7 @@ namespace CacheTower.Tests.Extensions.Redis
 		{
 			RedisHelper.ResetState();
 
-			var extension = new RedisLockExtension(RedisHelper.GetConnection(), new RedisLockOptions(lockTimeout: TimeSpan.FromDays(1)));
+			var extension = new RedisLockExtension(RedisHelper.GetConnection(), RedisLockOptions.Default with { LockTimeout = TimeSpan.FromDays(1) });
 			var refreshWaiterTask = new TaskCompletionSource<bool>();
 			var lockWaiterTask = new TaskCompletionSource<bool>();
 
@@ -209,7 +209,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisLockExtension(connection, new RedisLockOptions(lockTimeout: TimeSpan.FromSeconds(1)));
+			var extension = new RedisLockExtension(connection, RedisLockOptions.Default with { LockTimeout = TimeSpan.FromSeconds(1) });
 			extension.Register(cacheStackMock.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
@@ -247,7 +247,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			var connection = RedisHelper.GetConnection();
 
 			var cacheStackMock = new Mock<ICacheStack>();
-			var extension = new RedisLockExtension(connection, new RedisLockOptions(spinTime: TimeSpan.FromMilliseconds(50)));
+			var extension = new RedisLockExtension(connection, RedisLockOptions.Default with { LockCheckStrategy = LockCheckStrategy.WithSpinLock(TimeSpan.FromMilliseconds(50)) });
 			extension.Register(cacheStackMock.Object);
 
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));

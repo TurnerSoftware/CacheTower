@@ -47,7 +47,8 @@ These support plans help fund our OSS commitments to provide better software for
 - [Installation](#installation)
 - [Understanding a Multi-Layer Caching System](#understanding-multi-layer-caching)
 - [The Cache Layers of Cache Tower](#official-cache-layers)
-  - [Making Your Own Cache Layer](#custom-cache-layers)
+- [Making Your Own Cache Layer](#custom-cache-layers)
+- [Cache Serializers](#cache-serializers)
 - [Getting Started](#getting-started)
 - [Background Refreshing of Stale Data](#background-refreshing)
   - [Avoiding Disposed Contexts](#avoiding-disposed-contexts)
@@ -156,6 +157,10 @@ Cache Tower has a number of officially supported cache layers that you can use.
 
 > Bundled with Cache Tower
 
+```csharp
+builder.AddMemoryCacheLayer();
+```
+
 Allows for fast, local memory caching.
 The data is kept as a reference in memory and _not serialized_.
 It is strongly recommended to treat the cached instance as immutable.
@@ -164,6 +169,10 @@ Modification of an in-memory cached value won't be updated to other cache layers
 ### FileCacheLayer
 
 > Bundled with Cache Tower
+
+```csharp
+builder.AddFileCacheLayer(new FileCacheLayerOptions("~/", NewtonsoftJsonCacheSerializer.Instance));
+```
 
 Provides a basic file-based caching solution using [your choice of serializer](#cache-serializers).
 It stores each serialized cache item into its own file and uses a singular manifest file to track the status of the cache.
@@ -174,6 +183,10 @@ It stores each serialized cache item into its own file and uses a singular manif
 PM> Install-Package CacheTower.Providers.Database.MongoDB
 ```
 
+```csharp
+builder.AddMongoDbCacheLayer(/* MongoDB Connection */);
+```
+
 Allows caching through a MongoDB server.
 Cache entries are serialized to BSON using `MongoDB.Bson.Serialization.BsonSerializer`.
 
@@ -181,6 +194,10 @@ Cache entries are serialized to BSON using `MongoDB.Bson.Serialization.BsonSeria
 
 ```powershell
 PM> Install-Package CacheTower.Providers.Redis
+```
+
+```csharp
+builder.AddRedisCacheLayer(/* Redis Connection */, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance));
 ```
 
 Allows caching of data in Redis using [your choice of serializer](#cache-serializers).
@@ -223,8 +240,6 @@ public class UserProfile
 Additionally, as the Protobuf format doesn't have a way to represent an empty collection, these will be returned as `null`.
 While this can be inconvienent, using Protobuf ensures high performance and low allocations for serializing.
 
-
-
 ## <a id="custom-cache-layers" /> 🔨 Making Your Own Cache Layer
 
 You can create your own cache layer by implementing [`ICacheLayer`](src/CacheTower/ICacheLayer.cs).
@@ -235,22 +250,17 @@ Cache Stack prevents multiple threads at once calling the value factory, not pre
 
 ## <a id="getting-started" /> ⭐ Getting Started
 
-
 > In this example, `UserContext` is a type added to the service collection.
 It will be retrieved from the service provider every time a cache refresh is required.
 
 Create and configure your `CacheStack`, this is the backbone for Cache Tower.
 
 ```csharp
-services.AddCacheStack<UserContext>(
-	new [] {
-		new MemoryCacheLayer(),
-		new RedisCacheLayer(/* Your Redis Connection */)
-	}, 
-	new [] {
-		new AutoCleanupExtension(TimeSpan.FromMinutes(5))
-	}
-);
+services.AddCacheStack<UserContext>(builder => {
+	builder.AddMemoryCacheLayer()
+		.AddRedisCacheLayer(/* Your Redis Connection */, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance))
+		.WithCleanupFrequency(TimeSpan.FromMinutes(5));
+});
 ```
 
 The cache stack will be injected into constructors that accept `ICacheStack<UserContext>`.
@@ -285,20 +295,28 @@ await cacheStack.GetOrSetAsync<MyCachedType>("my-cache-key", async (oldValue) =>
 In the example above, the cache would expire in 60 minutes time (`timeToLive`).
 However, in 30 minutes, the cache will be considered stale (`staleAfter`).
 
-If this code was run again at least 30 minutes from now but no later than 60 minutes from now, it would perform a background refresh.
-If we call this code again after 60 minutes from now, it will be a cache miss and block the thread till the cache is refreshed.
+### Example Flow of Background Refreshing
 
-### Understanding Cache Time-to-Live and Stale Time
+- You request an item from the cache
+  - No entry is found (cache miss)
+  - Your value factory is called
+  - The value is cached and returned
+- You request the item again later (after the `staleAfter` time but before `timeToLive`)
+  - The non-expired entry is found
+  - It is checked if it is stale (it is)
+  - A background refresh is started
+  - The non-expired (stale) entry is returned
+- You request the item again later (after the background refresh has finished)
+  - The non-expired entry is found
+  - It is checked if it is stale (it isn't)
+  - The non-expired non-stale entry is returned
 
-Say you're caching something for 90 minutes, that would be your `timeToLive`.
-This is the absolute time till the cache entry will expire.
-If you want a 30 minutes "grace" period where data is refreshed in the background, you would set your `staleAfter` to 60 minutes.
+### Picking A Good Stale Time
 
-```
-staleAfter = timeToLive - gracePeriod
-```
+There is no one-size-fits-all `staleAfter` value - it will depend on what you're caching and why.
+That said, a reasonable rule of thumb would be to have a stale time no less than half of the `timeToLive`.
 
-While specific stale times are dependent on what you're caching and why, a reasonable rule of thumb can be to have a stale time no less than half of the time-to-live.
+The shorter you make the `staleAfter` value, the more frequent background refreshing will happen.
 
 ⚠ **Warning: Avoid setting a stale time that is too short!**
 
@@ -326,19 +344,20 @@ await cacheStack.GetOrSetAsync<MyCachedType>("my-cache-key", async (oldValue, co
 The type of `context` is established at the time of configuring the cache stack.
 
 ```csharp
-services.AddCacheStack<MyContext>(new[] { new MemoryCacheLayer() }, new[] { new AutoCleanupExtension(TimeSpan.FromMinutes(5)) });
+services.AddCacheStack<MyContext>(builder => {
+	builder.AddMemoryCacheLayer()
+		.WithCleanupFrequency(TimeSpan.FromMinutes(5));
+});
 ```
 
-The context object is resolved every time there is a cache refresh.
+Cache Tower will resolve the context from the same service collection the `AddCacheStack` call was added to.
+A scope will be created and context resolved every time there is a cache refresh.
+
 You can use this context to hold any of the other objects or properties you need for safe access in a background thread, avoiding the possibility of accessing disposed objects like database connections.
 
-|ℹ Want to specify your own context factory? |
+|ℹ Need a custom context resolving solution? |
 |:-|
-|You can specify your own context factory via the `AddCacheStack` methods on the services collection or via the `CacheStack<TContext>` constructor.<br/><br/><pre lang="csharp">services.AddCacheStack(() => new MyContext(), ... );</pre>|
-
-|ℹ Want to resolve your context via any IoC container? |
-|:-|
-|If you are using complex IoC configurations and require scopes to be controlled. You can inherit from `ICacheContextActivator` and provide this as the context factory. To see a complete example, see [this integration for SimpleInjector](https://github.com/mgoodfellow/CacheTower.ContextActivators.SimpleInjector)|
+|You can specify your own context activator via `AddCacheStack` by implementing a custom `ICacheContextActivator`. To see a complete example, see [this integration for SimpleInjector](https://github.com/mgoodfellow/CacheTower.ContextActivators.SimpleInjector)|
 
 ## <a id="extensions" /> 🏗 Cache Tower Extensions
 
@@ -349,14 +368,23 @@ Some of these extensions rely on third party libraries and software to function 
 
 > Bundled with Cache Tower
 
+```csharp
+builder.WithCleanupFrequency(TimeSpan.FromMinutes(5));
+```
+
 The cache layers themselves, for the most part, don't directly manage the co-ordination of when they need to delete expired data.
 While the `RedisCacheLayer` does handle cache expiration directly via Redis, none of the other official cache layers do.
 Unless you are only using the Redis cache layer, you will be wanting to include this extension in your cache stack.
+
 
 ### Distributed Locking via Redis
 
 ```powershell
 PM> Install-Package CacheTower.Extensions.Redis
+```
+
+```csharp
+builder.WithRedisDistributedLocking(/* Your Redis connection */);
 ```
 
 The `RedisLockExtension` uses Redis as a shared lock between multiple instances of your application.
@@ -368,6 +396,10 @@ If you are only running one web server/instance of your application, you won't n
 
 ```powershell
 PM> Install-Package CacheTower.Extensions.Redis
+```
+
+```csharp
+builder.WithRedisRemoteEviction(/* Your Redis connection */);
 ```
 
 The `RedisRemoteEvictionExtension` extension uses the pub/sub feature of Redis to co-ordinate cache invalidation across multiple instances of your application.

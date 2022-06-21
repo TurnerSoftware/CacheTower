@@ -154,7 +154,7 @@ namespace CacheTower.Benchmarks.Providers
 		[Benchmark]
 		public async Task RedisCacheLayer()
 		{
-			var cacheLayer = new RedisCacheLayer(RedisHelper.GetConnection(), ProtobufCacheSerializer.Instance);
+			var cacheLayer = new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance));
 			await BenchmarkWork(cacheLayer);
 			RedisHelper.FlushDatabase();
 		}

@@ -14,7 +14,7 @@ namespace CacheTower.Providers.Database.MongoDB
 	/// Cache entries are serialized to BSON using <see cref="global::MongoDB.Bson.Serialization.BsonSerializer"/>.
 	/// </remarks>
 	/// <inheritdoc cref="ICacheLayer"/>
-	public class MongoDbCacheLayer : ICacheLayer
+	public class MongoDbCacheLayer : IDistributedCacheLayer
 	{
 		private bool? IsDatabaseAvailable { get; set; }
 
