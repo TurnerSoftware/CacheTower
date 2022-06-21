@@ -215,6 +215,15 @@ PM> Install-Package CacheTower.Serializers.NewtonsoftJson
 
 Uses [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json/) to perform serialization.
 
+
+### SystemTextJsonCacheSerializer
+
+```powershell
+PM> Install-Package CacheTower.Serializers.SystemTextJson
+```
+
+Uses [System.Text.Json](https://www.nuget.org/packages/System.Text.Json) to perform serialization.
+
 ### ProtobufCacheSerializer
 
 ```powershell
