@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Title>Newtonsoft.Json Serializer for Cache Tower</Title>
+		<Description>Newtonsoft.Json cache serialization for Cache Tower</Description>
+		<PackageTags>newtonsoft;json;$(PackageBaseTags)</PackageTags>
+		<Authors>James Turner</Authors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Text.Json" Version="6.0.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\CacheTower\CacheTower.csproj" />
+	</ItemGroup>
+
+</Project>
+
