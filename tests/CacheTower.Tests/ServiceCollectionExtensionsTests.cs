@@ -16,6 +16,23 @@ namespace CacheTower.Tests;
 public class ServiceCollectionExtensionsTests
 {
 	[TestMethod]
+	public void CacheStack_InvalidCacheStackBuilder()
+	{
+		var serviceCollectionMock = new Mock<IServiceCollection>();
+
+		var hasBuilderBeenCalled = false;
+		Assert.ThrowsException<InvalidOperationException>(() =>
+		{
+			serviceCollectionMock.Object.AddCacheStack(builder =>
+			{
+				hasBuilderBeenCalled = true;
+			});
+		});
+
+		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
+	}
+
+	[TestMethod]
 	public void CacheStack_CacheStackBuilder()
 	{
 		var serviceCollectionMock = new Mock<IServiceCollection>();
