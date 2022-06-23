@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using CacheManager.Core;
 using CacheTower.AlternativesBenchmark.Utils;
 using CacheTower.Providers.Redis;
+using CacheTower.Serializers.Protobuf;
 using EasyCaching.Redis;
 using EasyCaching.Serialization.Protobuf;
 using ProtoBuf;
@@ -19,7 +20,7 @@ namespace CacheTower.AlternativesBenchmark
 
 		public CacheAlternatives_Redis_Benchmark()
 		{
-			CacheTower = new CacheStack(new[] { new RedisCacheLayer(RedisHelper.GetConnection()) }, Array.Empty<ICacheExtension>());
+			CacheTower = new CacheStack(new[] { new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
 			CacheManager = CacheFactory.Build<ProtobufCacheItem>(b =>
 			{
 				b.WithRedisConfiguration("redisLocal", "localhost:6379,ssl=false");

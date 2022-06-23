@@ -3,8 +3,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using CacheTower.Providers.FileSystem.Json;
-using CacheTower.Providers.FileSystem.Protobuf;
+using CacheTower.Providers.FileSystem;
+using CacheTower.Serializers.NewtonsoftJson;
+using CacheTower.Serializers.Protobuf;
+using CacheTower.Serializers.SystemTextJson;
 using EasyCaching.Disk;
 
 namespace CacheTower.AlternativesBenchmark
@@ -13,17 +15,19 @@ namespace CacheTower.AlternativesBenchmark
 	{
 		private const string DirectoryPath = "CacheAlternatives/FileCache";
 
-		private readonly CacheStack CacheTowerJson;
+		private readonly CacheStack CacheTowerNewtonsoftJson;
+		private readonly CacheStack CacheTowerSystemTextJson;
 		private readonly CacheStack CacheTowerProtobuf;
 		private DefaultDiskCachingProvider EasyCaching;
 
 		public CacheAlternatives_File_Benchmark()
 		{
-			CacheTowerJson = new CacheStack(new[] { new JsonFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>());
-			CacheTowerProtobuf = new CacheStack(new[] { new ProtobufFileCacheLayer(DirectoryPath) }, Array.Empty<ICacheExtension>());
+			CacheTowerNewtonsoftJson = new CacheStack(new[] { new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
+			CacheTowerSystemTextJson = new CacheStack(new[] { new FileCacheLayer(new(DirectoryPath, SystemTextJsonCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
+			CacheTowerProtobuf = new CacheStack(new[] { new FileCacheLayer(new(DirectoryPath, ProtobufCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
 		}
 
-		private void CleanupFileSystem()
+		private static void CleanupFileSystem()
 		{
 			var attempts = 0;
 			while (attempts < 5)
@@ -61,16 +65,25 @@ namespace CacheTower.AlternativesBenchmark
 		}
 
 		[Benchmark(Baseline = true)]
-		public async Task<string> CacheTower_JsonFileCacheLayer()
+		public async Task<string> CacheTower_FileCacheLayer_NewtonsoftJson()
 		{
-			return await CacheTowerJson.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
+			return await CacheTowerNewtonsoftJson.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
 			{
 				return Task.FromResult("Hello World");
 			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
 		}
 
 		[Benchmark]
-		public async Task<string> CacheTower_ProtobufFileCacheLayer()
+		public async Task<string> CacheTower_FileCacheLayer_SystemTextJson()
+		{
+			return await CacheTowerSystemTextJson.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
+			{
+				return Task.FromResult("Hello World");
+			}, new CacheSettings(TimeSpan.FromDays(1), TimeSpan.FromDays(1)));
+		}
+
+		[Benchmark]
+		public async Task<string> CacheTower_FileCacheLayer_Protobuf()
 		{
 			return await CacheTowerProtobuf.GetOrSetAsync<string>("GetOrSet_TestKey", (old) =>
 			{
