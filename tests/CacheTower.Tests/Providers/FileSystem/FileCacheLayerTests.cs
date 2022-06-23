@@ -1,7 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using CacheTower.Providers.FileSystem;
 using CacheTower.Serializers.NewtonsoftJson;
+using CacheTower.Serializers.Protobuf;
+using CacheTower.Serializers.SystemTextJson;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CacheTower.Tests.Providers.FileSystem
@@ -67,11 +72,40 @@ namespace CacheTower.Tests.Providers.FileSystem
 			await AssertPersistentGetSetCacheAsync(() => new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance)));
 		}
 
-		[TestMethod]
-		public async Task GetSetCache()
+		public static IEnumerable<object[]> GetTestSerializers()
 		{
-			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
+			yield return new object[] { NewtonsoftJsonCacheSerializer.Instance };
+			yield return new object[] { SystemTextJsonCacheSerializer.Instance };
+			yield return new object[] { ProtobufCacheSerializer.Instance };
+		}
+
+		public static string GetSerializerName(MethodInfo _, object[] values)
+		{
+			return values[0].GetType().Name;
+		}
+
+		[DataTestMethod]
+		[DynamicData(nameof(GetTestSerializers), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetSerializerName))]
+		public async Task GetSetCache(ICacheSerializer cacheSerializer)
+		{
+			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, cacheSerializer));
 			await AssertGetSetCacheAsync(cacheLayer);
+		}
+
+		[TestMethod]
+		public async Task JsonUpgradeTest()
+		{
+			{
+				await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
+				await cacheLayer.SetAsync("Test", new CacheEntry<BasicTypeCaching_TypeOne>(new BasicTypeCaching_TypeOne { ExampleString = "JsonUpgradeTest" }, TimeSpan.FromDays(1)));
+			}
+
+			File.WriteAllText(Path.Combine(DirectoryPath, "0CBC6611F5540BD0809A388DC95A615B"), @"{""Value"":{""ExampleString"":""JsonUpgradeTest""}}");
+
+			{
+				await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
+				var result = await cacheLayer.GetAsync<BasicTypeCaching_TypeOne>("Test");
+			}
 		}
 
 		[TestMethod]
@@ -102,10 +136,11 @@ namespace CacheTower.Tests.Providers.FileSystem
 			await AssertCacheCleanupAsync(cacheLayer);
 		}
 
-		[TestMethod]
-		public async Task CachingComplexTypes()
+		[DataTestMethod]
+		[DynamicData(nameof(GetTestSerializers), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetSerializerName))]
+		public async Task CachingComplexTypes(ICacheSerializer cacheSerializer)
 		{
-			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance));
+			await using var cacheLayer = new FileCacheLayer(new(DirectoryPath, cacheSerializer));
 			await AssertComplexTypeCachingAsync(cacheLayer);
 		}
 	}

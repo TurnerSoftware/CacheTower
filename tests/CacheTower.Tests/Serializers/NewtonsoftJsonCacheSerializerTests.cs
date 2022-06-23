@@ -13,9 +13,15 @@ namespace CacheTower.Tests.Serializers
 		}
 
 		[TestMethod]
-		public void AssertManifestSerialization()
+		public void ManifestSerialization()
 		{
-			AssertCacheEntrySerialization(NewtonsoftJsonCacheSerializer.Instance);
+			AssertManifestSerialization(NewtonsoftJsonCacheSerializer.Instance);
+		}
+
+		[TestMethod]
+		public void CustomTypeSerialization()
+		{
+			AssertCustomTypeSerialization(NewtonsoftJsonCacheSerializer.Instance);
 		}
 	}
 }

@@ -39,5 +39,10 @@ namespace CacheTower.Tests.Serializers
 			};
 			AssertRoundtripSerialization(serializer, manifest);
 		}
+
+		protected static void AssertCustomTypeSerialization(TSerializer serializer)
+		{
+			AssertRoundtripSerialization(serializer, new ComplexTypeCaching_TypeOne());
+		}
 	}
 }

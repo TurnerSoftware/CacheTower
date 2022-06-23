@@ -3,85 +3,103 @@ using System.Collections.Generic;
 using System.Linq;
 using ProtoBuf;
 
-namespace CacheTower.Tests
+namespace CacheTower.Tests;
+
+internal static class SequenceComparison
 {
-	[ProtoContract]
-	public class ComplexTypeCaching_TypeOne : IEquatable<ComplexTypeCaching_TypeOne>
+	public static bool Compare<T>(IEnumerable<T> x, IEnumerable<T> y)
 	{
-		[ProtoMember(1)]
-		public int ExampleNumber { get; set; }
-		[ProtoMember(2)]
-		public string ExampleString { get; set; }
-		[ProtoMember(3)]
-		public List<int> ListOfNumbers { get; set; }
-
-		public bool Equals(ComplexTypeCaching_TypeOne other)
+		if (x is not null && y is not null)
 		{
-			if (other == null)
-			{
-				return false;
-			}
-
-			return ExampleNumber == other.ExampleNumber &&
-				ExampleString == other.ExampleString &&
-				ListOfNumbers.SequenceEqual(other.ListOfNumbers);
+			return x.SequenceEqual(y);
 		}
+		return x is null && y is null;
+	}
+}
 
-		public override bool Equals(object obj)
+[ProtoContract]
+public record BasicTypeCaching_TypeOne
+{
+	[ProtoMember(1)]
+	public string ExampleString { get; set; }
+}
+
+[ProtoContract]
+public class ComplexTypeCaching_TypeOne : IEquatable<ComplexTypeCaching_TypeOne>
+{
+	[ProtoMember(1)]
+	public int ExampleNumber { get; set; }
+	[ProtoMember(2)]
+	public string ExampleString { get; set; }
+	[ProtoMember(3)]
+	public List<int> ListOfNumbers { get; set; }
+
+	public bool Equals(ComplexTypeCaching_TypeOne other)
+	{
+		if (other == null)
 		{
-			if (obj is ComplexTypeCaching_TypeOne complexType)
-			{
-				return Equals(complexType);
-			}
-
 			return false;
 		}
 
-		public override int GetHashCode()
-		{
-			return ExampleNumber.GetHashCode() ^
-				ExampleString.GetHashCode() ^
-				ListOfNumbers.GetHashCode();
-		}
+		return ExampleNumber == other.ExampleNumber &&
+			ExampleString == other.ExampleString &&
+			SequenceComparison.Compare(ListOfNumbers, other.ListOfNumbers);
 	}
 
-	[ProtoContract]
-	public class ComplexTypeCaching_TypeTwo : IEquatable<ComplexTypeCaching_TypeTwo>
+	public override bool Equals(object obj)
 	{
-		[ProtoMember(1)]
-		public string ExampleString { get; set; }
-		[ProtoMember(2)]
-		public ComplexTypeCaching_TypeOne[] ArrayOfObjects { get; set; }
-		[ProtoMember(3)]
-		public Dictionary<string, int> DictionaryOfNumbers { get; set; }
-
-		public bool Equals(ComplexTypeCaching_TypeTwo other)
+		if (obj is ComplexTypeCaching_TypeOne complexType)
 		{
-			if (other == null)
-			{
-				return false;
-			}
-
-			return ExampleString == other.ExampleString &&
-				ArrayOfObjects.SequenceEqual(other.ArrayOfObjects) &&
-				DictionaryOfNumbers.SequenceEqual(other.DictionaryOfNumbers);
+			return Equals(complexType);
 		}
 
-		public override bool Equals(object obj)
-		{
-			if (obj is ComplexTypeCaching_TypeTwo complexType)
-			{
-				return Equals(complexType);
-			}
+		return false;
+	}
 
+	public override int GetHashCode()
+	{
+		return ExampleNumber.GetHashCode() ^
+			ExampleString.GetHashCode() ^
+			ListOfNumbers.GetHashCode();
+	}
+}
+
+[ProtoContract]
+public class ComplexTypeCaching_TypeTwo : IEquatable<ComplexTypeCaching_TypeTwo>
+{
+	[ProtoMember(1)]
+	public string ExampleString { get; set; }
+	[ProtoMember(2)]
+	public ComplexTypeCaching_TypeOne[] ArrayOfObjects { get; set; }
+	[ProtoMember(3)]
+	public Dictionary<string, int> DictionaryOfNumbers { get; set; }
+
+	public bool Equals(ComplexTypeCaching_TypeTwo other)
+	{
+		if (other == null)
+		{
 			return false;
 		}
 
-		public override int GetHashCode()
+		return ExampleString == other.ExampleString &&
+			SequenceComparison.Compare(ArrayOfObjects, other.ArrayOfObjects) &&
+			SequenceComparison.Compare(DictionaryOfNumbers, other.DictionaryOfNumbers);
+	}
+
+	public override bool Equals(object obj)
+	{
+		if (obj is ComplexTypeCaching_TypeTwo complexType)
 		{
-			return ExampleString.GetHashCode() ^
-				ArrayOfObjects.GetHashCode() ^
-				DictionaryOfNumbers.GetHashCode();
+			return Equals(complexType);
 		}
+
+		return false;
+	}
+
+	public override int GetHashCode()
+	{
+		return ExampleString.GetHashCode() ^
+			ArrayOfObjects.GetHashCode() ^
+			DictionaryOfNumbers.GetHashCode();
 	}
 }

@@ -13,9 +13,15 @@ namespace CacheTower.Tests.Serializers
 		}
 
 		[TestMethod]
-		public void AssertManifestSerialization()
+		public void ManifestSerialization()
 		{
-			AssertCacheEntrySerialization(ProtobufCacheSerializer.Instance);
+			AssertManifestSerialization(ProtobufCacheSerializer.Instance);
+		}
+
+		[TestMethod]
+		public void CustomTypeSerialization()
+		{
+			AssertCustomTypeSerialization(ProtobufCacheSerializer.Instance);
 		}
 	}
 }
