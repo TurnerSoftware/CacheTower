@@ -10,12 +10,12 @@ public class SystemTextJsonCacheSerializer : ICacheSerializer
 {
 	private readonly JsonSerializerOptions? options;
 
-	private SystemTextJsonCacheSerializer() { }
-
 	/// <summary>
 	/// An existing instance of <see cref="SystemTextJsonCacheSerializer"/>.
 	/// </summary>
 	public static SystemTextJsonCacheSerializer Instance { get; } = new();
+
+	private SystemTextJsonCacheSerializer() { }
 
 	/// <summary>
 	/// Creates a new instance of <see cref="SystemTextJsonCacheSerializer"/> with the specified <paramref name="options"/>.
