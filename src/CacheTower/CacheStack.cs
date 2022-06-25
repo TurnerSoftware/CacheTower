@@ -238,8 +238,6 @@ namespace CacheTower
 
 		private async ValueTask BackPopulateCacheAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			ThrowIfDisposed();
-
 			if (KeyLock.AcquireLock(cacheKey))
 			{
 				try
@@ -262,8 +260,6 @@ namespace CacheTower
 
 		private async ValueTask<CacheEntry<T>?> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> asyncValueFactory, CacheSettings settings, CacheEntryStatus entryStatus)
 		{
-			ThrowIfDisposed();
-
 			if (KeyLock.AcquireLock(cacheKey))
 			{
 				try
