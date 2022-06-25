@@ -9,12 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+    <PackageReference Include="StackExchange.Redis" Version="2.6.45" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj" />
     <ProjectReference Include="..\CacheTower\CacheTower.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+    <PackageReference Update="TurnerSoftware.BuildVersioning" Version="0.4.0" />
   </ItemGroup>
 
 </Project>

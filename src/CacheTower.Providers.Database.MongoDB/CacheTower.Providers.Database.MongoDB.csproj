@@ -9,11 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoFramework" Version="0.23.2" />
+    <PackageReference Include="MongoFramework" Version="0.27.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CacheTower\CacheTower.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+    <PackageReference Update="TurnerSoftware.BuildVersioning" Version="0.4.0" />
   </ItemGroup>
 
 </Project>
