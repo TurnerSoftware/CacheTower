@@ -265,11 +265,11 @@ It will be retrieved from the service provider every time a cache refresh is req
 Create and configure your `CacheStack`, this is the backbone for Cache Tower.
 
 ```csharp
-services.AddCacheStack<UserContext>(builder => {
-	builder.AddMemoryCacheLayer()
-		.AddRedisCacheLayer(/* Your Redis Connection */, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance))
-		.WithCleanupFrequency(TimeSpan.FromMinutes(5));
-});
+services.AddCacheStack<UserContext>(builder => builder
+	.AddMemoryCacheLayer()
+	.AddRedisCacheLayer(/* Your Redis Connection */, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance))
+	.WithCleanupFrequency(TimeSpan.FromMinutes(5))
+);
 ```
 
 The cache stack will be injected into constructors that accept `ICacheStack<UserContext>`.
@@ -353,10 +353,10 @@ await cacheStack.GetOrSetAsync<MyCachedType>("my-cache-key", async (oldValue, co
 The type of `context` is established at the time of configuring the cache stack.
 
 ```csharp
-services.AddCacheStack<MyContext>(builder => {
-	builder.AddMemoryCacheLayer()
-		.WithCleanupFrequency(TimeSpan.FromMinutes(5));
-});
+services.AddCacheStack<MyContext>(builder => builder
+	.AddMemoryCacheLayer()
+	.WithCleanupFrequency(TimeSpan.FromMinutes(5))
+);
 ```
 
 Cache Tower will resolve the context from the same service collection the `AddCacheStack` call was added to.
