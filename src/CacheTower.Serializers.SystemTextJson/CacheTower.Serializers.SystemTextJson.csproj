@@ -2,9 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Title>Newtonsoft.Json Serializer for Cache Tower</Title>
-		<Description>Newtonsoft.Json cache serialization for Cache Tower</Description>
-		<PackageTags>newtonsoft;json;$(PackageBaseTags)</PackageTags>
+		<Title>System.Text.Json Serializer for Cache Tower</Title>
+		<Description>System.Text.Json cache serialization for Cache Tower</Description>
+		<PackageTags>system.text.json;json;$(PackageBaseTags)</PackageTags>
 		<Authors>James Turner</Authors>
 	</PropertyGroup>
 
