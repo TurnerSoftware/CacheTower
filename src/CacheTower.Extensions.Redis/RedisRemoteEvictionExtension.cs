@@ -101,7 +101,12 @@ namespace CacheTower.Extensions.Redis
 			Subscriber.Subscribe(EvictionChannel)
 				.OnMessage(async (channelMessage) =>
 				{
-					string cacheKey = channelMessage.Message;
+					if (channelMessage.Message.IsNull)
+					{
+						return;
+					}
+
+					string cacheKey = channelMessage.Message!;
 
 					var shouldEvictLocally = false;
 					lock (LockObj)

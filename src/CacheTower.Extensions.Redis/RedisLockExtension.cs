@@ -46,7 +46,13 @@ namespace CacheTower.Extensions.Redis
 
 			LockedOnKeyRefresh = new ConcurrentDictionary<string, TaskCompletionSource<bool>>(StringComparer.Ordinal);
 
-			Subscriber.Subscribe(options.RedisChannel, (channel, value) => UnlockWaitingTasks(value));
+			Subscriber.Subscribe(options.RedisChannel, (channel, value) =>
+			{
+				if (!value.IsNull)
+				{
+					UnlockWaitingTasks(value!);
+				}
+			});
 		}
 
 		/// <inheritdoc/>
