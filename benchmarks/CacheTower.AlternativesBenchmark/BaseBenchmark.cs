@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
@@ -11,30 +8,28 @@ using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Validators;
 
-namespace CacheTower.AlternativesBenchmark
+namespace CacheTower.AlternativesBenchmark;
+
+[Config(typeof(Config))]
+public abstract class BaseBenchmark
 {
-	[Config(typeof(Config))]
-	public abstract class BaseBenchmark
+	public class Config : ManualConfig
 	{
-		public class Config : ManualConfig
+		public Config()
 		{
-			public Config()
-			{
-				AddLogger(ConsoleLogger.Default);
+			AddLogger(ConsoleLogger.Default);
 
-				AddDiagnoser(MemoryDiagnoser.Default);
-				AddColumn(StatisticColumn.OperationsPerSecond);
-				AddColumnProvider(DefaultColumnProviders.Instance);
+			AddDiagnoser(MemoryDiagnoser.Default);
+			AddColumn(StatisticColumn.OperationsPerSecond);
+			AddColumnProvider(DefaultColumnProviders.Instance);
 
-				WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest));
+			WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest));
 
-				AddValidator(JitOptimizationsValidator.FailOnError);
+			AddValidator(JitOptimizationsValidator.FailOnError);
 
-				AddJob(Job.Default
-					.WithRuntime(CoreRuntime.Core50)
-					.WithMaxIterationCount(200));
-
-			}
+			AddJob(Job.Default
+				.WithRuntime(CoreRuntime.Core60)
+				.WithMaxIterationCount(200));
 		}
 	}
 }
