@@ -22,8 +22,8 @@ namespace CacheTower.Tests.Providers.Database
 			await MongoDbHelper.DropDatabaseAsync();
 		}
 
-		[AssemblyCleanup]
-		public static async Task AssemblyCleanup()
+		[TestCleanup]
+		public async Task Cleanup()
 		{
 			await MongoDbHelper.DropDatabaseAsync();
 		}
