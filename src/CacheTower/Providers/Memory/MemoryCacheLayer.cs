@@ -16,7 +16,7 @@ namespace CacheTower.Providers.Memory
 	/// <inheritdoc cref="ICacheLayer"/>
 	public class MemoryCacheLayer : ILocalCacheLayer
 	{
-		private ConcurrentDictionary<string, CacheEntry> Cache { get; } = new ConcurrentDictionary<string, CacheEntry>(StringComparer.Ordinal);
+		private readonly ConcurrentDictionary<string, CacheEntry> Cache = new(StringComparer.Ordinal);
 
 		/// <inheritdoc/>
 		public ValueTask CleanupAsync()

@@ -24,9 +24,9 @@ namespace CacheTower.Providers.FileSystem
 
 		private readonly SemaphoreSlim ManifestLock = new(1, 1);
 
-		private bool? IsManifestAvailable { get; set; }
+		private bool? IsManifestAvailable;
 
-		private ConcurrentDictionary<string?, ManifestEntry>? CacheManifest { get; set; }
+		private ConcurrentDictionary<string?, ManifestEntry>? CacheManifest;
 		private readonly ConcurrentDictionary<string?, AsyncReaderWriterLock> FileLock;
 
 		/// <summary>

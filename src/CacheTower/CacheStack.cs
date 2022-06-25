@@ -14,11 +14,9 @@ namespace CacheTower
 	{
 		private bool Disposed;
 
-		private Dictionary<string, TaskCompletionSource<CacheEntry>?> WaitingKeyRefresh { get; }
-
-		private ICacheLayer[] CacheLayers { get; }
-
-		private ExtensionContainer Extensions { get; }
+		private readonly Dictionary<string, TaskCompletionSource<CacheEntry>?> WaitingKeyRefresh;
+		private readonly ICacheLayer[] CacheLayers;
+		private readonly ExtensionContainer Extensions;
 
 		/// <summary>
 		/// Creates a new <see cref="CacheStack"/> with the given <paramref name="cacheLayers"/> and <paramref name="extensions"/>.

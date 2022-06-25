@@ -9,11 +9,11 @@ namespace CacheTower.Extensions
 	{
 		private bool Disposed;
 
-		private bool HasCacheRefreshCallSiteWrapperExtension { get; }
-		private ICacheRefreshCallSiteWrapperExtension? CacheRefreshCallSiteWrapperExtension { get; }
-		private bool HasCacheChangeExtensions { get; }
-		private ICacheChangeExtension[] CacheChangeExtensions { get; }
-		private ICacheExtension[] AllExtensions { get; }
+		private readonly bool HasCacheRefreshCallSiteWrapperExtension;
+		private readonly ICacheRefreshCallSiteWrapperExtension? CacheRefreshCallSiteWrapperExtension;
+		private readonly bool HasCacheChangeExtensions;
+		private readonly ICacheChangeExtension[] CacheChangeExtensions;
+		private readonly ICacheExtension[] AllExtensions;
 
 		public ExtensionContainer(ICacheExtension[] extensions)
 		{
