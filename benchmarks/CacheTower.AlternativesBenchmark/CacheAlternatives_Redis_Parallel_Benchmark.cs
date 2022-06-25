@@ -8,6 +8,7 @@ using CacheTower.Providers.Redis;
 using CacheTower.Serializers.Protobuf;
 using EasyCaching.Redis;
 using EasyCaching.Serialization.Protobuf;
+using Microsoft.Extensions.Logging;
 using ProtoBuf;
 
 namespace CacheTower.AlternativesBenchmark
@@ -41,7 +42,8 @@ namespace CacheTower.AlternativesBenchmark
 			EasyCaching = new DefaultRedisCachingProvider("EasyCaching", 
 				new[] { new RedisDatabaseProvider("EasyCaching", easyCachingRedisOptions) }, 
 				new[] { new DefaultProtobufSerializer("EasyCaching") }, 
-				easyCachingRedisOptions
+				easyCachingRedisOptions,
+				(ILoggerFactory)null
 			);
 			IntelligentCache = new IntelligentHack.IntelligentCache.RedisCache(RedisHelper.GetConnection(), string.Empty);
 		}

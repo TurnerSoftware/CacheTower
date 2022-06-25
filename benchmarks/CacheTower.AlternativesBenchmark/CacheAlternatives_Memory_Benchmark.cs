@@ -5,6 +5,7 @@ using CacheManager.Core;
 using CacheTower.Providers.Memory;
 using EasyCaching.InMemory;
 using LazyCache;
+using Microsoft.Extensions.Logging;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace CacheTower.AlternativesBenchmark
@@ -28,7 +29,8 @@ namespace CacheTower.AlternativesBenchmark
 			EasyCaching = new DefaultInMemoryCachingProvider(
 				"EasyCaching",
 				new[] { new InMemoryCaching("EasyCaching", new InMemoryCachingOptions()) },
-				new InMemoryOptions()
+				new InMemoryOptions(),
+				(ILoggerFactory)null
 			);
 			LazyCache = new CachingService();
 			FusionCache = new FusionCache(new FusionCacheOptions());

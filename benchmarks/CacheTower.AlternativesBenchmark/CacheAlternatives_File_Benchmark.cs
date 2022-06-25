@@ -8,6 +8,7 @@ using CacheTower.Serializers.NewtonsoftJson;
 using CacheTower.Serializers.Protobuf;
 using CacheTower.Serializers.SystemTextJson;
 using EasyCaching.Disk;
+using Microsoft.Extensions.Logging;
 
 namespace CacheTower.AlternativesBenchmark
 {
@@ -61,7 +62,7 @@ namespace CacheTower.AlternativesBenchmark
 				{
 					BasePath = DirectoryPath
 				}
-			});
+			}, (ILoggerFactory)null);
 		}
 
 		[Benchmark(Baseline = true)]

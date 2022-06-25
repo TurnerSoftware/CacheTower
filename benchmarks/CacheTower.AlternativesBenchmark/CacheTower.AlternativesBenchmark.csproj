@@ -7,18 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
     <PackageReference Include="CacheManager.Core" Version="1.2.0" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" Version="1.2.0" />
     <PackageReference Include="CacheManager.Serialization.ProtoBuf" Version="1.2.0" />
     <PackageReference Include="CacheManager.StackExchange.Redis" Version="1.2.0" />
-    <PackageReference Include="EasyCaching.Disk" Version="1.2.0" />
-    <PackageReference Include="EasyCaching.InMemory" Version="1.2.0" />
-    <PackageReference Include="EasyCaching.Redis" Version="1.2.0" />
-    <PackageReference Include="EasyCaching.Serialization.Protobuf" Version="1.2.0" />
+    <PackageReference Include="EasyCaching.Disk" Version="1.6.0" />
+    <PackageReference Include="EasyCaching.InMemory" Version="1.6.0" />
+    <PackageReference Include="EasyCaching.Redis" Version="1.6.0" />
+    <PackageReference Include="EasyCaching.Serialization.Protobuf" Version="1.6.0" />
     <PackageReference Include="IntelligentHack.IntelligentCache" Version="3.0.2" />
-    <PackageReference Include="LazyCache" Version="2.1.2" />
-    <PackageReference Include="ZiggyCreatures.FusionCache" Version="0.1.1" />
+    <PackageReference Include="LazyCache" Version="2.4.0" />
+    <PackageReference Include="ZiggyCreatures.FusionCache" Version="0.10.0" />
   </ItemGroup>
 
   <ItemGroup>
