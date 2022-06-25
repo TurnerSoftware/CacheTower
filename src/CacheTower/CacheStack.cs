@@ -44,8 +44,10 @@ namespace CacheTower
 		{
 			if (Disposed)
 			{
-				throw new ObjectDisposedException("CacheStack is disposed");
+				ThrowDisposedException();
 			}
+
+			static void ThrowDisposedException() => throw new ObjectDisposedException(nameof(CacheStack));
 		}
 
 		/// <inheritdoc/>
