@@ -422,8 +422,7 @@ Across a number of benchmarks against other caching solutions, Cache Tower perfo
 Where Cache Tower makes up in speed, it may lack a variety of features common amongst other caching solutions.
 It is important to weigh both the feature set and performance when deciding on a caching solution.
 
-For internal benchmarks between cache layers, see: [Performance Figures & Cache Layer Comparisons](/docs/Performance.md).<br>
-For comparisons between alternative caching libraries, see: [Comparisons to Cache Tower Alternatives](/docs/Comparison.md).
+[Performance Comparisons to Cache Tower Alternatives](/docs/Comparison.md)
 
 ## <a id="advanced-usage" /> 🧪 Advanced Usage
 
