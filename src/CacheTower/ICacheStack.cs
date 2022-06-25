@@ -57,14 +57,14 @@ namespace CacheTower
 		ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey);
 		/// <summary>
 		/// Attempts to retrieve the value for the given <paramref name="cacheKey"/>.
-		/// When unavailable, will fallback to use <paramref name="getter"/> to generate the value, storing it in the cache.
+		/// When unavailable, will fallback to use <paramref name="valueFactory"/> to generate the value, storing it in the cache.
 		/// </summary>
 		/// <typeparam name="T">The type of value in the cache entry.</typeparam>
 		/// <param name="cacheKey">The cache entry's key.</param>
-		/// <param name="getter">The value generator when no cache entry is available.</param>
+		/// <param name="valueFactory">The value factory called when no cache entry is available.</param>
 		/// <param name="settings">Cache control settings.</param>
 		/// <returns>The item from the cache that corresponds to the given <paramref name="cacheKey"/>.</returns>
-		ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings);
+		ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> valueFactory, CacheSettings settings);
 	}
 
 	/// <remarks>
@@ -115,6 +115,6 @@ namespace CacheTower
 		/// Additionally provides access to a context object during refreshing, allowing easier access to inject dependencies.
 		/// </remarks>
 		/// <inheritdoc cref="ICacheStack.GetOrSetAsync{T}(string, Func{T, Task{T}}, CacheSettings)"/>
-		ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, TContext, Task<T>> getter, CacheSettings settings);
+		ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, TContext, Task<T>> valueFactory, CacheSettings settings);
 	}
 }

@@ -191,7 +191,7 @@ namespace CacheTower
 		}
 
 		/// <inheritdoc/>
-		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> getter, CacheSettings settings)
+		public async ValueTask<T> GetOrSetAsync<T>(string cacheKey, Func<T, Task<T>> valueFactory, CacheSettings settings)
 		{
 			ThrowIfDisposed();
 
@@ -200,9 +200,9 @@ namespace CacheTower
 				throw new ArgumentNullException(nameof(cacheKey));
 			}
 
-			if (getter == null)
+			if (valueFactory == null)
 			{
-				throw new ArgumentNullException(nameof(getter));
+				throw new ArgumentNullException(nameof(valueFactory));
 			}
 
 			var currentTime = DateTimeProvider.Now;
@@ -215,7 +215,7 @@ namespace CacheTower
 					if (settings.StaleAfter.HasValue && cacheEntry.GetStaleDate(settings) < currentTime)
 					{
 						//If the cache entry is stale, refresh the value in the background
-						_ = RefreshValueAsync(cacheKey, getter, settings, CacheEntryStatus.Stale);
+						_ = RefreshValueAsync(cacheKey, valueFactory, settings, CacheEntryStatus.Stale);
 					}
 					else if (cacheEntryPoint.LayerIndex > 0)
 					{
@@ -228,13 +228,13 @@ namespace CacheTower
 				else
 				{
 					//Refresh the value in the current thread because we only have expired data (we never return expired data)
-					return (await RefreshValueAsync(cacheKey, getter, settings, CacheEntryStatus.Expired))!.Value!;
+					return (await RefreshValueAsync(cacheKey, valueFactory, settings, CacheEntryStatus.Expired))!.Value!;
 				}
 			}
 			else
 			{
 				//Refresh the value in the current thread because we have no existing data
-				return (await RefreshValueAsync(cacheKey, getter, settings, CacheEntryStatus.Miss))!.Value!;
+				return (await RefreshValueAsync(cacheKey, valueFactory, settings, CacheEntryStatus.Miss))!.Value!;
 			}
 		}
 
