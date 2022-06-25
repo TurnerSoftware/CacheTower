@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using CacheTower.Internal;
 
 namespace CacheTower.Providers.Memory
 {
@@ -21,7 +22,7 @@ namespace CacheTower.Providers.Memory
 		/// <inheritdoc/>
 		public ValueTask CleanupAsync()
 		{
-			var currentTime = DateTime.UtcNow;
+			var currentTime = DateTimeProvider.Now;
 
 			foreach (var cachePair in Cache)
 			{
