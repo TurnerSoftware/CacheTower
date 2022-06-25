@@ -14,7 +14,7 @@ namespace CacheTower
 	{
 		private bool Disposed;
 
-		private readonly Dictionary<string, TaskCompletionSource<CacheEntry>?> WaitingKeyRefresh;
+		private readonly CacheEntryKeyLock KeyLock = new();
 		private readonly ICacheLayer[] CacheLayers;
 		private readonly ExtensionContainer Extensions;
 
@@ -34,8 +34,6 @@ namespace CacheTower
 
 			Extensions = new ExtensionContainer(extensions);
 			Extensions.Register(this);
-
-			WaitingKeyRefresh = new Dictionary<string, TaskCompletionSource<CacheEntry>?>(StringComparer.Ordinal);
 		}
 
 		/// <summary>
@@ -242,21 +240,7 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			var hasLock = false;
-			lock (WaitingKeyRefresh)
-			{
-#if NETSTANDARD2_0
-				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
-				if (hasLock)
-				{
-					WaitingKeyRefresh[cacheKey] = null;
-				}
-#elif NETSTANDARD2_1
-				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, null);
-#endif
-			}
-
-			if (hasLock)
+			if (KeyLock.AcquireLock(cacheKey))
 			{
 				try
 				{
@@ -271,7 +255,7 @@ namespace CacheTower
 				}
 				finally
 				{
-					UnlockWaitingTasks(cacheKey, cacheEntry);
+					KeyLock.ReleaseLock(cacheKey, cacheEntry);
 				}
 			}
 		}
@@ -280,21 +264,7 @@ namespace CacheTower
 		{
 			ThrowIfDisposed();
 
-			var hasLock = false;
-			lock (WaitingKeyRefresh)
-			{
-#if NETSTANDARD2_0
-				hasLock = !WaitingKeyRefresh.ContainsKey(cacheKey);
-				if (hasLock)
-				{
-					WaitingKeyRefresh[cacheKey] = null;
-				}
-#elif NETSTANDARD2_1
-				hasLock = WaitingKeyRefresh.TryAdd(cacheKey, null);
-#endif
-			}
-
-			if (hasLock)
+			if (KeyLock.AcquireLock(cacheKey))
 			{
 				try
 				{
@@ -305,7 +275,7 @@ namespace CacheTower
 						//If we are told to refresh because one doesn't and we find one, we return the existing value, ignoring the refresh.
 						//This can happen due to the race condition of getting the values out of the cache.
 						//We can only do any of this because we have the local lock.
-						UnlockWaitingTasks(cacheKey, previousEntry);
+						KeyLock.ReleaseLock(cacheKey, previousEntry);
 						return previousEntry;
 					}
 
@@ -327,68 +297,32 @@ namespace CacheTower
 						};
 						await InternalSetAsync(cacheKey, refreshedEntry, cacheUpdateType);
 
-						UnlockWaitingTasks(cacheKey, refreshedEntry);
+						KeyLock.ReleaseLock(cacheKey, refreshedEntry);
 
 						return refreshedEntry;
 					}, (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey), settings);
 				}
 				catch (Exception e)
 				{
-					UnlockWaitingTasks(cacheKey, e);
+					KeyLock.ReleaseLock(cacheKey, e);
 					throw;
 				}
 			}
 			else if (entryStatus != CacheEntryStatus.Stale)
 			{
-				TaskCompletionSource<CacheEntry>? completionSource;
-
-				lock (WaitingKeyRefresh)
-				{
-					if (!WaitingKeyRefresh.TryGetValue(cacheKey, out completionSource) || completionSource == null)
-					{
-						completionSource = new TaskCompletionSource<CacheEntry>();
-						WaitingKeyRefresh[cacheKey] = completionSource;
-					}
-				}
-
 				//Last minute check to confirm whether waiting is required
 				var currentEntry = await GetAsync<T>(cacheKey);
 				if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTimeProvider.Now)
 				{
-					UnlockWaitingTasks(cacheKey, currentEntry);
+					KeyLock.ReleaseLock(cacheKey, currentEntry);
 					return currentEntry;
 				}
 
 				//Lock until we are notified to be unlocked
-				var result = await completionSource.Task;
-				return result as CacheEntry<T>;
+				return await KeyLock.WaitAsync(cacheKey) as CacheEntry<T>;
 			}
 
 			return default;
-		}
-
-		private void UnlockWaitingTasks(string cacheKey, CacheEntry cacheEntry)
-		{
-			lock (WaitingKeyRefresh)
-			{
-				if (WaitingKeyRefresh.TryGetValue(cacheKey, out var completionSource))
-				{
-					WaitingKeyRefresh.Remove(cacheKey);
-					completionSource?.TrySetResult(cacheEntry);
-				}
-			}
-		}
-
-		private void UnlockWaitingTasks(string cacheKey, Exception exception)
-		{
-			lock (WaitingKeyRefresh)
-			{
-				if (WaitingKeyRefresh.TryGetValue(cacheKey, out var completionSource))
-				{
-					WaitingKeyRefresh.Remove(cacheKey);
-					completionSource?.SetException(exception);
-				}
-			}
 		}
 
 		/// <summary>
