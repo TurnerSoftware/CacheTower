@@ -116,5 +116,5 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: 'ubuntu-latest'
-      - name: 'Upload NuGet package and symbols'
+      - name: 'Upload NuGet package'
         run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}

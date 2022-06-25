@@ -1,32 +1,31 @@
 <Project>
 
-  <PropertyGroup>
-    <Company>Turner Software</Company>
+	<PropertyGroup>
+		<Company>Turner Software</Company>
 
-    <PackageId>$(AssemblyName)</PackageId>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageProjectUrl>https://github.com/TurnerSoftware/CacheTower</PackageProjectUrl>
-    <PackageBaseTags>caching;cache;multi-layer</PackageBaseTags>
+		<PackageId>$(AssemblyName)</PackageId>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageProjectUrl>https://github.com/TurnerSoftware/CacheTower</PackageProjectUrl>
+		<PackageBaseTags>caching;cache;multi-layer</PackageBaseTags>
 
-    <!-- SourceLink Support -->
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<!-- SourceLink Support -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<DebugType>embedded</DebugType>
 
-    <LangVersion>Latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="TurnerSoftware.BuildVersioning" Version="0.3.0" PrivateAssets="All" />
-  </ItemGroup>
+		<LangVersion>Latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+		<PackageReference Include="TurnerSoftware.BuildVersioning" Version="0.3.0" PrivateAssets="All" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\images\$(PackageIcon)" Pack="true" PackagePath="/" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\images\$(PackageIcon)" Pack="true" PackagePath="/" />
+	</ItemGroup>
 
 </Project>
