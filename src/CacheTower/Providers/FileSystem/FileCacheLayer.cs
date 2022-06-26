@@ -210,7 +210,7 @@ namespace CacheTower.Providers.FileSystem
 
 			if (CacheManifest!.TryGetValue(cacheKey, out var manifestEntry))
 			{
-				var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, (name) => new AsyncReaderWriterLock());
+				var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, static (name) => new AsyncReaderWriterLock());
 				using (await lockObj.ReaderLockAsync())
 				{
 					//By the time we have the lock, confirm we still have a cache
@@ -280,7 +280,7 @@ namespace CacheTower.Providers.FileSystem
 			}
 			CacheManifest[cacheKey] = manifestEntry;
 
-			var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, (name) => new AsyncReaderWriterLock());
+			var lockObj = FileLock.GetOrAdd(manifestEntry.FileName, static (name) => new AsyncReaderWriterLock());
 
 			using (await lockObj.WriterLockAsync())
 			{
