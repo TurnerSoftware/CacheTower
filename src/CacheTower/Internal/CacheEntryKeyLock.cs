@@ -7,7 +7,7 @@ namespace CacheTower.Internal;
 
 internal readonly struct CacheEntryKeyLock
 {
-	private readonly Dictionary<string, TaskCompletionSource<CacheEntry>?> keyLocks = new(StringComparer.Ordinal);
+	private readonly Dictionary<string, TaskCompletionSource<ICacheEntry>?> keyLocks = new(StringComparer.Ordinal);
 
 	public CacheEntryKeyLock() { }
 
@@ -28,15 +28,15 @@ internal readonly struct CacheEntryKeyLock
 		}
 	}
 
-	public Task<CacheEntry> WaitAsync(string cacheKey)
+	public Task<ICacheEntry> WaitAsync(string cacheKey)
 	{
-		TaskCompletionSource<CacheEntry>? completionSource;
+		TaskCompletionSource<ICacheEntry>? completionSource;
 
 		lock (keyLocks)
 		{
 			if (!keyLocks.TryGetValue(cacheKey, out completionSource) || completionSource == null)
 			{
-				completionSource = new TaskCompletionSource<CacheEntry>();
+				completionSource = new TaskCompletionSource<ICacheEntry>();
 				keyLocks[cacheKey] = completionSource;
 			}
 		}
@@ -45,7 +45,7 @@ internal readonly struct CacheEntryKeyLock
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private bool TryRemove(string cacheKey, out TaskCompletionSource<CacheEntry>? completionSource)
+	private bool TryRemove(string cacheKey, out TaskCompletionSource<ICacheEntry>? completionSource)
 	{
 		lock (keyLocks)
 		{
@@ -62,7 +62,7 @@ internal readonly struct CacheEntryKeyLock
 		}
 	}
 
-	public void ReleaseLock(string cacheKey, CacheEntry cacheEntry)
+	public void ReleaseLock(string cacheKey, ICacheEntry cacheEntry)
 	{
 		if (TryRemove(cacheKey, out var completionSource))
 		{

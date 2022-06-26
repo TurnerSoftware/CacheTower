@@ -34,7 +34,7 @@ namespace CacheTower.Serializers.Protobuf
 		{
 			static SerializerConfig()
 			{
-				if (typeof(T).IsSubclassOf(typeof(CacheEntry)))
+				if (typeof(ICacheEntry).IsAssignableFrom(typeof(T)))
 				{
 					RuntimeTypeModel.Default.Add(typeof(T))
 						.Add(1, nameof(CacheEntry<object>.Expiry))
