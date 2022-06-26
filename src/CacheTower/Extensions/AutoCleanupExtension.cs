@@ -20,9 +20,8 @@ namespace CacheTower.Extensions
 		/// </summary>
 		public TimeSpan Frequency { get; }
 
-		private Task? BackgroundTask { get; set; }
-
-		private CancellationTokenSource TokenSource { get; }
+		private Task? BackgroundTask;
+		private readonly CancellationTokenSource TokenSource;
 
 		/// <summary>
 		/// Creates a new <see cref="AutoCleanupExtension"/> with the given <paramref name="frequency"/>.
@@ -37,7 +36,7 @@ namespace CacheTower.Extensions
 			}
 
 			Frequency = frequency;
-			TokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			TokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, default);
 		}
 
 		/// <inheritdoc/>
@@ -63,9 +62,7 @@ namespace CacheTower.Extensions
 					await cacheStack.CleanupAsync();
 				}
 			}
-			catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-			{
-			}
+			catch (OperationCanceledException) { }
 		}
 
 		/// <summary>
@@ -76,7 +73,7 @@ namespace CacheTower.Extensions
 		{
 			TokenSource.Cancel();
 
-			if (BackgroundTask is not null)
+			if (BackgroundTask is not null && !BackgroundTask.IsFaulted)
 			{
 				await BackgroundTask;
 			}
