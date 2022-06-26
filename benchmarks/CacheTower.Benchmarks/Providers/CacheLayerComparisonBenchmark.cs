@@ -28,7 +28,7 @@ namespace CacheTower.Benchmarks.Providers
 		{
 			public ConfigSettings()
 			{
-				AddJob(Job.Default.WithRuntime(CoreRuntime.Core50));
+				AddJob(Job.Default.WithRuntime(CoreRuntime.Core60));
 				AddDiagnoser(MemoryDiagnoser.Default);
 
 				WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest));

@@ -38,12 +38,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup dotnet 3.1
+    - name: Setup dotnet SDK
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: |
           3.1.x
-          5.0.x
           6.0.x
     - name: Install dependencies
       run: dotnet restore

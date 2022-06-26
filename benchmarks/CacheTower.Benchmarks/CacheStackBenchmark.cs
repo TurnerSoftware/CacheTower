@@ -21,7 +21,7 @@ namespace CacheTower.Benchmarks
 		{
 			public ConfigSettings()
 			{
-				AddJob(Job.Default.WithRuntime(CoreRuntime.Core50).WithMaxIterationCount(50));
+				AddJob(Job.Default.WithRuntime(CoreRuntime.Core60).WithMaxIterationCount(50));
 				AddDiagnoser(MemoryDiagnoser.Default);
 
 				AddColumn(StatisticColumn.OperationsPerSecond);
