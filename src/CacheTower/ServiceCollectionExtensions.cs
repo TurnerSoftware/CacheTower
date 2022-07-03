@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using CacheTower;
 using CacheTower.Extensions;
@@ -73,6 +74,7 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <inheritdoc cref="AddCacheStack(IServiceCollection, Action{IServiceProvider, ICacheStackBuilder})"/>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void AddCacheStack(this IServiceCollection services, Action<ICacheStackBuilder> configureBuilder)
 	{
 		services.AddCacheStack((serviceProvider, builder) => configureBuilder(builder));
@@ -108,6 +110,7 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <inheritdoc cref="AddCacheStack{TContext}(IServiceCollection, Action{IServiceProvider, ICacheStackBuilder})"/>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void AddCacheStack<TContext>(this IServiceCollection services, Action<ICacheStackBuilder> configureBuilder)
 	{
 		services.AddCacheStack<TContext>((provider, builder) => configureBuilder(builder));
@@ -147,6 +150,7 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <inheritdoc cref="AddCacheStack{TContext}(IServiceCollection, ICacheContextActivator, Action{IServiceProvider, ICacheStackBuilder})"/>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheContextActivator contextActivator, Action<ICacheStackBuilder> configureBuilder)
 	{
 		services.AddCacheStack<TContext>(contextActivator, (provider, builder) => configureBuilder(builder));
