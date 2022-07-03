@@ -29,12 +29,36 @@ public interface ICacheStackBuilder
 	IList<ICacheExtension> Extensions { get; }
 }
 
-internal sealed class CacheStackBuilder : ICacheStackBuilder
+/// <inheritdoc/>
+/// <typeparam name="TContext">The type of context that is passed during the cache entry generation process.</typeparam>
+public interface ICacheStackBuilder<TContext> : ICacheStackBuilder
+{
+	/// <summary>
+	/// The activator that is used to resolve <typeparamref name="TContext"/> for the cache entry generation process.
+	/// </summary>
+	/// <remarks>
+	/// The default activator uses the current service collection as a means to instantiate <typeparamref name="TContext"/>.
+	/// </remarks>
+	public ICacheContextActivator CacheContextActivator { get; set; }
+}
+
+internal class CacheStackBuilder : ICacheStackBuilder
 {
 	/// <inheritdoc/>
 	public IList<ICacheLayer> CacheLayers { get; } = new List<ICacheLayer>();
 	/// <inheritdoc/>
 	public IList<ICacheExtension> Extensions { get; } = new List<ICacheExtension>();
+}
+
+internal sealed class CacheStackBuilder<TContext> : CacheStackBuilder, ICacheStackBuilder<TContext>
+{
+	/// <inheritdoc/>
+	public ICacheContextActivator CacheContextActivator { get; set; }
+
+	public CacheStackBuilder(ICacheContextActivator cacheContextActivator)
+	{
+		CacheContextActivator = cacheContextActivator;
+	}
 }
 
 /// <summary>
@@ -61,13 +85,13 @@ public static class ServiceCollectionExtensions
 		);
 	}
 
-	private static ICacheStack<TContext> BuildCacheStack<TContext>(IServiceProvider provider, ICacheContextActivator contextActivator, Action<IServiceProvider, ICacheStackBuilder> configureBuilder)
+	private static ICacheStack<TContext> BuildCacheStack<TContext>(IServiceProvider provider, Action<IServiceProvider, ICacheStackBuilder<TContext>> configureBuilder)
 	{
-		var builder = new CacheStackBuilder();
+		var builder = new CacheStackBuilder<TContext>(new ServiceProviderContextActivator(provider));
 		configureBuilder(provider, builder);
 		ThrowIfInvalidBuilder(builder);
 		return new CacheStack<TContext>(
-			contextActivator,
+			builder.CacheContextActivator,
 			builder.CacheLayers.ToArray(),
 			builder.Extensions.ToArray()
 		);
@@ -109,7 +133,7 @@ public static class ServiceCollectionExtensions
 		});
 	}
 
-	/// <inheritdoc cref="AddCacheStack{TContext}(IServiceCollection, Action{IServiceProvider, ICacheStackBuilder})"/>
+	/// <inheritdoc cref="AddCacheStack{TContext}(IServiceCollection, Action{IServiceProvider, ICacheStackBuilder{TContext}})"/>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void AddCacheStack<TContext>(this IServiceCollection services, Action<ICacheStackBuilder> configureBuilder)
 	{
@@ -125,9 +149,9 @@ public static class ServiceCollectionExtensions
 	/// <typeparam name="TContext"></typeparam>
 	/// <param name="services"></param>
 	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
-	public static void AddCacheStack<TContext>(this IServiceCollection services, Action<IServiceProvider, ICacheStackBuilder> configureBuilder)
+	public static void AddCacheStack<TContext>(this IServiceCollection services, Action<IServiceProvider, ICacheStackBuilder<TContext>> configureBuilder)
 	{
-		services.AddSingleton(provider => BuildCacheStack<TContext>(provider, new ServiceProviderContextActivator(provider), configureBuilder));
+		services.AddSingleton(provider => BuildCacheStack(provider, configureBuilder));
 	}
 
 	/// <summary>
@@ -136,7 +160,7 @@ public static class ServiceCollectionExtensions
 	/// <param name="services"></param>
 	/// <param name="name">The name of the <see cref="CacheStack"/> to configure.</param>
 	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
-	public static void AddCacheStack<TContext>(this IServiceCollection services, string name, Action<IServiceProvider, ICacheStackBuilder> configureBuilder)
+	public static void AddCacheStack<TContext>(this IServiceCollection services, string name, Action<IServiceProvider, ICacheStackBuilder<TContext>> configureBuilder)
 	{
 		services.TryAddSingleton<NamedCacheStackLookup<ICacheStack<TContext>>>();
 		services.TryAddSingleton<ICacheStackAccessor<TContext>, CacheStackAccessor<TContext>>();
@@ -144,12 +168,12 @@ public static class ServiceCollectionExtensions
 		{
 			return new NamedCacheStackProvider<ICacheStack<TContext>>(name, provider =>
 			{
-				return BuildCacheStack<TContext>(provider, new ServiceProviderContextActivator(provider), configureBuilder);
+				return BuildCacheStack(provider, configureBuilder);
 			});
 		});
 	}
 
-	/// <inheritdoc cref="AddCacheStack{TContext}(IServiceCollection, ICacheContextActivator, Action{IServiceProvider, ICacheStackBuilder})"/>
+	/// <inheritdoc cref="AddCacheStack{TContext}(IServiceCollection, ICacheContextActivator, Action{IServiceProvider, ICacheStackBuilder{TContext}})"/>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheContextActivator contextActivator, Action<ICacheStackBuilder> configureBuilder)
 	{
@@ -163,9 +187,14 @@ public static class ServiceCollectionExtensions
 	/// <param name="services"></param>
 	/// <param name="contextActivator">The activator to instantiate the <typeparamref name="TContext"/> during cache refreshing.</param>
 	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
-	public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheContextActivator contextActivator, Action<IServiceProvider, ICacheStackBuilder> configureBuilder)
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheContextActivator contextActivator, Action<IServiceProvider, ICacheStackBuilder<TContext>> configureBuilder)
 	{
-		services.AddSingleton<ICacheStack>(provider => BuildCacheStack<TContext>(provider, contextActivator, configureBuilder));
+		services.AddSingleton(provider => BuildCacheStack<TContext>(provider, (provider, builder) =>
+		{
+			builder.CacheContextActivator = contextActivator;
+			configureBuilder(provider, builder);
+		}));
 	}
 
 	/// <summary>
@@ -175,7 +204,8 @@ public static class ServiceCollectionExtensions
 	/// <param name="name">The name of the <see cref="CacheStack"/> to configure.</param>
 	/// <param name="contextActivator">The activator to instantiate the <typeparamref name="TContext"/> during cache refreshing.</param>
 	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
-	public static void AddCacheStack<TContext>(this IServiceCollection services, string name, ICacheContextActivator contextActivator, Action<IServiceProvider, ICacheStackBuilder> configureBuilder)
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static void AddCacheStack<TContext>(this IServiceCollection services, string name, ICacheContextActivator contextActivator, Action<IServiceProvider, ICacheStackBuilder<TContext>> configureBuilder)
 	{
 		services.TryAddSingleton<NamedCacheStackLookup<ICacheStack<TContext>>>();
 		services.TryAddSingleton<ICacheStackAccessor<TContext>, CacheStackAccessor<TContext>>();
@@ -183,7 +213,11 @@ public static class ServiceCollectionExtensions
 		{
 			return new NamedCacheStackProvider<ICacheStack<TContext>>(name, provider =>
 			{
-				return BuildCacheStack<TContext>(provider, contextActivator, configureBuilder);
+				return BuildCacheStack<TContext>(provider, (provider, builder) =>
+				{
+					builder.CacheContextActivator = contextActivator;
+					configureBuilder(provider, builder);
+				});
 			});
 		});
 	}
