@@ -5,13 +5,30 @@ using System.Linq;
 
 namespace CacheTower;
 
+/// <summary>
+/// Provides access to a named implementation of <see cref="ICacheStack"/>.
+/// </summary>
 public interface ICacheStackAccessor
 {
+	/// <summary>
+	/// Creates or returns existing named <see cref="ICacheStack"/> base on the configured builder.
+	/// </summary>
+	/// <param name="name">The name of the <see cref="ICacheStack"/> that has been configured.</param>
+	/// <returns></returns>
 	ICacheStack GetCacheStack(string name);
 }
 
+/// <summary>
+/// Provides access to a named implementation of <see cref="ICacheStack{TContext}"/>.
+/// </summary>
+/// <typeparam name="TContext">The type of context that is passed during the cache entry generation process.</typeparam>
 public interface ICacheStackAccessor<TContext>
 {
+	/// <summary>
+	/// Creates or returns existing named <see cref="ICacheStack{TContext}"/> base on the configured builder.
+	/// </summary>
+	/// <param name="name">The name of the <see cref="ICacheStack{TContext}"/> that has been configured.</param>
+	/// <returns></returns>
 	ICacheStack<TContext> GetCacheStack(string name);
 }
 
