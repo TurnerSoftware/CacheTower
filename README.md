@@ -265,7 +265,7 @@ It will be retrieved from the service provider every time a cache refresh is req
 Create and configure your `CacheStack`, this is the backbone for Cache Tower.
 
 ```csharp
-services.AddCacheStack<UserContext>(builder => builder
+services.AddCacheStack<UserContext>((provider, builder) => builder
 	.AddMemoryCacheLayer()
 	.AddRedisCacheLayer(/* Your Redis Connection */, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance))
 	.WithCleanupFrequency(TimeSpan.FromMinutes(5))
@@ -353,7 +353,7 @@ await cacheStack.GetOrSetAsync<MyCachedType>("my-cache-key", async (oldValue, co
 The type of `context` is established at the time of configuring the cache stack.
 
 ```csharp
-services.AddCacheStack<MyContext>(builder => builder
+services.AddCacheStack<MyContext>((provider, builder) => builder
 	.AddMemoryCacheLayer()
 	.WithCleanupFrequency(TimeSpan.FromMinutes(5))
 );
@@ -366,7 +366,31 @@ You can use this context to hold any of the other objects or properties you need
 
 |ℹ Need a custom context resolving solution? |
 |:-|
-|You can specify your own context activator via `AddCacheStack` by implementing a custom `ICacheContextActivator`. To see a complete example, see [this integration for SimpleInjector](https://github.com/mgoodfellow/CacheTower.ContextActivators.SimpleInjector)|
+|You can specify your own context activator via `builder.CacheContextActivator` by implementing a custom `ICacheContextActivator`. To see a complete example, see [this integration for SimpleInjector](https://github.com/mgoodfellow/CacheTower.ContextActivators.SimpleInjector)|
+
+## <a id="named-cache-stacks"> 🏷 Named Cache Stacks
+
+You might not always want a single large `CacheStack` shared between all your code - perhaps you want an in-memory cache with a Redis layer for one section and a file cache for another.
+Cache Tower supports named `CacheStack` implementations via `ICacheStackAccessor`/`ICacheStackAccessor<MyContext>`.
+
+This follows a similar pattern to how `IHttpClientFactory` works, allowing you to fetch the specific `CacheStack` implementation you want within your own class.
+
+```csharp
+services.AddCacheStack<MyContext>("MyAwesomeCacheStack", (provider, builder) => builder
+	.AddMemoryCacheLayer()
+	.WithCleanupFrequency(TimeSpan.FromMinutes(5))
+);
+
+public class MyController
+{
+	private readonly ICacheStack<MyContext> cacheStack;
+	
+	public MyController(ICacheStackAccessor<MyContext> cacheStackAccessor)
+	{
+		cacheStack = cacheStackAccessor.GetCacheStack("MyAwesomeCacheStack");
+	}
+}
+```
 
 ## <a id="extensions" /> 🏗 Cache Tower Extensions
 
