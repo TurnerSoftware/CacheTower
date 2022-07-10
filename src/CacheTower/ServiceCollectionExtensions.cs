@@ -122,11 +122,11 @@ public static class ServiceCollectionExtensions
 	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
 	public static void AddCacheStack(this IServiceCollection services, string name, Action<IServiceProvider, ICacheStackBuilder> configureBuilder)
 	{
-		services.TryAddSingleton<NamedCacheStackLookup<ICacheStack>>();
+		services.TryAddSingleton<NamedCacheStackLookup>();
 		services.TryAddSingleton<ICacheStackAccessor, CacheStackAccessor>();
 		services.AddSingleton(provider =>
 		{
-			return new NamedCacheStackProvider<ICacheStack>(name, provider =>
+			return new NamedCacheStackProvider(name, provider =>
 			{
 				return BuildCacheStack(provider, configureBuilder);
 			});
@@ -162,11 +162,12 @@ public static class ServiceCollectionExtensions
 	/// <param name="configureBuilder">The builder to configure the <see cref="CacheStack"/>.</param>
 	public static void AddCacheStack<TContext>(this IServiceCollection services, string name, Action<IServiceProvider, ICacheStackBuilder<TContext>> configureBuilder)
 	{
-		services.TryAddSingleton<NamedCacheStackLookup<ICacheStack<TContext>>>();
+		services.TryAddSingleton<NamedCacheStackLookup>();
+		services.TryAddSingleton<ICacheStackAccessor, CacheStackAccessor>();
 		services.TryAddSingleton<ICacheStackAccessor<TContext>, CacheStackAccessor<TContext>>();
 		services.AddSingleton(provider =>
 		{
-			return new NamedCacheStackProvider<ICacheStack<TContext>>(name, provider =>
+			return new NamedCacheStackProvider(name, provider =>
 			{
 				return BuildCacheStack(provider, configureBuilder);
 			});

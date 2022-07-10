@@ -32,40 +32,38 @@ public interface ICacheStackAccessor<TContext>
 	ICacheStack<TContext> GetCacheStack(string name);
 }
 
-
-internal record NamedCacheStackProvider<TCacheStack>(string Name, Func<IServiceProvider, TCacheStack> Provider);
-internal class NamedCacheStackLookup<TCacheStack>
-	where TCacheStack : ICacheStack
+internal record NamedCacheStackProvider(string Name, Func<IServiceProvider, ICacheStack> Provider);
+internal class NamedCacheStackLookup
 {
-	private readonly ConcurrentDictionary<string, Lazy<TCacheStack>> cachedDependencies = new(StringComparer.Ordinal);
-	private readonly Dictionary<string, NamedCacheStackProvider<TCacheStack>> namedProviders;
+	private readonly ConcurrentDictionary<string, Lazy<ICacheStack>> cachedDependencies = new(StringComparer.Ordinal);
+	private readonly Dictionary<string, NamedCacheStackProvider> namedProviders;
 	private readonly IServiceProvider serviceProvider;
 
 	public NamedCacheStackLookup(
 		IServiceProvider serviceProvider,
-		IEnumerable<NamedCacheStackProvider<TCacheStack>> namedProviders
+		IEnumerable<NamedCacheStackProvider> namedProviders
 	)
 	{
 		this.serviceProvider = serviceProvider;
 		this.namedProviders = namedProviders.ToDictionary(p => p.Name);
 	}
 
-	public TCacheStack GetCacheStack(string name)
+	public ICacheStack GetCacheStack(string name)
 	{
 		if (!namedProviders.TryGetValue(name, out var dependencyProvider))
 		{
-			throw new InvalidOperationException($"No \"{typeof(TCacheStack)}\" is registered with the name \"{name}\"");
+			throw new ArgumentException($"No ICacheStack is registered with the name \"{name}\"");
 		}
 
-		return cachedDependencies.GetOrAdd(name, name => new Lazy<TCacheStack>(() => dependencyProvider.Provider(serviceProvider))).Value;
+		return cachedDependencies.GetOrAdd(name, name => new Lazy<ICacheStack>(() => dependencyProvider.Provider(serviceProvider))).Value;
 	}
 }
 
 internal class CacheStackAccessor : ICacheStackAccessor
 {
-	private readonly NamedCacheStackLookup<ICacheStack> cacheStackAccessor;
+	private readonly NamedCacheStackLookup cacheStackAccessor;
 
-	public CacheStackAccessor(NamedCacheStackLookup<ICacheStack> cacheStackAccessor)
+	public CacheStackAccessor(NamedCacheStackLookup cacheStackAccessor)
 	{
 		this.cacheStackAccessor = cacheStackAccessor;
 	}
@@ -75,12 +73,19 @@ internal class CacheStackAccessor : ICacheStackAccessor
 
 internal class CacheStackAccessor<TContext> : ICacheStackAccessor<TContext>
 {
-	private readonly NamedCacheStackLookup<ICacheStack<TContext>> cacheStackAccessor;
+	private readonly NamedCacheStackLookup cacheStackAccessor;
 
-	public CacheStackAccessor(NamedCacheStackLookup<ICacheStack<TContext>> cacheStackAccessor)
+	public CacheStackAccessor(NamedCacheStackLookup cacheStackAccessor)
 	{
 		this.cacheStackAccessor = cacheStackAccessor;
 	}
 
-	public ICacheStack<TContext> GetCacheStack(string name) => cacheStackAccessor.GetCacheStack(name);
+	public ICacheStack<TContext> GetCacheStack(string name)
+	{
+		if (cacheStackAccessor.GetCacheStack(name) is not ICacheStack<TContext> cacheStack)
+		{
+			throw new InvalidOperationException($"Registered ICacheStack for \"{name}\" is not compatible with {typeof(ICacheStack<TContext>)}");
+		}
+		return cacheStack;
+	}
 }
