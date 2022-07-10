@@ -66,7 +66,7 @@ public class ServiceCollectionExtensionsTests
 		var provider = serviceCollection.BuildServiceProvider();
 		var cacheStackAccessor = provider.GetRequiredService<ICacheStackAccessor>();
 
-		Assert.ThrowsException<InvalidOperationException>(() => cacheStackAccessor.GetCacheStack("NotTheRealName"));
+		Assert.ThrowsException<ArgumentException>(() => cacheStackAccessor.GetCacheStack("NotTheRealName"));
 		Assert.IsFalse(hasBuilderBeenCalled, "Builder has been called");
 	}
 
@@ -88,6 +88,29 @@ public class ServiceCollectionExtensionsTests
 		var cacheLayers = (cacheStack as IExtendableCacheStack).GetCacheLayers();
 		Assert.AreEqual(1, cacheLayers.Count);
 		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
+		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
+	}
+
+	[TestMethod]
+	public void CacheStack_NamedCacheStackBuilder_GenericCacheStackConversion()
+	{
+		var serviceCollection = new ServiceCollection();
+
+		serviceCollection.AddCacheStack<object>("MyGenericNamedCacheStack", (serviceProvider, builder) =>
+		{
+			builder.AddMemoryCacheLayer();
+		});
+
+		var hasBuilderBeenCalled = false;
+		serviceCollection.AddCacheStack("MyNamedCacheStack", (serviceProvider, builder) =>
+		{
+			hasBuilderBeenCalled = true;
+			builder.AddMemoryCacheLayer();
+		});
+		var provider = serviceCollection.BuildServiceProvider();
+		var cacheStackAccessor = provider.GetRequiredService<ICacheStackAccessor<object>>();
+
+		Assert.ThrowsException<InvalidOperationException>(() => cacheStackAccessor.GetCacheStack("MyNamedCacheStack"));
 		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
 	}
 
@@ -127,7 +150,7 @@ public class ServiceCollectionExtensionsTests
 		var provider = serviceCollection.BuildServiceProvider();
 		var cacheStackAccessor = provider.GetRequiredService<ICacheStackAccessor<int>>();
 
-		Assert.ThrowsException<InvalidOperationException>(() => cacheStackAccessor.GetCacheStack("NotTheRealName"));
+		Assert.ThrowsException<ArgumentException>(() => cacheStackAccessor.GetCacheStack("NotTheRealName"));
 		Assert.IsFalse(hasBuilderBeenCalled, "Builder has been called");
 	}
 
