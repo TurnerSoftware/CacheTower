@@ -17,11 +17,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-		<PackageReference Update="TurnerSoftware.BuildVersioning" Version="0.4.0" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<AssemblyAttribute Remove="System.CLSCompliantAttribute" />
 		<AssemblyAttribute Include="System.CLSCompliantAttribute">
 			<_Parameter1>false</_Parameter1>
