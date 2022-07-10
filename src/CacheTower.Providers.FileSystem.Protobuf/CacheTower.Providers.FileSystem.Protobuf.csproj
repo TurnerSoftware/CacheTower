@@ -1,21 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Title>Protobuf File Provider for Cache Tower</Title>
-    <Description>Use Protobuf serialized files for caching with Cache Tower</Description>
-    <PackageTags>protobuf;filesystem;$(PackageBaseTags)</PackageTags>
-    <Authors>James Turner</Authors>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Title>Protobuf File Provider for Cache Tower</Title>
+		<Description>Use Protobuf serialized files for caching with Cache Tower</Description>
+		<PackageTags>protobuf;filesystem;$(PackageBaseTags)</PackageTags>
+		<Authors>James Turner</Authors>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj" />
-    <ProjectReference Include="..\CacheTower\CacheTower.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageReference Update="TurnerSoftware.BuildVersioning" Version="0.4.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj" />
+		<ProjectReference Include="..\CacheTower\CacheTower.csproj" />
+	</ItemGroup>
 
 </Project>
