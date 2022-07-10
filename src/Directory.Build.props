@@ -27,5 +27,11 @@
 	<ItemGroup>
 		<None Include="..\..\images\$(PackageIcon)" Pack="true" PackagePath="/" />
 	</ItemGroup>
+	
+	<ItemGroup>
+		<AssemblyAttribute Include="System.CLSCompliantAttribute">
+			<_Parameter1>true</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 
 </Project>
