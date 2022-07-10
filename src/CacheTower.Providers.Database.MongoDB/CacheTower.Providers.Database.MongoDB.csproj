@@ -1,24 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Title>MongoDB Provider for Cache Tower</Title>
-    <Description>Use MongoDB for caching with Cache Tower</Description>
-    <PackageTags>mongodb;$(PackageBaseTags)</PackageTags>
-    <Authors>James Turner</Authors>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Title>MongoDB Provider for Cache Tower</Title>
+		<Description>Use MongoDB for caching with Cache Tower</Description>
+		<PackageTags>mongodb;$(PackageBaseTags)</PackageTags>
+		<Authors>James Turner</Authors>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MongoFramework" Version="0.27.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="MongoFramework" Version="0.27.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CacheTower\CacheTower.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\CacheTower\CacheTower.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <PackageReference Update="TurnerSoftware.BuildVersioning" Version="0.4.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+		<PackageReference Update="TurnerSoftware.BuildVersioning" Version="0.4.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Remove="System.CLSCompliantAttribute" />
+		<AssemblyAttribute Include="System.CLSCompliantAttribute">
+			<_Parameter1>false</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 
 </Project>
