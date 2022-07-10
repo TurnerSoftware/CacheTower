@@ -18,100 +18,185 @@ public class ServiceCollectionExtensionsTests
 	[TestMethod]
 	public void CacheStack_InvalidCacheStackBuilder()
 	{
-		var serviceCollectionMock = new Mock<IServiceCollection>();
+		var serviceCollection = new ServiceCollection();
 
 		var hasBuilderBeenCalled = false;
-		Assert.ThrowsException<InvalidOperationException>(() =>
+		serviceCollection.AddCacheStack(builder =>
 		{
-			serviceCollectionMock.Object.AddCacheStack(builder =>
-			{
-				hasBuilderBeenCalled = true;
-			});
+			hasBuilderBeenCalled = true;
 		});
-
+		var serviceProvider = serviceCollection.BuildServiceProvider();
+		
+		Assert.ThrowsException<InvalidOperationException>(() => serviceProvider.GetRequiredService<ICacheStack>());
 		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
 	}
 
 	[TestMethod]
 	public void CacheStack_CacheStackBuilder()
 	{
-		var serviceCollectionMock = new Mock<IServiceCollection>();
-		serviceCollectionMock.Setup(s => s.Add(It.IsAny<ServiceDescriptor>()))
-			.Callback<ServiceDescriptor>(sd =>
-			{
-				Assert.AreEqual(ServiceLifetime.Singleton, sd.Lifetime);
-				var result = (IExtendableCacheStack)sd.ImplementationFactory(null);
-				var cacheLayers = result.GetCacheLayers();
-				Assert.AreEqual(1, cacheLayers.Count);
-				Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
-			}).Verifiable();
+		var serviceCollection = new ServiceCollection();
 
 		var hasBuilderBeenCalled = false;
-		serviceCollectionMock.Object.AddCacheStack(builder =>
+		serviceCollection.AddCacheStack(builder =>
 		{
 			hasBuilderBeenCalled = true;
 			builder.AddMemoryCacheLayer();
 		});
 
+		var serviceDescriptor = serviceCollection[0];
+		Assert.AreEqual(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
+		var result = (IExtendableCacheStack)serviceDescriptor.ImplementationFactory(null);
+		var cacheLayers = result.GetCacheLayers();
+		Assert.AreEqual(1, cacheLayers.Count);
+		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
 		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
+	}
 
-		serviceCollectionMock.Verify();
+	[TestMethod]
+	public void CacheStack_NamedCacheStackBuilder_InvalidName()
+	{
+		var serviceCollection = new ServiceCollection();
+
+		var hasBuilderBeenCalled = false;
+		serviceCollection.AddCacheStack("MyNamedCacheStack", (serviceProvider, builder) =>
+		{
+			hasBuilderBeenCalled = true;
+			builder.AddMemoryCacheLayer();
+		});
+		var provider = serviceCollection.BuildServiceProvider();
+		var cacheStackAccessor = provider.GetRequiredService<ICacheStackAccessor>();
+
+		Assert.ThrowsException<ArgumentException>(() => cacheStackAccessor.GetCacheStack("NotTheRealName"));
+		Assert.IsFalse(hasBuilderBeenCalled, "Builder has been called");
+	}
+
+	[TestMethod]
+	public void CacheStack_NamedCacheStackBuilder_ValidName()
+	{
+		var serviceCollection = new ServiceCollection();
+
+		var hasBuilderBeenCalled = false;
+		serviceCollection.AddCacheStack("MyNamedCacheStack", (serviceProvider, builder) =>
+		{
+			hasBuilderBeenCalled = true;
+			builder.AddMemoryCacheLayer();
+		});
+		var provider = serviceCollection.BuildServiceProvider();
+		var cacheStackAccessor = provider.GetRequiredService<ICacheStackAccessor>();
+		var cacheStack = cacheStackAccessor.GetCacheStack("MyNamedCacheStack");
+
+		var cacheLayers = (cacheStack as IExtendableCacheStack).GetCacheLayers();
+		Assert.AreEqual(1, cacheLayers.Count);
+		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
+		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
+	}
+
+	[TestMethod]
+	public void CacheStack_NamedCacheStackBuilder_GenericCacheStackConversion()
+	{
+		var serviceCollection = new ServiceCollection();
+
+		serviceCollection.AddCacheStack<object>("MyGenericNamedCacheStack", (serviceProvider, builder) =>
+		{
+			builder.AddMemoryCacheLayer();
+		});
+
+		var hasBuilderBeenCalled = false;
+		serviceCollection.AddCacheStack("MyNamedCacheStack", (serviceProvider, builder) =>
+		{
+			hasBuilderBeenCalled = true;
+			builder.AddMemoryCacheLayer();
+		});
+		var provider = serviceCollection.BuildServiceProvider();
+		var cacheStackAccessor = provider.GetRequiredService<ICacheStackAccessor<object>>();
+
+		Assert.ThrowsException<InvalidOperationException>(() => cacheStackAccessor.GetCacheStack("MyNamedCacheStack"));
+		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
 	}
 
 	[TestMethod]
 	public void GenericCacheStack_CacheStackBuilder()
 	{
-		var serviceCollectionMock = new Mock<IServiceCollection>();
-		serviceCollectionMock.Setup(s => s.Add(It.IsAny<ServiceDescriptor>()))
-			.Callback<ServiceDescriptor>(sd =>
-			{
-				Assert.AreEqual(ServiceLifetime.Singleton, sd.Lifetime);
-				var result = (IExtendableCacheStack)sd.ImplementationFactory(null);
-				var cacheLayers = result.GetCacheLayers();
-				Assert.AreEqual(1, cacheLayers.Count);
-				Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
-				Assert.IsTrue(result is ICacheStack<int>);
-			}).Verifiable();
+		var serviceCollection = new ServiceCollection();
 
 		var hasBuilderBeenCalled = false;
-		serviceCollectionMock.Object.AddCacheStack<int>(builder =>
+		serviceCollection.AddCacheStack<int>(builder =>
 		{
 			hasBuilderBeenCalled = true;
 			builder.AddMemoryCacheLayer();
 		});
 
+		var serviceDescriptor = serviceCollection[0];
+		Assert.AreEqual(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
+		var result = (IExtendableCacheStack)serviceDescriptor.ImplementationFactory(null);
+		var cacheLayers = result.GetCacheLayers();
+		Assert.AreEqual(1, cacheLayers.Count);
+		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
+		Assert.IsTrue(result is ICacheStack<int>);
 		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
+	}
 
-		serviceCollectionMock.Verify();
+	[TestMethod]
+	public void GenericCacheStack_NamedCacheStackBuilder_InvalidName()
+	{
+		var serviceCollection = new ServiceCollection();
+
+		var hasBuilderBeenCalled = false;
+		serviceCollection.AddCacheStack<int>("MyNamedCacheStack", (serviceProvider, builder) =>
+		{
+			hasBuilderBeenCalled = true;
+			builder.AddMemoryCacheLayer();
+		});
+		var provider = serviceCollection.BuildServiceProvider();
+		var cacheStackAccessor = provider.GetRequiredService<ICacheStackAccessor<int>>();
+
+		Assert.ThrowsException<ArgumentException>(() => cacheStackAccessor.GetCacheStack("NotTheRealName"));
+		Assert.IsFalse(hasBuilderBeenCalled, "Builder has been called");
+	}
+
+	[TestMethod]
+	public void GenericCacheStack_NamedCacheStackBuilder_ValidName()
+	{
+		var serviceCollection = new ServiceCollection();
+
+		var hasBuilderBeenCalled = false;
+		serviceCollection.AddCacheStack<int>("MyNamedCacheStack", (serviceProvider, builder) =>
+		{
+			hasBuilderBeenCalled = true;
+			builder.AddMemoryCacheLayer();
+		});
+		var provider = serviceCollection.BuildServiceProvider();
+		var cacheStackAccessor = provider.GetRequiredService<ICacheStackAccessor<int>>();
+		var cacheStack = cacheStackAccessor.GetCacheStack("MyNamedCacheStack");
+
+		var cacheLayers = (cacheStack as IExtendableCacheStack).GetCacheLayers();
+		Assert.AreEqual(1, cacheLayers.Count);
+		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
+		Assert.IsTrue(cacheStack is ICacheStack<int>);
+		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
 	}
 
 	[TestMethod]
 	public void GenericCacheStack_CacheStackBuilder_CustomCacheContextActivator()
 	{
-		var serviceCollectionMock = new Mock<IServiceCollection>();
-		serviceCollectionMock.Setup(s => s.Add(It.IsAny<ServiceDescriptor>()))
-			.Callback<ServiceDescriptor>(sd =>
-			{
-				Assert.AreEqual(ServiceLifetime.Singleton, sd.Lifetime);
-				var result = (IExtendableCacheStack)sd.ImplementationFactory(null);
-				var cacheLayers = result.GetCacheLayers();
-				Assert.AreEqual(1, cacheLayers.Count);
-				Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
-				Assert.IsTrue(result is ICacheStack<int>);
-			}).Verifiable();
-
+		var serviceCollection = new ServiceCollection();
 		var contextActivatorMock = new Mock<ICacheContextActivator>();
 
 		var hasBuilderBeenCalled = false;
-		serviceCollectionMock.Object.AddCacheStack<int>(contextActivatorMock.Object, builder =>
+		serviceCollection.AddCacheStack<int>(contextActivatorMock.Object, builder =>
 		{
 			hasBuilderBeenCalled = true;
 			builder.AddMemoryCacheLayer();
 		});
 
+		var serviceDescriptor = serviceCollection[0];
+		Assert.AreEqual(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
+		var result = (IExtendableCacheStack)serviceDescriptor.ImplementationFactory(null);
+		var cacheLayers = result.GetCacheLayers();
+		Assert.AreEqual(1, cacheLayers.Count);
+		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
+		Assert.IsTrue(result is ICacheStack<int>);
 		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
-
-		serviceCollectionMock.Verify();
 	}
 
 	[TestMethod]
