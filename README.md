@@ -368,7 +368,7 @@ You can use this context to hold any of the other objects or properties you need
 |:-|
 |You can specify your own context activator via `builder.CacheContextActivator` by implementing a custom `ICacheContextActivator`. To see a complete example, see [this integration for SimpleInjector](https://github.com/mgoodfellow/CacheTower.ContextActivators.SimpleInjector)|
 
-## <a id="named-cache-stacks"> 🏷 Named Cache Stacks
+## <a id="named-cache-stacks" /> 🏷 Named Cache Stacks
 
 You might not always want a single large `CacheStack` shared between all your code - perhaps you want an in-memory cache with a Redis layer for one section and a file cache for another.
 Cache Tower supports named `CacheStack` implementations via `ICacheStackAccessor`/`ICacheStackAccessor<MyContext>`.
