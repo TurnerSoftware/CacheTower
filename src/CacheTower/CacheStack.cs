@@ -277,9 +277,9 @@ namespace CacheTower
 						return previousEntry;
 					}
 
-					return await Extensions.WithRefreshAsync(cacheKey, async state =>
+					return await Extensions.WithRefreshAsync(cacheKey, static async state =>
 					{
-						var (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey) = state;
+						var (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey, stack) = state;
 						var oldValue = default(T);
 						if (previousEntry != default)
 						{
@@ -293,12 +293,12 @@ namespace CacheTower
 							CacheEntryStatus.Miss => CacheUpdateType.AddEntry,
 							_ => CacheUpdateType.AddOrUpdateEntry
 						};
-						await InternalSetAsync(cacheKey, refreshedEntry, cacheUpdateType);
+						await stack.InternalSetAsync(cacheKey, refreshedEntry, cacheUpdateType);
 
-						KeyLock.ReleaseLock(cacheKey, refreshedEntry);
+						stack.KeyLock.ReleaseLock(cacheKey, refreshedEntry);
 
 						return refreshedEntry;
-					}, (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey), settings);
+					}, (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey, this), settings);
 				}
 				catch (Exception e)
 				{
