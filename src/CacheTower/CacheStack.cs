@@ -207,6 +207,7 @@ namespace CacheTower
 
 			var currentTime = DateTimeProvider.Now;
 			var cacheEntryPoint = await GetWithLayerIndexAsync<T>(cacheKey);
+			var cacheEntryStatus = CacheEntryStatus.Stale;
 			if (cacheEntryPoint != default)
 			{
 				if (cacheEntryPoint.CacheEntry.Expiry > currentTime)
@@ -215,7 +216,7 @@ namespace CacheTower
 					if (settings.StaleAfter.HasValue && cacheEntry.GetStaleDate(settings) < currentTime)
 					{
 						//If the cache entry is stale, refresh the value in the background
-						_ = RefreshValueAsync(cacheKey, valueFactory, settings, CacheEntryStatus.Stale);
+						_ = RefreshValueAsync(cacheKey, valueFactory, settings, cacheEntryStatus);
 					}
 					else if (cacheEntryPoint.LayerIndex > 0)
 					{
@@ -228,14 +229,16 @@ namespace CacheTower
 				else
 				{
 					//Refresh the value in the current thread because we only have expired data (we never return expired data)
-					return (await RefreshValueAsync(cacheKey, valueFactory, settings, CacheEntryStatus.Expired))!.Value!;
+					cacheEntryStatus = CacheEntryStatus.Expired;
 				}
 			}
 			else
 			{
 				//Refresh the value in the current thread because we have no existing data
-				return (await RefreshValueAsync(cacheKey, valueFactory, settings, CacheEntryStatus.Miss))!.Value!;
+				cacheEntryStatus = CacheEntryStatus.Miss;
 			}
+
+			return (await RefreshValueAsync(cacheKey, valueFactory, settings, cacheEntryStatus))!.Value!;
 		}
 
 		private async ValueTask BackPopulateCacheAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
