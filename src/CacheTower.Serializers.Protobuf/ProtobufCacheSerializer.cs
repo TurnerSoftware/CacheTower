@@ -18,7 +18,7 @@ namespace CacheTower.Serializers.Protobuf
 	{
 		static ProtobufCacheSerializer()
 		{
-			RuntimeTypeModel.Default.Add<ManifestEntry>()
+			RuntimeTypeModel.Default.Add<ManifestEntry>(applyDefaultBehaviour: false)
 				.Add(1, nameof(ManifestEntry.FileName))
 				.Add(2, nameof(ManifestEntry.Expiry));
 		}
@@ -36,7 +36,7 @@ namespace CacheTower.Serializers.Protobuf
 			{
 				if (typeof(ICacheEntry).IsAssignableFrom(typeof(T)))
 				{
-					RuntimeTypeModel.Default.Add(typeof(T))
+					RuntimeTypeModel.Default.Add(typeof(T), applyDefaultBehaviour: false)
 						.Add(1, nameof(CacheEntry<object>.Expiry))
 						.Add(2, nameof(CacheEntry<object>.Value));
 				}
