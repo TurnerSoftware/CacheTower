@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
 using CacheTower.Internal;
+using CacheTower.Serializers;
+using Microsoft.Extensions.Logging;
 
 namespace CacheTower
 {
@@ -15,21 +17,24 @@ namespace CacheTower
 		private bool Disposed;
 
 		private readonly CacheEntryKeyLock KeyLock = new();
+		private readonly ILogger<CacheStack> Logger;
 		private readonly ICacheLayer[] CacheLayers;
 		private readonly ExtensionContainer Extensions;
 
 		/// <summary>
 		/// Creates a new <see cref="CacheStack"/> with the given <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
 		/// </summary>
+		/// <param name="logger">The internal logger to use.</param>
 		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
 		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
-		public CacheStack(ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
+		public CacheStack(ILogger<CacheStack> logger, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
 			if (cacheLayers == null || cacheLayers.Length == 0)
 			{
 				throw new ArgumentException("There must be at least one cache layer", nameof(cacheLayers));
 			}
 
+			Logger = logger;
 			CacheLayers = cacheLayers;
 
 			Extensions = new ExtensionContainer(extensions);
@@ -139,7 +144,15 @@ namespace CacheTower
 			for (int i = 0, l = CacheLayers.Length; i < l; i++)
 			{
 				var layer = CacheLayers[i];
-				await layer.SetAsync(cacheKey, cacheEntry);
+
+				try
+				{
+					await layer.SetAsync(cacheKey, cacheEntry);
+				}
+				catch (CacheSerializationException ex)
+				{
+					Logger.LogWarning(ex, "Unable to set CacheKey={CacheKey} on CacheLayer={CacheLayer} due to an exception. This will result in cache misses on this layer.", cacheKey, layer.GetType());
+				}
 			}
 
 			await Extensions.OnCacheUpdateAsync(cacheKey, cacheEntry.Expiry, cacheUpdateType);
@@ -160,10 +173,17 @@ namespace CacheTower
 				var layer = CacheLayers[layerIndex];
 				if (await layer.IsAvailableAsync(cacheKey))
 				{
-					var cacheEntry = await layer.GetAsync<T>(cacheKey);
-					if (cacheEntry != default)
+					try
 					{
-						return cacheEntry;
+						var cacheEntry = await layer.GetAsync<T>(cacheKey);
+						if (cacheEntry != default)
+						{
+							return cacheEntry;
+						}
+					}
+					catch (CacheSerializationException ex)
+					{
+						Logger.LogWarning(ex, "Unable to retrieve CacheKey={CacheKey} from CacheLayer={CacheLayer} due to an exception. This layer will be skipped.", cacheKey, layer.GetType());
 					}
 				}
 			}
@@ -179,10 +199,17 @@ namespace CacheTower
 				var layer = CacheLayers[layerIndex];
 				if (await layer.IsAvailableAsync(cacheKey))
 				{
-					var cacheEntry = await layer.GetAsync<T>(cacheKey);
-					if (cacheEntry != default)
+					try
 					{
-						return (layerIndex, cacheEntry);
+						var cacheEntry = await layer.GetAsync<T>(cacheKey);
+						if (cacheEntry != default)
+						{
+							return (layerIndex, cacheEntry);
+						}
+					}
+					catch (CacheSerializationException ex)
+					{
+						Logger.LogWarning(ex, "Unable to retrieve CacheKey={CacheKey} from CacheLayer={CacheLayer} due to an exception. This layer will be skipped.", cacheKey, layer.GetType());
 					}
 				}
 			}

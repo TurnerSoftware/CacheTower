@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using CacheTower.Providers.FileSystem;
 using ProtoBuf;
 using ProtoBuf.Meta;
@@ -49,15 +50,29 @@ namespace CacheTower.Serializers.Protobuf
 		/// <inheritdoc />
 		public void Serialize<T>(Stream stream, T? value)
 		{
-			SerializerConfig<T>.EnsureConfigured();
-			Serializer.Serialize(stream, value);
+			try
+			{
+				SerializerConfig<T>.EnsureConfigured();
+				Serializer.Serialize(stream, value);
+			}
+			catch (Exception ex)
+			{
+				throw new CacheSerializationException("A serialization error has occurred when serializing with ProtoBuf", ex);
+			}
 		}
 
 		/// <inheritdoc />
 		public T? Deserialize<T>(Stream stream)
 		{
-			SerializerConfig<T>.EnsureConfigured();
-			return Serializer.Deserialize<T>(stream);
+			try
+			{
+				SerializerConfig<T>.EnsureConfigured();
+				return Serializer.Deserialize<T>(stream);
+			}
+			catch (Exception ex)
+			{
+				throw new CacheSerializationException("A serialization error has occurred when deserializing with ProtoBuf", ex);
+			}
 		}
 	}
 }

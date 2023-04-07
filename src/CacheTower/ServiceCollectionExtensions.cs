@@ -7,6 +7,7 @@ using CacheTower.Extensions;
 using CacheTower.Providers.FileSystem;
 using CacheTower.Providers.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -80,6 +81,7 @@ public static class ServiceCollectionExtensions
 		configureBuilder(provider, builder);
 		ThrowIfInvalidBuilder(builder);
 		return new CacheStack(
+			provider.GetRequiredService<ILogger<CacheStack>>(),
 			builder.CacheLayers.ToArray(),
 			builder.Extensions.ToArray()
 		);
@@ -91,6 +93,7 @@ public static class ServiceCollectionExtensions
 		configureBuilder(provider, builder);
 		ThrowIfInvalidBuilder(builder);
 		return new CacheStack<TContext>(
+			provider.GetRequiredService<ILogger<CacheStack>>(),
 			builder.CacheContextActivator,
 			builder.CacheLayers.ToArray(),
 			builder.Extensions.ToArray()
