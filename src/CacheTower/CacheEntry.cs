@@ -66,14 +66,19 @@ public sealed record CacheEntry<T>(T? Value, DateTime Expiry) : ICacheEntry<T>
 	/// <summary>
 	/// The cached value.
 	/// </summary>
-	public T? Value { get; } = Value;
+	public T? Value { get; init; } = Value;
 
 	/// <summary>
 	/// The expiry date for the cache entry.
 	/// </summary>
-	public DateTime Expiry { get; } = new DateTime(
+	public DateTime Expiry { get; init; } = new DateTime(
 		Expiry.Year, Expiry.Month, Expiry.Day, Expiry.Hour, Expiry.Minute, Expiry.Second, DateTimeKind.Utc
 	);
+
+	/// <summary>
+	/// Creates a new <see cref="ICacheEntry"/> with a default value.
+	/// </summary>
+	public CacheEntry() : this(default, DateTime.MinValue) { }
 
 	/// <summary>
 	/// Creates a new <see cref="ICacheEntry"/> with the given <paramref name="value"/> and an expiry adjusted to the <paramref name="timeToLive"/>.
