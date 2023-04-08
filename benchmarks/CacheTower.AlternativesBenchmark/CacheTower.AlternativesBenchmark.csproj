@@ -12,7 +12,7 @@
     <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" Version="1.2.0" />
     <PackageReference Include="CacheManager.Serialization.ProtoBuf" Version="1.2.0" />
     <PackageReference Include="CacheManager.StackExchange.Redis" Version="1.2.0" />
-    <PackageReference Include="EasyCaching.Disk" Version="1.6.0" />
+    <PackageReference Include="EasyCaching.Disk" Version="1.9.0" />
     <PackageReference Include="EasyCaching.InMemory" Version="1.6.0" />
     <PackageReference Include="EasyCaching.Redis" Version="1.6.0" />
     <PackageReference Include="EasyCaching.Serialization.Protobuf" Version="1.6.0" />
