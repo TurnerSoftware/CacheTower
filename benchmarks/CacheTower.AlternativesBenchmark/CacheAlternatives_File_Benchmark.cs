@@ -23,9 +23,9 @@ namespace CacheTower.AlternativesBenchmark
 
 		public CacheAlternatives_File_Benchmark()
 		{
-			CacheTowerNewtonsoftJson = new CacheStack(new[] { new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
-			CacheTowerSystemTextJson = new CacheStack(new[] { new FileCacheLayer(new(DirectoryPath, SystemTextJsonCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
-			CacheTowerProtobuf = new CacheStack(new[] { new FileCacheLayer(new(DirectoryPath, ProtobufCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
+			CacheTowerNewtonsoftJson = new CacheStack(null, new[] { new FileCacheLayer(new(DirectoryPath, NewtonsoftJsonCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
+			CacheTowerSystemTextJson = new CacheStack(null, new[] { new FileCacheLayer(new(DirectoryPath, SystemTextJsonCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
+			CacheTowerProtobuf = new CacheStack(null, new[] { new FileCacheLayer(new(DirectoryPath, ProtobufCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
 		}
 
 		private static void CleanupFileSystem()

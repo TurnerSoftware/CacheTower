@@ -24,7 +24,7 @@ namespace CacheTower.AlternativesBenchmark
 
 		public CacheAlternatives_Redis_Parallel_Benchmark()
 		{
-			CacheTower = new CacheStack(new[] { new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
+			CacheTower = new CacheStack(null, new[] { new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)) }, Array.Empty<ICacheExtension>());
 			CacheManager = CacheFactory.Build<ProtobufCacheItem>(b =>
 			{
 				b.WithRedisConfiguration("redisLocal", "localhost:6379,ssl=false");
