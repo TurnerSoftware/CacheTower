@@ -81,7 +81,7 @@ public static class ServiceCollectionExtensions
 		configureBuilder(provider, builder);
 		ThrowIfInvalidBuilder(builder);
 		return new CacheStack(
-			provider.GetRequiredService<ILogger<CacheStack>>(),
+			provider.GetService<ILogger<CacheStack>>(),
 			builder.CacheLayers.ToArray(),
 			builder.Extensions.ToArray()
 		);
@@ -93,7 +93,7 @@ public static class ServiceCollectionExtensions
 		configureBuilder(provider, builder);
 		ThrowIfInvalidBuilder(builder);
 		return new CacheStack<TContext>(
-			provider.GetRequiredService<ILogger<CacheStack>>(),
+			provider.GetService<ILogger<CacheStack>>(),
 			builder.CacheContextActivator,
 			builder.CacheLayers.ToArray(),
 			builder.Extensions.ToArray()

@@ -6,6 +6,7 @@ using CacheTower.Extensions;
 using CacheTower.Internal;
 using CacheTower.Serializers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CacheTower
 {
@@ -27,14 +28,14 @@ namespace CacheTower
 		/// <param name="logger">The internal logger to use.</param>
 		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
 		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
-		public CacheStack(ILogger<CacheStack> logger, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
+		public CacheStack(ILogger<CacheStack>? logger, ICacheLayer[] cacheLayers, ICacheExtension[] extensions)
 		{
 			if (cacheLayers == null || cacheLayers.Length == 0)
 			{
 				throw new ArgumentException("There must be at least one cache layer", nameof(cacheLayers));
 			}
 
-			Logger = logger;
+			Logger = logger ?? NullLogger<CacheStack>.Instance;
 			CacheLayers = cacheLayers;
 
 			Extensions = new ExtensionContainer(extensions);

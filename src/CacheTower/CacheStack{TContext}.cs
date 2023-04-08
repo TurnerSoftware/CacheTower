@@ -21,7 +21,7 @@ namespace CacheTower
 		/// <param name="cacheContextActivator">The activator that provides the context. This is called for every cache item refresh.</param>
 		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
 		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
-		public CacheStack(ILogger<CacheStack> logger, ICacheContextActivator cacheContextActivator, ICacheLayer[] cacheLayers, ICacheExtension[] extensions) : base(logger, cacheLayers, extensions)
+		public CacheStack(ILogger<CacheStack>? logger, ICacheContextActivator cacheContextActivator, ICacheLayer[] cacheLayers, ICacheExtension[] extensions) : base(logger, cacheLayers, extensions)
 		{
 			CacheContextActivator = cacheContextActivator ?? throw new ArgumentNullException(nameof(cacheContextActivator));
 		}
