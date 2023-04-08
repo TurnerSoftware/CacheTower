@@ -4,7 +4,7 @@
 # Cache Tower
 An efficient multi-layered caching system for .NET
 
-![Build](https://img.shields.io/github/workflow/status/TurnerSoftware/CacheTower/Build)
+![Build](https://img.shields.io/github/actions/workflow/status/TurnerSoftware/CacheTower/build.yml?branch=main)
 [![Codecov](https://img.shields.io/codecov/c/github/turnersoftware/cachetower/main.svg)](https://codecov.io/gh/TurnerSoftware/CacheTower)
 [![NuGet](https://img.shields.io/nuget/v/CacheTower.svg)](https://www.nuget.org/packages/CacheTower/)
 </div>
