@@ -222,7 +222,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var cacheLayerOne = new Mock<ILocalCacheLayer>();
 			var extensionOne = new RedisRemoteEvictionExtension(connectionMock.Object);
-			var cacheStackOne = new CacheStack(new[] { cacheLayerOne.Object }, new[] { extensionOne });
+			var cacheStackOne = new CacheStack(null, new[] { cacheLayerOne.Object }, new[] { extensionOne });
 
 			await cacheStackOne.GetOrSetAsync<int>("NoEvictionOnNewEntries", _ => Task.FromResult(1), new CacheSettings(TimeSpan.FromMinutes(5)));
 
