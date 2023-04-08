@@ -24,16 +24,45 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
+        mongodb: ['6.0']
+        include:
+          - os: ubuntu-latest
+            ubuntu: 'jammy'
     steps:
-    - name: Configure Windows
+    # Configure Redis
+    - name: Configure Redis (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt-get install redis-server
+    - name: Configure Redis (Windows)
       if: matrix.os == 'windows-latest'
       run: choco install Memurai-Developer
-    - name: Configure Ubuntu
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo systemctl start mongod && sudo apt-get install redis-server
-    - name: Configure MacOS
+    - name: Configure Redis (MacOS)
       if: matrix.os == 'macOS-latest'
-      run: brew services start mongodb-community && brew install redis && brew services start redis
+      run: brew install redis && brew services start redis
+
+    # Configure MongoDB
+    - name: Configure MongoDB (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        wget -qO - https://www.mongodb.org/static/pgp/server-${{matrix.mongodb}}.asc | gpg --dearmor | sudo tee /usr/share/keyrings/mongodb.gpg > /dev/null
+        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb.gpg ] https://repo.mongodb.org/apt/ubuntu ${{matrix.ubuntu}}/mongodb-org/${{matrix.mongodb}} multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-${{matrix.mongodb}}.list
+        sudo apt update
+        sudo apt install mongodb-org
+        sudo systemctl start mongod
+    - name: Configure MongoDB (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: powershell
+      run: |
+        choco uninstall mongodb mongodb.install
+        $latestPackageVersion = Get-LatestChocoPackageVersion -TargetVersion ${{matrix.mongodb}} -PackageName "mongodb.install"
+        choco install mongodb.portable --version=$latestPackageVersion 
+    - name: Configure MongoDB (MacOS)
+      if: matrix.os == 'macOS-latest'
+      run: |
+        brew tap mongodb/brew
+        brew update
+        brew install mongodb-community@${{matrix.mongodb}}
+        brew services start mongodb-community@${{matrix.mongodb}}
 
     - name: Checkout
       uses: actions/checkout@v2
