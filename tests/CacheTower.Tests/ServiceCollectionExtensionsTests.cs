@@ -42,10 +42,9 @@ public class ServiceCollectionExtensionsTests
 			hasBuilderBeenCalled = true;
 			builder.AddMemoryCacheLayer();
 		});
+		var serviceProvider = serviceCollection.BuildServiceProvider();
 
-		var serviceDescriptor = serviceCollection[0];
-		Assert.AreEqual(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
-		var result = (IExtendableCacheStack)serviceDescriptor.ImplementationFactory(null);
+		var result = (IExtendableCacheStack)serviceProvider.GetRequiredService<ICacheStack>();
 		var cacheLayers = result.GetCacheLayers();
 		Assert.AreEqual(1, cacheLayers.Count);
 		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
@@ -125,10 +124,9 @@ public class ServiceCollectionExtensionsTests
 			hasBuilderBeenCalled = true;
 			builder.AddMemoryCacheLayer();
 		});
+		var serviceProvider = serviceCollection.BuildServiceProvider();
 
-		var serviceDescriptor = serviceCollection[0];
-		Assert.AreEqual(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
-		var result = (IExtendableCacheStack)serviceDescriptor.ImplementationFactory(null);
+		var result = (IExtendableCacheStack)serviceProvider.GetRequiredService<ICacheStack<int>>();
 		var cacheLayers = result.GetCacheLayers();
 		Assert.AreEqual(1, cacheLayers.Count);
 		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
@@ -188,10 +186,9 @@ public class ServiceCollectionExtensionsTests
 			hasBuilderBeenCalled = true;
 			builder.AddMemoryCacheLayer();
 		});
+		var serviceProvider = serviceCollection.BuildServiceProvider();
 
-		var serviceDescriptor = serviceCollection[0];
-		Assert.AreEqual(ServiceLifetime.Singleton, serviceDescriptor.Lifetime);
-		var result = (IExtendableCacheStack)serviceDescriptor.ImplementationFactory(null);
+		var result = (IExtendableCacheStack)serviceProvider.GetRequiredService<ICacheStack<int>>();
 		var cacheLayers = result.GetCacheLayers();
 		Assert.AreEqual(1, cacheLayers.Count);
 		Assert.AreEqual(typeof(MemoryCacheLayer), cacheLayers[0].GetType());
