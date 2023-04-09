@@ -23,37 +23,31 @@ namespace CacheTower.Tests.Extensions
 		[TestMethod, ExpectedException(typeof(InvalidOperationException))]
 		public async Task ThrowForRegisteringTwoCacheStacks()
 		{
-			await using (var extension = new AutoCleanupExtension(TimeSpan.FromSeconds(30)))
-			{
-				//Will register as part of the CacheStack constructor
-				await using var cacheStack = new CacheStack(new[] { new MemoryCacheLayer() }, new[] { extension });
-				//Force the second register manually
-				extension.Register(cacheStack);
-			}
+			await using var extension = new AutoCleanupExtension(TimeSpan.FromSeconds(30));
+			//Will register as part of the CacheStack constructor
+			await using var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, new[] { extension });
+			//Force the second register manually
+			extension.Register(cacheStack);
 		}
 
 		[TestMethod]
 		public async Task RunsBackgroundCleanup()
 		{
-			await using (var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500)))
-			{
-				var cacheStackMock = new Mock<ICacheStack>();
-				extension.Register(cacheStackMock.Object);
-				await Task.Delay(TimeSpan.FromSeconds(2));
-				cacheStackMock.Verify(c => c.CleanupAsync(), Times.AtLeast(2));
-			}
+			await using var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500));
+			var cacheStackMock = new Mock<ICacheStack>();
+			extension.Register(cacheStackMock.Object);
+			await Task.Delay(TimeSpan.FromSeconds(2));
+			cacheStackMock.Verify(c => c.CleanupAsync(), Times.AtLeast(2));
 		}
 
 		[TestMethod]
 		public async Task BackgroundCleanupObeysCancel()
 		{
-			await using (var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500), new CancellationToken(true)))
-			{
-				var cacheStackMock = new Mock<ICacheStack>();
-				extension.Register(cacheStackMock.Object);
-				await Task.Delay(TimeSpan.FromSeconds(2));
-				cacheStackMock.Verify(c => c.CleanupAsync(), Times.Never);
-			}
+			await using var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500), new CancellationToken(true));
+			var cacheStackMock = new Mock<ICacheStack>();
+			extension.Register(cacheStackMock.Object);
+			await Task.Delay(TimeSpan.FromSeconds(2));
+			cacheStackMock.Verify(c => c.CleanupAsync(), Times.Never);
 		}
 	}
 }

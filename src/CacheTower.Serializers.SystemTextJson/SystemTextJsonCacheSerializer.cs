@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.Json;
 
 namespace CacheTower.Serializers.SystemTextJson;
@@ -28,12 +29,26 @@ public class SystemTextJsonCacheSerializer : ICacheSerializer
 	/// <inheritdoc/>
 	public void Serialize<T>(Stream stream, T? value)
 	{
-		JsonSerializer.Serialize(stream, value, options);
+		try
+		{
+			JsonSerializer.Serialize(stream, value, options);
+		}
+		catch (Exception ex)
+		{
+			throw new CacheSerializationException("A serialization error has occurred when serializing with System.Text.Json", ex);
+		}
 	}
 
 	/// <inheritdoc/>
 	public T? Deserialize<T>(Stream stream)
 	{
-		return JsonSerializer.Deserialize<T>(stream, options);
+		try
+		{
+			return JsonSerializer.Deserialize<T>(stream, options);
+		}
+		catch (Exception ex)
+		{
+			throw new CacheSerializationException("A serialization error has occurred when deserializing with System.Text.Json", ex);
+		}
 	}
 }

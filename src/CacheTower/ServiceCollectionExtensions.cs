@@ -7,6 +7,7 @@ using CacheTower.Extensions;
 using CacheTower.Providers.FileSystem;
 using CacheTower.Providers.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -80,6 +81,7 @@ public static class ServiceCollectionExtensions
 		configureBuilder(provider, builder);
 		ThrowIfInvalidBuilder(builder);
 		return new CacheStack(
+			provider.GetService<ILogger<CacheStack>>(),
 			builder.CacheLayers.ToArray(),
 			builder.Extensions.ToArray()
 		);
@@ -91,6 +93,7 @@ public static class ServiceCollectionExtensions
 		configureBuilder(provider, builder);
 		ThrowIfInvalidBuilder(builder);
 		return new CacheStack<TContext>(
+			provider.GetService<ILogger<CacheStack>>(),
 			builder.CacheContextActivator,
 			builder.CacheLayers.ToArray(),
 			builder.Extensions.ToArray()
@@ -232,71 +235,5 @@ public static class ServiceCollectionExtensions
 		{
 			collection.Add(value);
 		}
-	}
-
-	/// <summary>
-	/// Adds a <see cref="CacheStack"/> singleton to the specified <see cref="IServiceCollection"/> with the given layers and automatic cleanup frequency (via <see cref="AutoCleanupExtension"/>).
-	/// </summary>
-	/// <param name="services">The services collection to add the dependencies to.</param>
-	/// <param name="layers">The cache layers to use.</param>
-	/// <param name="cleanupFrequency">The frequency at which cache stack cleanup will be performed.</param>
-	[Obsolete("Use service collection extension with builder pattern instead. This will be removed in a future version.")]
-	public static void AddCacheStack(this IServiceCollection services, ICacheLayer[] layers, TimeSpan cleanupFrequency)
-	{
-		services.AddCacheStack(builder =>
-		{
-			builder.CacheLayers.AddRange(layers);
-			builder.WithCleanupFrequency(cleanupFrequency);
-		});
-	}
-
-	/// <summary>
-	/// Adds a <see cref="CacheStack"/> singleton to the specified <see cref="IServiceCollection"/> with the specified layers and extensions.
-	/// </summary>
-	/// <param name="services">The services collection to add the dependencies to.</param>
-	/// <param name="layers">The cache layers to use.</param>
-	/// <param name="extensions">The cache extensions to use.</param>
-	[Obsolete("Use service collection extension with builder pattern instead. This will be removed in a future version.")]
-	public static void AddCacheStack(this IServiceCollection services, ICacheLayer[] layers, ICacheExtension[] extensions)
-	{
-		services.AddCacheStack(builder =>
-		{
-			builder.CacheLayers.AddRange(layers);
-			builder.Extensions.AddRange(extensions);
-		});
-	}
-
-	/// <summary>
-	/// Adds a <see cref="CacheStack"/> singleton to the specified <see cref="IServiceCollection"/> with the specified layers and extensions.
-	/// An implementation factory of <typeparamref name="TContext"/> is built using the <see cref="IServiceProvider"/> established when instantiating the <see cref="CacheStack{TContext}"/>.
-	/// </summary>
-	/// <param name="services">The services collection to add the dependencies to.</param>
-	/// <param name="layers">The cache layers to use.</param>
-	/// <param name="extensions">The cache extensions to use.</param>
-	[Obsolete("Use service collection extension with builder pattern instead. This will be removed in a future version.")]
-	public static void AddCacheStack<TContext>(this IServiceCollection services, ICacheLayer[] layers, ICacheExtension[] extensions)
-	{
-		services.AddCacheStack<TContext>(builder =>
-		{
-			builder.CacheLayers.AddRange(layers);
-			builder.Extensions.AddRange(extensions);
-		});
-	}
-
-	/// <summary>
-	/// Adds a <see cref="CacheStack{TContext}"/> singleton to the specified <see cref="IServiceCollection"/> with the specified <paramref name="contextFactory"/>, layers and extensions.
-	/// </summary>
-	/// <param name="services">The services collection to add the dependencies to.</param>
-	/// <param name="contextFactory">The factory method that will generate a context when <see cref="CacheStack{TContext}.GetOrSetAsync{T}(string, Func{T, TContext, System.Threading.Tasks.Task{T}}, CacheSettings)"/> is called.</param>
-	/// <param name="layers">The cache layers to use.</param>
-	/// <param name="extensions">The cache extensions to use.</param>
-	[Obsolete("Use service collection extension with builder pattern instead. This will be removed in a future version.")]
-	public static void AddCacheStack<TContext>(this IServiceCollection services, Func<TContext> contextFactory, ICacheLayer[] layers, ICacheExtension[] extensions)
-	{
-		services.AddCacheStack<TContext>(new FuncCacheContextActivator<TContext>(contextFactory), builder =>
-		{
-			builder.CacheLayers.AddRange(layers);
-			builder.Extensions.AddRange(extensions);
-		});
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -32,16 +33,30 @@ public class NewtonsoftJsonCacheSerializer : ICacheSerializer
 	/// <inheritdoc />
 	public void Serialize<T>(Stream stream, T? value)
 	{
-		using var streamWriter = new StreamWriter(stream, Encoding.UTF8, 1024, true);
-		using var jsonWriter = new JsonTextWriter(streamWriter);
-		serializer.Serialize(jsonWriter, value);
+		try
+		{
+			using var streamWriter = new StreamWriter(stream, Encoding.UTF8, 1024, true);
+			using var jsonWriter = new JsonTextWriter(streamWriter);
+			serializer.Serialize(jsonWriter, value);
+		}
+		catch (Exception ex)
+		{
+			throw new CacheSerializationException("A serialization error has occurred when serializing with Newtonsoft.Json", ex);
+		}
 	}
 
 	/// <inheritdoc />
 	public T? Deserialize<T>(Stream stream)
 	{
-		using var streamReader = new StreamReader(stream, Encoding.UTF8, false, 1024);
-		using var jsonReader = new JsonTextReader(streamReader);
-		return serializer.Deserialize<T>(jsonReader);
+		try
+		{
+			using var streamReader = new StreamReader(stream, Encoding.UTF8, false, 1024);
+			using var jsonReader = new JsonTextReader(streamReader);
+			return serializer.Deserialize<T>(jsonReader);
+		}
+		catch (Exception ex)
+		{
+			throw new CacheSerializationException("A serialization error has occurred when deserializing with Newtonsoft.Json", ex);
+		}
 	}
 }

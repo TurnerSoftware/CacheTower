@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CacheTower
 {
@@ -14,25 +15,13 @@ namespace CacheTower
 		private readonly ICacheContextActivator CacheContextActivator;
 
 		/// <summary>
-		/// Creates a new <see cref="CacheStack{TContext}"/> with the given <paramref name="contextFactory"/>, <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
-		/// </summary>
-		/// <param name="contextFactory">The factory that provides the context. This is called for every cache item refresh.</param>
-		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
-		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
-		[Obsolete("Use other constructor that requires an `ICacheContextActivator` instead. This constructor will be removed in a future version.")]
-		public CacheStack(Func<TContext> contextFactory, ICacheLayer[] cacheLayers, ICacheExtension[] extensions) : base(cacheLayers, extensions)
-		{
-			var factory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
-			CacheContextActivator = new FuncCacheContextActivator<TContext>(factory);
-		}
-
-		/// <summary>
 		/// Creates a new <see cref="CacheStack{TContext}"/> with the given <paramref name="cacheContextActivator"/>, <paramref name="cacheLayers"/> and <paramref name="extensions"/>.
 		/// </summary>
+		/// <param name="logger">The internal logger to use.</param>
 		/// <param name="cacheContextActivator">The activator that provides the context. This is called for every cache item refresh.</param>
 		/// <param name="cacheLayers">The cache layers to use for the current cache stack. The layers should be ordered from the highest priority to the lowest. At least one cache layer is required.</param>
 		/// <param name="extensions">The cache extensions to use for the current cache stack.</param>
-		public CacheStack(ICacheContextActivator cacheContextActivator, ICacheLayer[] cacheLayers, ICacheExtension[] extensions) : base(cacheLayers, extensions)
+		public CacheStack(ILogger<CacheStack>? logger, ICacheContextActivator cacheContextActivator, ICacheLayer[] cacheLayers, ICacheExtension[] extensions) : base(logger, cacheLayers, extensions)
 		{
 			CacheContextActivator = cacheContextActivator ?? throw new ArgumentNullException(nameof(cacheContextActivator));
 		}
