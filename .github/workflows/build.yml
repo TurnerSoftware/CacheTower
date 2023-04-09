@@ -7,6 +7,10 @@ on:
   release:
     types: [ published ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   # Disable the .NET logo in the console output.
   DOTNET_NOLOGO: true
