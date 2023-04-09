@@ -2,5 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>TurnerSoftware/.github:renovate-shared"
+  ],
+  "packageRules": [
+    {
+      "matchSourceUrls": [ "https://github.com/dotnetcore/EasyCaching" ],
+      "groupName": "EasyCaching monorepo packages"
+    }
   ]
 }
