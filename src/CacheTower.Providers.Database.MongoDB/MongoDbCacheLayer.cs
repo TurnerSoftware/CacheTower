@@ -6,6 +6,7 @@ using MongoFramework;
 using MongoFramework.Infrastructure;
 using MongoFramework.Infrastructure.Indexing;
 using MongoFramework.Infrastructure.Linq;
+using MongoFramework.Infrastructure.Mapping;
 
 namespace CacheTower.Providers.Database.MongoDB
 {
@@ -21,6 +22,15 @@ namespace CacheTower.Providers.Database.MongoDB
 		private IMongoDbConnection Connection { get; }
 
 		private bool HasSetIndexes = false;
+		
+		static MongoDbCacheLayer()
+		{
+			//Due to a change in 2.19.0, we need to ensure that DbCachedEntry is registered early.
+			//More importantly than the type itself is that the TypeDiscoverySerializer is registered
+			//which is done automatically with use of type discovery serialization.
+			//This may need to be revisited later with a future update to MongoFramework.
+			_ = EntityMapping.RegisterType(typeof(DbCachedEntry));
+		}
 
 		/// <summary>
 		/// Creates a new instance of <see cref="MongoDbCacheLayer"/> with the given <paramref name="connection"/>.
