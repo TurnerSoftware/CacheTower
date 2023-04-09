@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 namespace CacheTower.Extensions
 {
-	internal class ExtensionContainer : ICacheExtension, ICacheChangeExtension, ICacheRefreshCallSiteWrapperExtension, IAsyncDisposable
+	internal class ExtensionContainer : ICacheExtension, ICacheChangeExtension, IDistributedLockExtension, IAsyncDisposable
 	{
 		private bool Disposed;
 
-		private readonly bool HasCacheRefreshCallSiteWrapperExtension;
-		private readonly ICacheRefreshCallSiteWrapperExtension? CacheRefreshCallSiteWrapperExtension;
+		private readonly bool HasDistributedLockExtension;
+		private readonly IDistributedLockExtension? DistributedLockExtension;
 		private readonly bool HasCacheChangeExtensions;
 		private readonly ICacheChangeExtension[] CacheChangeExtensions;
 		private readonly ICacheExtension[] AllExtensions;
@@ -23,10 +23,10 @@ namespace CacheTower.Extensions
 
 				foreach (var extension in extensions)
 				{
-					if (CacheRefreshCallSiteWrapperExtension == null && extension is ICacheRefreshCallSiteWrapperExtension remoteLockExtension)
+					if (!HasDistributedLockExtension && extension is IDistributedLockExtension distributedLockExtension)
 					{
-						HasCacheRefreshCallSiteWrapperExtension = true;
-						CacheRefreshCallSiteWrapperExtension = remoteLockExtension;
+						HasDistributedLockExtension = true;
+						DistributedLockExtension = distributedLockExtension;
 					}
 
 					if (extension is ICacheChangeExtension cacheChangeExtension)
@@ -53,20 +53,17 @@ namespace CacheTower.Extensions
 			{
 				extension.Register(cacheStack);
 			}
-
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ValueTask<CacheEntry<TValue>> WithRefreshAsync<TValue, TState>(string cacheKey, Func<TState, ValueTask<CacheEntry<TValue>>> asyncValueFactory, TState state, CacheSettings settings)
+		public ValueTask<DistributedLock> AwaitAccessAsync(string cacheKey)
 		{
-			if (!HasCacheRefreshCallSiteWrapperExtension)
+			if (HasDistributedLockExtension)
 			{
-				return asyncValueFactory(state);
+				return DistributedLockExtension!.AwaitAccessAsync(cacheKey);
 			}
-			else
-			{
-				return CacheRefreshCallSiteWrapperExtension!.WithRefreshAsync(cacheKey, asyncValueFactory, state, settings);
-			}
+
+			return new(DistributedLock.NotEnabled(cacheKey));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

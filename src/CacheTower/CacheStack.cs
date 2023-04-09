@@ -308,28 +308,29 @@ namespace CacheTower
 						return previousEntry;
 					}
 
-					return await Extensions.WithRefreshAsync(cacheKey, static async state =>
-					{
-						var (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey, stack) = state;
-						var oldValue = default(T);
-						if (previousEntry != default)
-						{
-							oldValue = previousEntry.Value;
-						}
+					await using var distributedLock = await Extensions.AwaitAccessAsync(cacheKey);
 
-						var value = await asyncValueFactory(oldValue!);
-						var refreshedEntry = new CacheEntry<T>(value, settings.TimeToLive);
+					CacheEntry<T>? cacheEntry;
+					if (distributedLock.IsLockOwner)
+					{
+						var oldValue = previousEntry != default ? previousEntry.Value : default;
+						var refreshedValue = await asyncValueFactory(oldValue!);
+						cacheEntry = new CacheEntry<T>(refreshedValue, settings.TimeToLive);
 						var cacheUpdateType = entryStatus switch
 						{
 							CacheEntryStatus.Miss => CacheUpdateType.AddEntry,
 							_ => CacheUpdateType.AddOrUpdateEntry
 						};
-						await stack.InternalSetAsync(cacheKey, refreshedEntry, cacheUpdateType);
+						await InternalSetAsync(cacheKey, cacheEntry, cacheUpdateType);
 
-						stack.KeyLock.ReleaseLock(cacheKey, refreshedEntry);
+						KeyLock.ReleaseLock(cacheKey, cacheEntry);
+					}
+					else
+					{
+						cacheEntry = await GetAsync<T>(cacheKey);
+					}
 
-						return refreshedEntry;
-					}, (previousEntry, asyncValueFactory, settings, entryStatus, cacheKey, this), settings);
+					return cacheEntry;
 				}
 				catch (Exception e)
 				{

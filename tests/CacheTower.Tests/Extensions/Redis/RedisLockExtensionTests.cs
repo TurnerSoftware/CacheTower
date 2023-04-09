@@ -44,22 +44,10 @@ namespace CacheTower.Tests.Extensions.Redis
 			RedisHelper.ResetState();
 
 			var extension = new RedisLockExtension(RedisHelper.GetConnection(), RedisLockOptions.Default with { LockTimeout = TimeSpan.FromDays(1) });
-			var refreshWaiterTask = new TaskCompletionSource<bool>();
-			var lockWaiterTask = new TaskCompletionSource<bool>();
-
-			var refreshTask = extension.WithRefreshAsync<int, object>("TestLock", async _ =>
-			{
-				lockWaiterTask.SetResult(true);
-				await refreshWaiterTask.Task;
-				return new CacheEntry<int>(5, TimeSpan.FromDays(1));
-			}, null, new CacheSettings(TimeSpan.FromHours(3)));
-
-			await lockWaiterTask.Task;
+			await using var distributedLock = await extension.AwaitAccessAsync("TestLock");
 
 			var database = RedisHelper.GetConnection().GetDatabase();
 			var keyWithExpiry = await database.StringGetWithExpiryAsync("Lock:TestLock");
-
-			refreshWaiterTask.SetResult(true);
 
 			var lockTimeout = TimeSpan.FromDays(1);
 			var actualExpiry = keyWithExpiry.Expiry.Value;
@@ -70,7 +58,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			//is greater than this new "comparison timeout".
 			var comparisonTimeout = lockTimeout - TimeSpan.FromMinutes(1);
 
-			Assert.IsTrue(comparisonTimeout < keyWithExpiry.Expiry.Value);
+			Assert.IsTrue(comparisonTimeout < actualExpiry);
 		}
 
 		[TestMethod]
@@ -104,8 +92,8 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
 
-			await extension.WithRefreshAsync<int, object>("TestKey",
-				_ => new ValueTask<CacheEntry<int>>(cacheEntry), null, new CacheSettings(TimeSpan.FromDays(1)));
+			var distributedLock = await extension.AwaitAccessAsync("TestKey");
+			await distributedLock.DisposeAsync();
 
 			var succeedingTask = await Task.WhenAny(completionSource.Task, Task.Delay(TimeSpan.FromSeconds(10)));
 			if (!succeedingTask.Equals(completionSource.Task))
@@ -134,16 +122,8 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask = extension.WithRefreshAsync<int, object>("TestKey",
-					_ =>
-					{
-						return new ValueTask<CacheEntry<int>>(cacheEntry);
-					},
-					null,
-					new CacheSettings(TimeSpan.FromDays(1))
-				).AsTask();
+			var lockTask = extension.AwaitAccessAsync("TestKey").AsTask();
 
-			//Delay to allow for Redis check and self-entry into lock
 			await Task.Delay(TimeSpan.FromSeconds(1));
 
 			Assert.IsTrue(extension.LockedOnKeyRefresh.ContainsKey("TestKey"), "Lock was not established");
@@ -151,8 +131,8 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Trigger the end of the lock
 			await connection.GetSubscriber().PublishAsync("CacheTower.CacheLock", "TestKey");
 
-			var succeedingTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(10)));
-			if (!succeedingTask.Equals(refreshTask))
+			var succeedingTask = await Task.WhenAny(lockTask, Task.Delay(TimeSpan.FromSeconds(10)));
+			if (!succeedingTask.Equals(lockTask))
 			{
 				RedisHelper.DebugInfo(connection);
 				Assert.Fail("Refresh has timed out - something has gone very wrong");
@@ -178,9 +158,9 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask1 = extension.WithRefreshAsync<int, object>("TestKey", _ => { return new ValueTask<CacheEntry<int>>(cacheEntry); }, null, new CacheSettings(TimeSpan.FromDays(1))).AsTask();
+			var lockTask1 = extension.AwaitAccessAsync("TestKey").AsTask();
 
-			var refreshTask2 = extension.WithRefreshAsync<int, object>("TestKey", _ => { return new ValueTask<CacheEntry<int>>(cacheEntry); }, null, new CacheSettings(TimeSpan.FromDays(1))).AsTask();
+			var lockTask2 = extension.AwaitAccessAsync("TestKey").AsTask();
 
 			//Delay to allow for Redis check and self-entry into lock
 			await Task.Delay(TimeSpan.FromSeconds(2));
@@ -190,7 +170,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			//Trigger the end of the lock
 			await connection.GetSubscriber().PublishAsync("CacheTower.CacheLock", "TestKey");
 
-			var whenAllRefreshesTask = Task.WhenAll(refreshTask1, refreshTask2);
+			var whenAllRefreshesTask = Task.WhenAll(lockTask1, lockTask2);
 			var succeedingTask = await Task.WhenAny(whenAllRefreshesTask, Task.Delay(TimeSpan.FromSeconds(10)));
 			if (!succeedingTask.Equals(whenAllRefreshesTask))
 			{
@@ -212,12 +192,10 @@ namespace CacheTower.Tests.Extensions.Redis
 			var extension = new RedisLockExtension(connection, RedisLockOptions.Default with { LockTimeout = TimeSpan.FromSeconds(1) });
 			extension.Register(cacheStackMock.Object);
 
-			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
-
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask = extension.WithRefreshAsync<int, object>("TestKey", _ => { return new ValueTask<CacheEntry<int>>(cacheEntry); }, null, new CacheSettings(TimeSpan.FromDays(1))).AsTask();
+			var lockTask = extension.AwaitAccessAsync("TestKey").AsTask();
 
 			//Delay to allow for Redis check and self-entry into lock
 			await Task.Delay(TimeSpan.FromSeconds(1));
@@ -227,14 +205,12 @@ namespace CacheTower.Tests.Extensions.Redis
 			//We don't publish to end lock
 
 			//However, we still expect to succeed
-			var succeedingTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(10)));
-			if (!succeedingTask.Equals(refreshTask))
+			var succeedingTask = await Task.WhenAny(lockTask, Task.Delay(TimeSpan.FromSeconds(10)));
+			if (!succeedingTask.Equals(lockTask))
 			{
 				RedisHelper.DebugInfo(connection);
 				Assert.Fail("Refresh has timed out - something has gone very wrong");
 			}
-
-			cacheStackMock.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(1), "One checks to the cache stack are expected as it will fail to resolve lock");
 		}
 
 
@@ -250,12 +226,10 @@ namespace CacheTower.Tests.Extensions.Redis
 			var extension = new RedisLockExtension(connection, RedisLockOptions.Default with { LockCheckStrategy = LockCheckStrategy.WithSpinLock(TimeSpan.FromMilliseconds(50)) });
 			extension.Register(cacheStackMock.Object);
 
-			var cacheEntry = new CacheEntry<int>(13, TimeSpan.FromDays(1));
-
 			//Establish lock
 			await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
 
-			var refreshTask = extension.WithRefreshAsync<int, object>("TestKey", _ => { return new ValueTask<CacheEntry<int>>(cacheEntry); }, null, new CacheSettings(TimeSpan.FromDays(1))).AsTask();
+			var lockTask = extension.AwaitAccessAsync("TestKey").AsTask();
 
 			//Delay to allow for Redis check and self-entry into lock
 			await Task.Delay(TimeSpan.FromSeconds(1));
@@ -267,14 +241,12 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			//Note we don't publish the value was refreshed
 
-			var succeedingTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(10)));
-			if (!succeedingTask.Equals(refreshTask))
+			var succeedingTask = await Task.WhenAny(lockTask, Task.Delay(TimeSpan.FromSeconds(10)));
+			if (!succeedingTask.Equals(lockTask))
 			{
 				RedisHelper.DebugInfo(connection);
 				Assert.Fail("Refresh has timed out - something has gone very wrong");
 			}
-
-			cacheStackMock.Verify(c => c.GetAsync<int>("TestKey"), Times.Exactly(2), "Two checks to the cache stack are expected");
 		}
 	}
 }
