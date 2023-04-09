@@ -56,7 +56,7 @@ namespace CacheTower.AlternativesBenchmark
 			CleanupFileSystem();
 
 			// Easy Caching seems to generate a folder structure at initialization - this is required to be established for benchmarking.
-			EasyCaching = new DefaultDiskCachingProvider("EasyCaching", new DiskOptions
+			EasyCaching = new DefaultDiskCachingProvider("EasyCaching", new[] { new EasyCaching.Serialization.Protobuf.DefaultProtobufSerializer("EasyCaching") }, new DiskOptions
 			{
 				DBConfig = new DiskDbOptions
 				{
