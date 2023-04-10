@@ -3,67 +3,72 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using StackExchange.Redis;
 
-namespace CacheTower.Tests.Utils
+namespace CacheTower.Tests.Utils;
+
+public static class RedisHelper
 {
-	public static class RedisHelper
+	public static string Endpoint => Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? "localhost:6379";
+
+	private static readonly ConcurrentQueue<string> Errors = new();
+
+	static RedisHelper()
 	{
-		public static string Endpoint => Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? "localhost:6379";
-
-		private static readonly ConcurrentQueue<string> Errors = new();
-
-		static RedisHelper()
+		var connection = GetConnection();
+		connection.ErrorMessage += (sender, args) =>
 		{
-			var connection = GetConnection();
-			connection.ErrorMessage += (sender, args) =>
+			Errors.Enqueue(args.Message);
+		};
+		connection.InternalError += (sender, args) =>
+		{
+			if (args.Exception is not null)
 			{
-				Errors.Enqueue(args.Message);
-			};
-			connection.InternalError += (sender, args) =>
-			{
-				if (args.Exception is not null)
-				{
-					Errors.Enqueue(args.Exception.Message);
-				}
-			};
-		}
+				Errors.Enqueue(args.Exception.Message);
+			}
+		};
+	}
 
-		public static ConnectionMultiplexer GetConnection()
+	private static ConnectionMultiplexer Connection { get; set; }
+
+	public static ConnectionMultiplexer GetConnection()
+	{
+		if (Connection == null)
 		{
 			var config = new ConfigurationOptions
 			{
 				AllowAdmin = true
 			};
 			config.EndPoints.Add(Endpoint);
-			return ConnectionMultiplexer.Connect(config);
+			Connection = ConnectionMultiplexer.Connect(config);
 		}
+		return Connection;
+	}
 
-		/// <summary>
-		/// Flushes Redis and resets the state of error logging
-		/// </summary>
-		public static void ResetState()
+	/// <summary>
+	/// Flushes Redis and resets the state of error logging
+	/// </summary>
+	public static void ResetState()
+	{
+		GetConnection().GetServer(Endpoint).FlushDatabase();
+		GetConnection().GetSubscriber().UnsubscribeAll();
+		
+		//.NET Framework doesn't support `Clear()` on Errors so we do it manually
+		while (!Errors.IsEmpty)
 		{
-			GetConnection().GetServer(Endpoint).FlushDatabase();
-			GetConnection().GetSubscriber().UnsubscribeAll();
-			
-			//.NET Framework doesn't support `Clear()` on Errors so we do it manually
-			while (!Errors.IsEmpty)
-			{
-				Errors.TryDequeue(out _);
-			}
+			Errors.TryDequeue(out _);
 		}
+	}
 
-		public static void DebugInfo(IConnectionMultiplexer connection)
+	public static void DebugInfo(IConnectionMultiplexer connection)
+	{
+		Debug.WriteLine("== Redis Connection Status ==");
+		Debug.WriteLine(connection.GetStatus());
+
+		Debug.WriteLine("== Errors (Redis and Internal) ==");
+		while (!Errors.IsEmpty)
 		{
-			Debug.WriteLine("== Redis Connection Status ==");
-			Debug.WriteLine(connection.GetStatus());
-
-			Debug.WriteLine("== Errors (Redis and Internal) ==");
-			while (!Errors.IsEmpty)
+			if (Errors.TryDequeue(out var message))
 			{
-				if (Errors.TryDequeue(out var message))
-				{
-					Debug.WriteLine(message);
-				}
+				Debug.WriteLine(message);
 			}
 		}
 	}
