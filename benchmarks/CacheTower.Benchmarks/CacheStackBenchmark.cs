@@ -34,7 +34,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Set()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -45,7 +45,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Set_TwoLayers()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer(), new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -56,7 +56,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Evict()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -68,7 +68,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Evict_TwoLayers()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer(), new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -80,7 +80,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Cleanup()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -92,7 +92,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task Cleanup_TwoLayers()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer(), new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer(), new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -104,7 +104,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetMiss()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -115,7 +115,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetHit()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() })))
 			{
 				await cacheStack.SetAsync("GetHit", 15, TimeSpan.FromDays(1));
 
@@ -128,7 +128,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetOrSet_NeverStale()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -142,7 +142,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetOrSet_AlwaysStale()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() })))
 			{
 				for (var i = 0; i < WorkIterations; i++)
 				{
@@ -156,7 +156,7 @@ namespace CacheTower.Benchmarks
 		[Benchmark]
 		public async Task GetOrSet_UnderLoad()
 		{
-			await using (var cacheStack = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>()))
+			await using (var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() })))
 			{
 				await cacheStack.SetAsync("GetOrSet", new CacheEntry<int>(15, DateTime.UtcNow.AddDays(-1)));
 

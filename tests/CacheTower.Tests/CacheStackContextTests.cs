@@ -11,19 +11,19 @@ namespace CacheTower.Tests
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullKey()
 		{
-			await using var cacheStack = new CacheStack<object>(null, new FuncCacheContextActivator<object>(() => null), new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack<object>(null, new FuncCacheContextActivator<object>(() => null), new(new[] { new MemoryCacheLayer() }));
 			await cacheStack.GetOrSetAsync<int>(null, (old, context) => Task.FromResult(5), new CacheSettings(TimeSpan.FromDays(1)));
 		}
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task GetOrSet_ThrowsOnNullGetter()
 		{
-			await using var cacheStack = new CacheStack<object>(null, new FuncCacheContextActivator<object>(() => null), new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack<object>(null, new FuncCacheContextActivator<object>(() => null), new(new[] { new MemoryCacheLayer() }));
 			await cacheStack.GetOrSetAsync<int>("MyCacheKey", null, new CacheSettings(TimeSpan.FromDays(1)));
 		}
 		[TestMethod]
 		public async Task GetOrSet_CacheMiss_ContextHasValue()
 		{
-			await using var cacheStack = new CacheStack<int>(null, new FuncCacheContextActivator<object>(() => 123), new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack<int>(null, new FuncCacheContextActivator<object>(() => 123), new(new[] { new MemoryCacheLayer() }));
    			var result = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheMiss_ContextHasValue", (oldValue, context) =>
 			{
 				Assert.AreEqual(123, context);
@@ -36,7 +36,7 @@ namespace CacheTower.Tests
 		public async Task GetOrSet_CacheMiss_ContextFactoryCalledEachTime()
 		{
 			var contextValue = 0;
-			await using var cacheStack = new CacheStack<int>(null, new FuncCacheContextActivator<object>(() => contextValue++), new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			await using var cacheStack = new CacheStack<int>(null, new FuncCacheContextActivator<object>(() => contextValue++), new(new[] { new MemoryCacheLayer() }));
 
 			var result1 = await cacheStack.GetOrSetAsync<int>("GetOrSet_CacheMiss_ContextFactoryCalledEachTime_1", (oldValue, context) =>
 			{

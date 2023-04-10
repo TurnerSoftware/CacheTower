@@ -49,6 +49,11 @@ internal class CacheStackBuilder : ICacheStackBuilder
 	public IList<ICacheLayer> CacheLayers { get; } = new List<ICacheLayer>();
 	/// <inheritdoc/>
 	public IList<ICacheExtension> Extensions { get; } = new List<ICacheExtension>();
+	/// <inheritdoc/>
+	public virtual CacheStackOptions ToOptions() => new(CacheLayers.ToArray())
+	{
+		Extensions = Extensions.ToArray()
+	};
 }
 
 internal sealed class CacheStackBuilder<TContext> : CacheStackBuilder, ICacheStackBuilder<TContext>
@@ -67,36 +72,21 @@ internal sealed class CacheStackBuilder<TContext> : CacheStackBuilder, ICacheSta
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-	private static void ThrowIfInvalidBuilder(ICacheStackBuilder builder)
-	{
-		if (builder.CacheLayers.Count == 0)
-		{
-			throw new InvalidOperationException("No cache layers have been configured");
-		}
-	}
-
 	private static ICacheStack BuildCacheStack(IServiceProvider provider, Action<IServiceProvider, ICacheStackBuilder> configureBuilder)
 	{
 		var builder = new CacheStackBuilder();
 		configureBuilder(provider, builder);
-		ThrowIfInvalidBuilder(builder);
-		return new CacheStack(
-			provider.GetService<ILogger<CacheStack>>(),
-			builder.CacheLayers.ToArray(),
-			builder.Extensions.ToArray()
-		);
+		return new CacheStack(provider.GetService<ILogger<CacheStack>>(), builder.ToOptions());
 	}
 
 	private static ICacheStack<TContext> BuildCacheStack<TContext>(IServiceProvider provider, Action<IServiceProvider, ICacheStackBuilder<TContext>> configureBuilder)
 	{
 		var builder = new CacheStackBuilder<TContext>(new ServiceProviderContextActivator(provider));
 		configureBuilder(provider, builder);
-		ThrowIfInvalidBuilder(builder);
 		return new CacheStack<TContext>(
 			provider.GetService<ILogger<CacheStack>>(),
 			builder.CacheContextActivator,
-			builder.CacheLayers.ToArray(),
-			builder.Extensions.ToArray()
+			builder.ToOptions()
 		);
 	}
 

@@ -30,7 +30,7 @@ namespace CacheTower.Benchmarks.Extensions
 		protected virtual void SetupBenchmark() { }
 		protected virtual void CleanupBenchmark() { }
 
-		protected static CacheStack CacheStack { get; } = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+		protected static CacheStack CacheStack { get; } = new CacheStack(null, new(new[] { new MemoryCacheLayer() }));
 
 		[GlobalSetup]
 		public void Setup()
