@@ -27,7 +27,7 @@ public class ServiceCollectionExtensionsTests
 		});
 		var serviceProvider = serviceCollection.BuildServiceProvider();
 		
-		Assert.ThrowsException<InvalidOperationException>(() => serviceProvider.GetRequiredService<ICacheStack>());
+		Assert.ThrowsException<ArgumentException>(() => serviceProvider.GetRequiredService<ICacheStack>());
 		Assert.IsTrue(hasBuilderBeenCalled, "Builder has not been called");
 	}
 
