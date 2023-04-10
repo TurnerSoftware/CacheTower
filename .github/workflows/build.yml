@@ -105,7 +105,7 @@ jobs:
     - name: Prepare coverage reports
       run: reportgenerator -reports:*/coverage/*/coverage.cobertura.xml -targetdir:./ -reporttypes:Cobertura
     - name: Upload coverage report
-      uses: codecov/codecov-action@v1.5.2
+      uses: codecov/codecov-action@v3.1.1
       with:
         file: Cobertura.xml
         fail_ci_if_error: false
