@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using StackExchange.Redis;
@@ -12,7 +13,7 @@ namespace CacheTower.Extensions.Redis
 	/// <remarks>
 	/// Based on <a href="https://github.com/kristoff-it/redis-memolock/blob/77da8f82711309b9dd81eafd02cb7ccfb22344c7/csharp/redis-memolock/RedisMemoLock.cs">Loris Cro's RedisMemoLock"</a>
 	/// </remarks>
-	public class RedisLockExtension : ICacheRefreshCallSiteWrapperExtension
+	public class RedisLockExtension : IDistributedLockExtension
 	{
 		private ISubscriber Subscriber { get; }
 		private IDatabaseAsync Database { get; }
@@ -66,87 +67,78 @@ namespace CacheTower.Extensions.Redis
 			RegisteredStack = cacheStack;
 		}
 
-		/// <remarks>
-		/// The <see cref="RedisLockExtension"/> attempts to set a key in Redis representing whether it has achieved a lock.
-		/// If it succeeds to set the key, it continues to refresh the value, broadcasting the success of the updated value to all subscribers.
-		/// If it fails to set the key, it waits until notified that the cache is updated, retrieving it from the cache stack and returning the value.
-		/// </remarks>
-		/// <inheritdoc/>
-		public async ValueTask<CacheEntry<TValue>> WithRefreshAsync<TValue, TState>(string cacheKey, Func<TState, ValueTask<CacheEntry<TValue>>> asyncValueFactory, TState state, CacheSettings settings)
+		private async ValueTask ReleaseLockAsync(string cacheKey)
+		{
+			var lockKey = string.Format(Options.KeyFormat, cacheKey);
+			await Subscriber.PublishAsync(Options.RedisChannel, cacheKey, CommandFlags.FireAndForget);
+			await Database.KeyDeleteAsync(lockKey, CommandFlags.FireAndForget);
+			UnlockWaitingTasks(cacheKey);
+		}
+
+		private async ValueTask SpinWaitAsync(TaskCompletionSource<bool> taskCompletionSource, string lockKey)
+		{
+			var spinAttempt = 0;
+			var maxSpinAttempts = Options.LockCheckStrategy.CalculateSpinAttempts(Options.LockTimeout);
+			while (spinAttempt <= maxSpinAttempts && !taskCompletionSource.Task.IsCanceled && !taskCompletionSource.Task.IsCompleted)
+			{
+				spinAttempt++;
+
+				var lockExists = await Database.KeyExistsAsync(lockKey).ConfigureAwait(false);
+				if (lockExists)
+				{
+					await Task.Delay(Options.LockCheckStrategy.SpinTime);
+					continue;
+				}
+
+				taskCompletionSource.TrySetResult(true);
+				return;
+			}
+
+			taskCompletionSource.TrySetCanceled();
+		}
+
+		private async ValueTask DelayWaitAsync(TaskCompletionSource<bool> taskCompletionSource)
+		{
+			await Task.Delay(Options.LockTimeout).ConfigureAwait(false);
+			taskCompletionSource.TrySetCanceled();
+		}
+
+		public async ValueTask<DistributedLock> AwaitAccessAsync(string cacheKey)
 		{
 			var lockKey = string.Format(Options.KeyFormat, cacheKey);
 			var hasLock = await Database.StringSetAsync(lockKey, RedisValue.EmptyString, expiry: Options.LockTimeout, when: When.NotExists);
-
+			
 			if (hasLock)
 			{
-				try
-				{
-					var cacheEntry = await asyncValueFactory(state);
-					return cacheEntry;
-				}
-				finally
-				{
-					await Subscriber.PublishAsync(Options.RedisChannel, cacheKey, CommandFlags.FireAndForget);
-					await Database.KeyDeleteAsync(lockKey, CommandFlags.FireAndForget);
-				}
+				return DistributedLock.Locked(cacheKey, ReleaseLockAsync);
 			}
 			else
 			{
 				var completionSource = LockedOnKeyRefresh.GetOrAdd(cacheKey, key =>
 				{
-					var tcs = new TaskCompletionSource<bool>();
-			
+					var taskCompletionSource = new TaskCompletionSource<bool>();
+
 					if (Options.LockCheckStrategy.UseSpinLock)
 					{
-						_ = TestLock(tcs, Options);
+						_ = SpinWaitAsync(taskCompletionSource, lockKey);
 					}
 					else
 					{
-						var cts = new CancellationTokenSource(Options.LockTimeout);
-						cts.Token.Register(tcs => ((TaskCompletionSource<bool>)tcs).TrySetCanceled(), tcs, useSynchronizationContext: false);
+						_ = DelayWaitAsync(taskCompletionSource);
 					}
 
-					return tcs;
-
-					async Task TestLock(TaskCompletionSource<bool> taskCompletionSource, RedisLockOptions options)
-					{
-						var spinAttempt = 0;
-						var maxSpinAttempts = options.LockCheckStrategy.CalculateSpinAttempts(options.LockTimeout);
-						while (spinAttempt <= maxSpinAttempts && 
-						       !taskCompletionSource.Task.IsCanceled && 
-						       !taskCompletionSource.Task.IsCompleted)
-						{
-							spinAttempt++;
-
-							var lockExists = await Database.KeyExistsAsync(lockKey);
-
-							if (lockExists)
-							{
-								await Task.Delay(options.LockCheckStrategy.SpinTime);
-								continue;
-							}
-
-							taskCompletionSource.TrySetResult(true);
-							return;
-						}
-
-						taskCompletionSource.TrySetCanceled();
-					}
+					return taskCompletionSource;
 				});
 
 				//Last minute check to confirm whether waiting is required (in case the notification is missed)
-				var currentEntry = await RegisteredStack!.GetAsync<TValue>(cacheKey);
-				if (currentEntry != null && currentEntry.GetStaleDate(settings) > Internal.DateTimeProvider.Now)
+				if (!await Database.KeyExistsAsync(lockKey))
 				{
 					UnlockWaitingTasks(cacheKey);
-					return currentEntry;
+					return DistributedLock.Unlocked(cacheKey);
 				}
 
-				//Lock until we are notified to be unlocked
 				await completionSource.Task;
-
-				//Get the updated value from the cache stack
-				return (await RegisteredStack.GetAsync<TValue>(cacheKey))!;
+				return DistributedLock.Unlocked(cacheKey);
 			}
 		}
 

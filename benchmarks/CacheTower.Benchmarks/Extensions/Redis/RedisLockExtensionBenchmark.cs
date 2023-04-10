@@ -4,7 +4,7 @@ using CacheTower.Extensions.Redis;
 
 namespace CacheTower.Benchmarks.Extensions.Redis
 {
-	public class RedisLockExtensionBenchmark : BaseRefreshWrapperExtensionBenchmark
+	public class RedisLockExtensionBenchmark : BaseDistributedLockExtensionBenchmark
 	{
 		protected override void SetupBenchmark()
 		{

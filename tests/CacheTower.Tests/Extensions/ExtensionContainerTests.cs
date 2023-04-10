@@ -25,28 +25,18 @@ namespace CacheTower.Tests.Extensions
 		}
 		
 		[TestMethod]
-		public async Task RefreshCallSiteWrapperExtension()
+		public async Task DistributedLockExtension()
 		{
 			var cacheStackMock = new Mock<ICacheStack>();
-			var refreshWrapperMock = new Mock<ICacheRefreshCallSiteWrapperExtension>();
-			await using var container = new ExtensionContainer(new[] { refreshWrapperMock.Object });
+			var distributedLockMock = new Mock<IDistributedLockExtension>();
+			await using var container = new ExtensionContainer(new[] { distributedLockMock.Object });
 
 			container.Register(cacheStackMock.Object);
 
-			var cacheEntry = new CacheEntry<int>(1, TimeSpan.FromDays(1));
+			var distributedLock = await container.AwaitAccessAsync("DistributedLockCacheKey");
 
-			var refreshedValue = await container.WithRefreshAsync<int, object>("WrapperTestCacheKey", _ =>
-			{
-				return new ValueTask<CacheEntry<int>>(cacheEntry);
-			}, null, new CacheSettings(TimeSpan.FromDays(1)));
-
-			refreshWrapperMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
-			refreshWrapperMock.Verify(e => e.WithRefreshAsync<int, object>(
-					"WrapperTestCacheKey",
-					It.IsAny<Func<object, ValueTask<CacheEntry<int>>>>(), null, new CacheSettings(TimeSpan.FromDays(1))
-				),
-				Times.Once
-			);
+			distributedLockMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
+			distributedLockMock.Verify(e => e.AwaitAccessAsync("DistributedLockCacheKey"), Times.Once);
 		}
 
 		[TestMethod]
