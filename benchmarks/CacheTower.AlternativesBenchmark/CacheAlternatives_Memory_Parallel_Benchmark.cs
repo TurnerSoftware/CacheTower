@@ -36,7 +36,7 @@ namespace CacheTower.AlternativesBenchmark
 			);
 			LazyCache = new CachingService();
 			FusionCache = new FusionCache(new FusionCacheOptions());
-			IntelligentCache = new IntelligentHack.IntelligentCache.MemoryCache(string.Empty);
+			IntelligentCache = new IntelligentHack.IntelligentCache.MemoryCache("IntelligentCache");
 		}
 
 		[Benchmark(Baseline = true)]
