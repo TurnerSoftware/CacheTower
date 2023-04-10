@@ -86,7 +86,7 @@ jobs:
     - name: Pack
       run: dotnet pack --no-build -c Release /p:PackageOutputPath=${{env.BUILD_ARTIFACT_PATH}}
     - name: Publish artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{matrix.os}}
         path: ${{env.BUILD_ARTIFACT_PATH}}
@@ -110,7 +110,7 @@ jobs:
         file: Cobertura.xml
         fail_ci_if_error: false
     - name: Save combined coverage report as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: coverage-report
         path: Cobertura.xml
