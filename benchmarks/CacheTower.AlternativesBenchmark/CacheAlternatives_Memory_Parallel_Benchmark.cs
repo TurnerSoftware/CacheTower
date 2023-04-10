@@ -23,7 +23,7 @@ namespace CacheTower.AlternativesBenchmark
 
 		public CacheAlternatives_Memory_Parallel_Benchmark()
 		{
-			CacheTower = new CacheStack(null, new[] { new MemoryCacheLayer() }, Array.Empty<ICacheExtension>());
+			CacheTower = new CacheStack(null, new(new[] { new MemoryCacheLayer() }));
 			CacheManager = CacheFactory.Build<string>(b =>
 			{
 				b.WithMicrosoftMemoryCacheHandle();
