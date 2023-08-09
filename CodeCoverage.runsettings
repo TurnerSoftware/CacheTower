@@ -7,7 +7,7 @@
           <Format>cobertura</Format>
           <Exclude>[CacheTower.Tests]*,[CacheTower.Benchmarks]*,[CacheTower.AlternativesBenchmark]*</Exclude>
           <Include>[CacheTower]*,[CacheTower.*]*</Include>
-          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <ExcludeByAttribute>Obsolete</ExcludeByAttribute>
           <UseSourceLink>true</UseSourceLink>
           <SkipAutoProps>true</SkipAutoProps>
         </Configuration>
