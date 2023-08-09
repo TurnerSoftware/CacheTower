@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 using CacheTower.Extensions;
 using CacheTower.Providers.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
+using NSubstitute.ReceivedExtensions;
 
 namespace CacheTower.Tests.Extensions
 {
@@ -34,20 +35,20 @@ namespace CacheTower.Tests.Extensions
 		public async Task RunsBackgroundCleanup()
 		{
 			await using var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500));
-			var cacheStackMock = new Mock<ICacheStack>();
-			extension.Register(cacheStackMock.Object);
+			var cacheStackMock = Substitute.For<ICacheStack>();
+			extension.Register(cacheStackMock);
 			await Task.Delay(TimeSpan.FromSeconds(2));
-			cacheStackMock.Verify(c => c.CleanupAsync(), Times.AtLeast(2));
+			await cacheStackMock.Received(Quantity.Within(2, int.MaxValue)).CleanupAsync();
 		}
 
 		[TestMethod]
 		public async Task BackgroundCleanupObeysCancel()
 		{
 			await using var extension = new AutoCleanupExtension(TimeSpan.FromMilliseconds(500), new CancellationToken(true));
-			var cacheStackMock = new Mock<ICacheStack>();
-			extension.Register(cacheStackMock.Object);
+			var cacheStackMock = Substitute.For<ICacheStack>();
+			extension.Register(cacheStackMock);
 			await Task.Delay(TimeSpan.FromSeconds(2));
-			cacheStackMock.Verify(c => c.CleanupAsync(), Times.Never);
+			await cacheStackMock.DidNotReceive().CleanupAsync();
 		}
 	}
 }

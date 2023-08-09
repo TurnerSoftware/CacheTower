@@ -8,7 +8,7 @@ using CacheTower.Providers.Redis;
 using CacheTower.Serializers.NewtonsoftJson;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace CacheTower.Tests;
 
@@ -178,10 +178,10 @@ public class ServiceCollectionExtensionsTests
 	public void GenericCacheStack_CacheStackBuilder_CustomCacheContextActivator()
 	{
 		var serviceCollection = new ServiceCollection();
-		var contextActivatorMock = new Mock<ICacheContextActivator>();
+		var contextActivatorMock = Substitute.For<ICacheContextActivator>();
 
 		var hasBuilderBeenCalled = false;
-		serviceCollection.AddCacheStack<int>(contextActivatorMock.Object, builder =>
+		serviceCollection.AddCacheStack<int>(contextActivatorMock, builder =>
 		{
 			hasBuilderBeenCalled = true;
 			builder.AddMemoryCacheLayer();
@@ -200,14 +200,14 @@ public class ServiceCollectionExtensionsTests
 	public void CacheStackBuilder_AddCacheLayers()
 	{
 		var cacheStackBuilder = new CacheStackBuilder();
-		var mongoDbConnectionMock = new Mock<MongoFramework.IMongoDbConnection>();
-		var redisConnectionMock = new Mock<StackExchange.Redis.IConnectionMultiplexer>();
+		var mongoDbConnectionMock = Substitute.For<MongoFramework.IMongoDbConnection>();
+		var redisConnectionMock = Substitute.For<StackExchange.Redis.IConnectionMultiplexer>();
 
 		cacheStackBuilder
 			.AddMemoryCacheLayer()
 			.AddFileCacheLayer(new FileCacheLayerOptions("./FileCacheLayer", NewtonsoftJsonCacheSerializer.Instance))
-			.AddMongoDbCacheLayer(mongoDbConnectionMock.Object)
-			.AddRedisCacheLayer(redisConnectionMock.Object, new RedisCacheLayerOptions(NewtonsoftJsonCacheSerializer.Instance));
+			.AddMongoDbCacheLayer(mongoDbConnectionMock)
+			.AddRedisCacheLayer(redisConnectionMock, new RedisCacheLayerOptions(NewtonsoftJsonCacheSerializer.Instance));
 
 		Assert.AreEqual(4, cacheStackBuilder.CacheLayers.Count);
 		Assert.IsInstanceOfType(cacheStackBuilder.CacheLayers[0], typeof(MemoryCacheLayer));
@@ -220,14 +220,14 @@ public class ServiceCollectionExtensionsTests
 	public void CacheStackBuilder_WithExtensions()
 	{
 		var cacheStackBuilder = new CacheStackBuilder();
-		var redisConnectionMock = new Mock<StackExchange.Redis.IConnectionMultiplexer>();
-		redisConnectionMock.Setup(r => r.GetSubscriber(It.IsAny<object>()))
-			.Returns(new Mock<StackExchange.Redis.ISubscriber>().Object);
+		var redisConnectionMock = Substitute.For<StackExchange.Redis.IConnectionMultiplexer>();
+		redisConnectionMock.GetSubscriber(Arg.Any<object>())
+			.Returns(Substitute.For<StackExchange.Redis.ISubscriber>());
 
 		cacheStackBuilder
 			.WithCleanupFrequency(TimeSpan.FromSeconds(5))
-			.WithRedisDistributedLocking(redisConnectionMock.Object)
-			.WithRedisRemoteEviction(redisConnectionMock.Object);
+			.WithRedisDistributedLocking(redisConnectionMock)
+			.WithRedisRemoteEviction(redisConnectionMock);
 
 		Assert.AreEqual(3, cacheStackBuilder.Extensions.Count);
 		Assert.IsInstanceOfType(cacheStackBuilder.Extensions[0], typeof(AutoCleanupExtension));

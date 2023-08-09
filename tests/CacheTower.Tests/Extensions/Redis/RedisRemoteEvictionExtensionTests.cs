@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using CacheTower.Extensions.Redis;
-using CacheTower.Providers.Memory;
 using CacheTower.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using StackExchange.Redis;
 
 namespace CacheTower.Tests.Extensions.Redis
@@ -37,9 +33,9 @@ namespace CacheTower.Tests.Extensions.Redis
 		public void ThrowForRegisteringMoreThanOneCacheStack()
 		{
 			var extension = new RedisRemoteEvictionExtension(RedisHelper.GetConnection());
-			var cacheStackMock = new Mock<ICacheStack>();
-			extension.Register(cacheStackMock.Object);
-			extension.Register(cacheStackMock.Object);
+			var cacheStackMock = Substitute.For<ICacheStack>();
+			extension.Register(cacheStackMock);
+			extension.Register(cacheStackMock);
 		}
 
 		[TestMethod]
@@ -49,19 +45,19 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var connection = RedisHelper.GetConnection();
 
-			var cacheStackMockOne = new Mock<IExtendableCacheStack>();
-			var cacheLayerOne = new Mock<ILocalCacheLayer>();
-			cacheStackMockOne.Setup(c => c.GetCacheLayers())
-				.Returns(new[] { cacheLayerOne.Object });
+			var cacheStackMockOne = Substitute.For<IExtendableCacheStack>();
+			var cacheLayerOne = Substitute.For<ILocalCacheLayer>();
+			cacheStackMockOne.GetCacheLayers()
+				.Returns(new[] { cacheLayerOne });
 			var extensionOne = new RedisRemoteEvictionExtension(connection);
-			extensionOne.Register(cacheStackMockOne.Object);
+			extensionOne.Register(cacheStackMockOne);
 
-			var cacheStackMockTwo = new Mock<IExtendableCacheStack>();
-			var cacheLayerTwo = new Mock<ILocalCacheLayer>();
-			cacheStackMockTwo.Setup(c => c.GetCacheLayers())
-				.Returns(new[] { cacheLayerTwo.Object });
+			var cacheStackMockTwo = Substitute.For<IExtendableCacheStack>();
+			var cacheLayerTwo = Substitute.For<ILocalCacheLayer>();
+			cacheStackMockTwo.GetCacheLayers()
+				.Returns(new[] { cacheLayerTwo });
 			var extensionTwo = new RedisRemoteEvictionExtension(connection);
-			extensionTwo.Register(cacheStackMockTwo.Object);
+			extensionTwo.Register(cacheStackMockTwo);
 
 			var completionSource = new TaskCompletionSource<bool>();
 			connection.GetSubscriber().Subscribe("CacheTower.RemoteEviction").OnMessage(channelMessage =>
@@ -89,8 +85,8 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			await Task.Delay(500);
 
-			cacheLayerOne.Verify(c => c.EvictAsync("TestKey"), Times.Never, "Eviction took place locally where it should have been skipped");
-			cacheLayerTwo.Verify(c => c.EvictAsync("TestKey"), Times.Once, "Eviction was skipped where it should have taken place locally");
+			await cacheLayerOne.DidNotReceive().EvictAsync("TestKey"); //else; Eviction took place locally where it should have been skipped
+			await cacheLayerTwo.Received(1).EvictAsync("TestKey"); //else; Eviction was skipped where it should have taken place locally
 		}
 
 		[TestMethod]
@@ -100,19 +96,19 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var connection = RedisHelper.GetConnection();
 
-			var cacheStackMockOne = new Mock<IExtendableCacheStack>();
-			var cacheLayerOne = new Mock<ILocalCacheLayer>();
-			cacheStackMockOne.Setup(c => c.GetCacheLayers())
-				.Returns(new[] { cacheLayerOne.Object });
+			var cacheStackMockOne = Substitute.For<IExtendableCacheStack>();
+			var cacheLayerOne = Substitute.For<ILocalCacheLayer>();
+			cacheStackMockOne.GetCacheLayers()
+				.Returns(new[] { cacheLayerOne });
 			var extensionOne = new RedisRemoteEvictionExtension(connection);
-			extensionOne.Register(cacheStackMockOne.Object);
+			extensionOne.Register(cacheStackMockOne);
 
-			var cacheStackMockTwo = new Mock<IExtendableCacheStack>();
-			var cacheLayerTwo = new Mock<ILocalCacheLayer>();
-			cacheStackMockTwo.Setup(c => c.GetCacheLayers())
-				.Returns(new[] { cacheLayerTwo.Object });
+			var cacheStackMockTwo = Substitute.For<IExtendableCacheStack>();
+			var cacheLayerTwo = Substitute.For<ILocalCacheLayer>();
+			cacheStackMockTwo.GetCacheLayers()
+				.Returns(new[] { cacheLayerTwo });
 			var extensionTwo = new RedisRemoteEvictionExtension(connection);
-			extensionTwo.Register(cacheStackMockTwo.Object);
+			extensionTwo.Register(cacheStackMockTwo);
 
 			var completionSource = new TaskCompletionSource<bool>();
 			connection.GetSubscriber().Subscribe("CacheTower.RemoteEviction").OnMessage(channelMessage =>
@@ -144,8 +140,8 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			await Task.Delay(500);
 
-			cacheLayerOne.Verify(c => c.EvictAsync("TestKey"), Times.Never, "Eviction took place locally where it should have been skipped");
-			cacheLayerTwo.Verify(c => c.EvictAsync("TestKey"), Times.Once, "Eviction was skipped where it should have taken place locally");
+			await cacheLayerOne.DidNotReceive().EvictAsync("TestKey"); //else; Eviction took place locally where it should have been skipped
+			await cacheLayerTwo.Received(1).EvictAsync("TestKey"); //else; Eviction was skipped where it should have taken place locally
 		}
 
 		[TestMethod]
@@ -155,19 +151,19 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var connection = RedisHelper.GetConnection();
 
-			var cacheStackMockOne = new Mock<IExtendableCacheStack>();
-			var cacheLayerOne = new Mock<ILocalCacheLayer>();
-			cacheStackMockOne.Setup(c => c.GetCacheLayers())
-				.Returns(new[] { cacheLayerOne.Object });
+			var cacheStackMockOne = Substitute.For<IExtendableCacheStack>();
+			var cacheLayerOne = Substitute.For<ILocalCacheLayer>();
+			cacheStackMockOne.GetCacheLayers()
+				.Returns(new[] { cacheLayerOne });
 			var extensionOne = new RedisRemoteEvictionExtension(connection);
-			extensionOne.Register(cacheStackMockOne.Object);
+			extensionOne.Register(cacheStackMockOne);
 
-			var cacheStackMockTwo = new Mock<IExtendableCacheStack>();
-			var cacheLayerTwo = new Mock<ILocalCacheLayer>();
-			cacheStackMockTwo.Setup(c => c.GetCacheLayers())
-				.Returns(new[] { cacheLayerTwo.Object });
+			var cacheStackMockTwo = Substitute.For<IExtendableCacheStack>();
+			var cacheLayerTwo = Substitute.For<ILocalCacheLayer>();
+			cacheStackMockTwo.GetCacheLayers()
+				.Returns(new[] { cacheLayerTwo });
 			var extensionTwo = new RedisRemoteEvictionExtension(connection);
-			extensionTwo.Register(cacheStackMockTwo.Object);
+			extensionTwo.Register(cacheStackMockTwo);
 
 			var completionSource = new TaskCompletionSource<bool>();
 			connection.GetSubscriber().Subscribe("CacheTower.RemoteFlush").OnMessage(channelMessage =>
@@ -199,8 +195,8 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			await Task.Delay(500);
 
-			cacheLayerOne.Verify(c => c.FlushAsync(), Times.Never, "Flush took place locally where it should have been skipped");
-			cacheLayerTwo.Verify(c => c.FlushAsync(), Times.Once, "Flush was skipped where it should have taken place locally");
+			await cacheLayerOne.DidNotReceive().FlushAsync(); //else; Flush took place locally where it should have been skipped
+			await cacheLayerTwo.Received(1).FlushAsync(); //else; Flush was skipped where it should have taken place locally
 		}
 
 		[TestMethod]
@@ -210,27 +206,23 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			var realConnection = RedisHelper.GetConnection();
 
-			var connectionMock = new Mock<IConnectionMultiplexer>();
-			var subscriberMock = new Mock<ISubscriber>();
+			var connectionMock = Substitute.For<IConnectionMultiplexer>();
+			var subscriberMock = Substitute.For<ISubscriber>();
 
-			subscriberMock
-				.Setup(subscriber => subscriber.Subscribe(It.IsAny<RedisChannel>(), It.IsAny<CommandFlags>()))
-				.Returns(() => realConnection.GetSubscriber().Subscribe("DummyMessageQueue"));
-			connectionMock
-				.Setup(connection => connection.GetSubscriber(It.IsAny<object>()))
-				.Returns(subscriberMock.Object);
+			subscriberMock.Subscribe(Arg.Any<RedisChannel>(), Arg.Any<CommandFlags>())
+				.Returns(x => realConnection.GetSubscriber().Subscribe("DummyMessageQueue"));
+			subscriberMock.Subscribe(Arg.Any<RedisChannel>(), Arg.Any<CommandFlags>())
+				.Returns(x => realConnection.GetSubscriber().Subscribe("DummyMessageQueue"));
+			connectionMock.GetSubscriber(Arg.Any<object>())
+				.Returns(subscriberMock);
 
-			var cacheLayerOne = new Mock<ILocalCacheLayer>();
-			var extensionOne = new RedisRemoteEvictionExtension(connectionMock.Object);
-			var cacheStackOne = new CacheStack(null, new(new[] { cacheLayerOne.Object }) { Extensions = new[] { extensionOne } });
+			var cacheLayerOne = Substitute.For<ILocalCacheLayer>();
+			var extensionOne = new RedisRemoteEvictionExtension(connectionMock);
+			var cacheStackOne = new CacheStack(null, new(new[] { cacheLayerOne }) { Extensions = new[] { extensionOne } });
 
 			await cacheStackOne.GetOrSetAsync<int>("NoEvictionOnNewEntries", _ => Task.FromResult(1), new CacheSettings(TimeSpan.FromMinutes(5)));
 
-			subscriberMock
-				.Verify(
-					subscriber => subscriber.PublishAsync("CacheTower.RemoteEviction", It.IsAny<RedisValue>(), It.IsAny<CommandFlags>()),
-					Times.Never
-				);
+			await subscriberMock.DidNotReceive().PublishAsync("CacheTower.RemoteEviction", Arg.Any<RedisValue>(), Arg.Any<CommandFlags>());
 		}
 	}
 }

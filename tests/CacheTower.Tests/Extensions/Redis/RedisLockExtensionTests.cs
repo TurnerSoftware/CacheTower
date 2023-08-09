@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using CacheTower.Extensions.Redis;
 using CacheTower.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using StackExchange.Redis;
 
 namespace CacheTower.Tests.Extensions.Redis;
@@ -33,7 +33,7 @@ public class RedisLockExtensionTests
 	public void ThrowForRegisteringTwoCacheStacks()
 	{
 		var extension = new RedisLockExtension(RedisHelper.GetConnection());
-		var cacheStack = new Mock<ICacheStack>().Object;
+		var cacheStack = Substitute.For<ICacheStack>();
 		extension.Register(cacheStack);
 		extension.Register(cacheStack);
 	}
@@ -68,9 +68,9 @@ public class RedisLockExtensionTests
 
 		var connection = RedisHelper.GetConnection();
 
-		var cacheStackMock = new Mock<ICacheStack>();
+		var cacheStackMock = Substitute.For<ICacheStack>();
 		var extension = new RedisLockExtension(connection, RedisLockOptions.Default);
-		extension.Register(cacheStackMock.Object);
+		extension.Register(cacheStackMock);
 
 		var completionSource = new TaskCompletionSource<bool>();
 
@@ -112,9 +112,9 @@ public class RedisLockExtensionTests
 
 		var connection = RedisHelper.GetConnection();
 
-		var cacheStackMock = new Mock<ICacheStack>();
+		var cacheStackMock = Substitute.For<ICacheStack>();
 		var extension = new RedisLockExtension(connection, RedisLockOptions.Default);
-		extension.Register(cacheStackMock.Object);
+		extension.Register(cacheStackMock);
 
 		//Establish lock
 		await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
@@ -143,9 +143,9 @@ public class RedisLockExtensionTests
 
 		var connection = RedisHelper.GetConnection();
 
-		var cacheStackMock = new Mock<ICacheStack>();
+		var cacheStackMock = Substitute.For<ICacheStack>();
 		var extension = new RedisLockExtension(connection, RedisLockOptions.Default);
-		extension.Register(cacheStackMock.Object);
+		extension.Register(cacheStackMock);
 
 		//Establish lock
 		await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
@@ -178,9 +178,9 @@ public class RedisLockExtensionTests
 
 		var connection = RedisHelper.GetConnection();
 
-		var cacheStackMock = new Mock<ICacheStack>();
+		var cacheStackMock = Substitute.For<ICacheStack>();
 		var extension = new RedisLockExtension(connection, RedisLockOptions.Default with { LockTimeout = TimeSpan.FromSeconds(1) });
-		extension.Register(cacheStackMock.Object);
+		extension.Register(cacheStackMock);
 
 		//Establish lock
 		await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);
@@ -212,9 +212,9 @@ public class RedisLockExtensionTests
 
 		var connection = RedisHelper.GetConnection();
 
-		var cacheStackMock = new Mock<ICacheStack>();
+		var cacheStackMock = Substitute.For<ICacheStack>();
 		var extension = new RedisLockExtension(connection, RedisLockOptions.Default with { LockCheckStrategy = LockCheckStrategy.WithSpinLock(TimeSpan.FromMilliseconds(50)) });
-		extension.Register(cacheStackMock.Object);
+		extension.Register(cacheStackMock);
 
 		//Establish lock
 		await connection.GetDatabase().StringSetAsync("Lock:TestKey", RedisValue.EmptyString);

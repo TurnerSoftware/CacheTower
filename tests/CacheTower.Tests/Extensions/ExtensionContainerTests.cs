@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using CacheTower.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace CacheTower.Tests.Extensions
 {
@@ -27,76 +24,67 @@ namespace CacheTower.Tests.Extensions
 		[TestMethod]
 		public async Task DistributedLockExtension()
 		{
-			var cacheStackMock = new Mock<ICacheStack>();
-			var distributedLockMock = new Mock<IDistributedLockExtension>();
-			await using var container = new ExtensionContainer(new[] { distributedLockMock.Object });
+			var cacheStackMock = Substitute.For<ICacheStack>();
+			var distributedLockMock = Substitute.For<IDistributedLockExtension>();
+			await using var container = new ExtensionContainer(new[] { distributedLockMock });
 
-			container.Register(cacheStackMock.Object);
+			container.Register(cacheStackMock);
 
 			var distributedLock = await container.AwaitAccessAsync("DistributedLockCacheKey");
 
-			distributedLockMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
-			distributedLockMock.Verify(e => e.AwaitAccessAsync("DistributedLockCacheKey"), Times.Once);
+			distributedLockMock.Received(1).Register(cacheStackMock);
+			await distributedLockMock.Received(1).AwaitAccessAsync("DistributedLockCacheKey");
 		}
 
 		[TestMethod]
 		public async Task CacheChangeExtension_Update()
 		{
-			var cacheStackMock = new Mock<ICacheStack>();
-			var valueRefreshMock = new Mock<ICacheChangeExtension>();
-			await using var container = new ExtensionContainer(new[] { valueRefreshMock.Object });
+			var cacheStackMock = Substitute.For<ICacheStack>();
+			var valueRefreshMock = Substitute.For<ICacheChangeExtension>();
+			await using var container = new ExtensionContainer(new[] { valueRefreshMock });
 
-			container.Register(cacheStackMock.Object);
+			container.Register(cacheStackMock);
 
 			var expiry = DateTime.UtcNow.AddDays(1);
 
 			await container.OnCacheUpdateAsync("CacheChangeKey", expiry, CacheUpdateType.AddEntry);
 
-			valueRefreshMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
-			valueRefreshMock.Verify(e =>
-				e.OnCacheUpdateAsync("CacheChangeKey", expiry, CacheUpdateType.AddEntry),
-				Times.Once
-			);
+			valueRefreshMock.Received(1).Register(cacheStackMock);
+			await valueRefreshMock.Received(1).OnCacheUpdateAsync("CacheChangeKey", expiry, CacheUpdateType.AddEntry);
 		}
 
 		[TestMethod]
 		public async Task CacheChangeExtension_Eviction()
 		{
-			var cacheStackMock = new Mock<ICacheStack>();
-			var valueRefreshMock = new Mock<ICacheChangeExtension>();
-			await using var container = new ExtensionContainer(new[] { valueRefreshMock.Object });
+			var cacheStackMock = Substitute.For<ICacheStack>();
+			var valueRefreshMock = Substitute.For<ICacheChangeExtension>();
+			await using var container = new ExtensionContainer(new[] { valueRefreshMock });
 
-			container.Register(cacheStackMock.Object);
+			container.Register(cacheStackMock);
 
 			var expiry = DateTime.UtcNow.AddDays(1);
 
 			await container.OnCacheEvictionAsync("CacheChangeKey");
 
-			valueRefreshMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
-			valueRefreshMock.Verify(e =>
-				e.OnCacheEvictionAsync("CacheChangeKey"),
-				Times.Once
-			);
+			valueRefreshMock.Received(1).Register(cacheStackMock);
+			await valueRefreshMock.Received(1).OnCacheEvictionAsync("CacheChangeKey");
 		}
 
 		[TestMethod]
 		public async Task CacheChangeExtension_Flush()
 		{
-			var cacheStackMock = new Mock<ICacheStack>();
-			var valueRefreshMock = new Mock<ICacheChangeExtension>();
-			await using var container = new ExtensionContainer(new[] { valueRefreshMock.Object });
+			var cacheStackMock = Substitute.For<ICacheStack>();
+			var valueRefreshMock = Substitute.For<ICacheChangeExtension>();
+			await using var container = new ExtensionContainer(new[] { valueRefreshMock });
 
-			container.Register(cacheStackMock.Object);
+			container.Register(cacheStackMock);
 
 			var expiry = DateTime.UtcNow.AddDays(1);
 
 			await container.OnCacheFlushAsync();
 
-			valueRefreshMock.Verify(e => e.Register(cacheStackMock.Object), Times.Once);
-			valueRefreshMock.Verify(e =>
-				e.OnCacheFlushAsync(),
-				Times.Once
-			);
+			valueRefreshMock.Received(1).Register(cacheStackMock);
+			await valueRefreshMock.Received(1).OnCacheFlushAsync();
 		}
 	}
 }
