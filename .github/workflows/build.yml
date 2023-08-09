@@ -65,7 +65,7 @@ jobs:
       run: |
         brew tap mongodb/brew
         brew update
-        brew uninstall mongodb-community
+        brew uninstall mongodb-community@5.0
         brew install mongodb-community@${{matrix.mongodb}}
         brew services start mongodb-community@${{matrix.mongodb}}
 
