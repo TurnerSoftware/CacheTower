@@ -77,7 +77,7 @@ jobs:
       with:
         dotnet-version: |
           6.0.x
-          7.0.x
+          7.0.306
     - name: Install dependencies
       run: dotnet restore
     - name: Build
