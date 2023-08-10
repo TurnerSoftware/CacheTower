@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CacheTower.Providers.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 
 namespace CacheTower.Tests
 {
@@ -83,13 +83,13 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task Evict_TriggersCacheChangeExtension()
 		{
-			var mockExtension = new Mock<ICacheChangeExtension>();
-			await using var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() }) { Extensions = new[] { mockExtension.Object } });
+			var mockExtension = Substitute.For<ICacheChangeExtension>();
+			await using var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() }) { Extensions = new[] { mockExtension } });
 			var cacheEntry = await cacheStack.SetAsync("Evict_TriggerCacheChangeExtension", 42, TimeSpan.FromDays(1));
 
 			await cacheStack.EvictAsync("Evict_TriggerCacheChangeExtension");
 
-			mockExtension.Verify(e => e.OnCacheEvictionAsync("Evict_TriggerCacheChangeExtension"), Times.Once);
+			await mockExtension.Received(1).OnCacheEvictionAsync("Evict_TriggerCacheChangeExtension");
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
 		public async Task Evict_ThrowsOnUseAfterDisposal()
@@ -122,12 +122,12 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task Flush_TriggersCacheChangeExtension()
 		{
-			var mockExtension = new Mock<ICacheChangeExtension>();
-			await using var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() }) { Extensions = new[] { mockExtension.Object } });
+			var mockExtension = Substitute.For<ICacheChangeExtension>();
+			await using var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() }) { Extensions = new[] { mockExtension } });
 
 			await cacheStack.FlushAsync();
 
-			mockExtension.Verify(e => e.OnCacheFlushAsync(), Times.Once);
+			await mockExtension.Received(1).OnCacheFlushAsync();
 		}
 		[TestMethod, ExpectedException(typeof(ObjectDisposedException))]
 		public async Task Flush_ThrowsOnUseAfterDisposal()
@@ -201,11 +201,11 @@ namespace CacheTower.Tests
 		[TestMethod]
 		public async Task Set_TriggersCacheChangeExtension()
 		{
-			var mockExtension = new Mock<ICacheChangeExtension>();
-			await using var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() }) { Extensions = new[] { mockExtension.Object } });
+			var mockExtension = Substitute.For<ICacheChangeExtension>();
+			await using var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() }) { Extensions = new[] { mockExtension } });
 			var cacheEntry = await cacheStack.SetAsync("Set_TriggersCacheChangeExtension", 42, TimeSpan.FromDays(1));
 
-			mockExtension.Verify(e => e.OnCacheUpdateAsync("Set_TriggersCacheChangeExtension", cacheEntry.Expiry, CacheUpdateType.AddOrUpdateEntry), Times.Once);
+			await mockExtension.Received(1).OnCacheUpdateAsync("Set_TriggersCacheChangeExtension", cacheEntry.Expiry, CacheUpdateType.AddOrUpdateEntry);
 		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]

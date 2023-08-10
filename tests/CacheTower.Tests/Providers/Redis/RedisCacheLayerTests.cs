@@ -4,7 +4,7 @@ using CacheTower.Providers.Redis;
 using CacheTower.Serializers.Protobuf;
 using CacheTower.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using NSubstitute;
 using StackExchange.Redis;
 
 namespace CacheTower.Tests.Providers.Redis
@@ -29,12 +29,12 @@ namespace CacheTower.Tests.Providers.Redis
 		{
 			await AssertCacheAvailabilityAsync(new RedisCacheLayer(RedisHelper.GetConnection(), new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)), true);
 
-			var connectionMock = new Mock<IConnectionMultiplexer>();
-			var databaseMock = new Mock<IDatabase>();
-			connectionMock.Setup(cm => cm.GetDatabase(It.IsAny<int>(), It.IsAny<object>())).Returns(databaseMock.Object);
-			databaseMock.Setup(db => db.PingAsync(It.IsAny<CommandFlags>())).Throws<Exception>();
+			var connectionMock = Substitute.For<IConnectionMultiplexer>();
+			var databaseMock = Substitute.For<IDatabase>();
+			connectionMock.GetDatabase(Arg.Any<int>(), Arg.Any<object>()).Returns(databaseMock);
+			databaseMock.PingAsync(Arg.Any<CommandFlags>()).Returns(Task.FromException<TimeSpan>(new Exception()));
 
-			await AssertCacheAvailabilityAsync(new RedisCacheLayer(connectionMock.Object, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)), false);
+			await AssertCacheAvailabilityAsync(new RedisCacheLayer(connectionMock, new RedisCacheLayerOptions(ProtobufCacheSerializer.Instance)), false);
 		}
 
 		[TestMethod]
