@@ -74,7 +74,7 @@ public class RedisLockExtensionTests
 
 		var completionSource = new TaskCompletionSource<bool>();
 
-		await connection.GetSubscriber().SubscribeAsync("CacheTower.CacheLock", (channel, value) =>
+		await connection.GetSubscriber().SubscribeAsync(new("CacheTower.CacheLock", RedisChannel.PatternMode.Literal), (channel, value) =>
 		{
 			if (value == "TestKey")
 			{
@@ -126,7 +126,7 @@ public class RedisLockExtensionTests
 		Assert.IsTrue(extension.LockedOnKeyRefresh.ContainsKey("TestKey"), "Lock was not established");
 
 		//Trigger the end of the lock
-		await connection.GetSubscriber().PublishAsync("CacheTower.CacheLock", "TestKey");
+		await connection.GetSubscriber().PublishAsync(new("CacheTower.CacheLock", RedisChannel.PatternMode.Literal), "TestKey");
 
 		var succeedingTask = await Task.WhenAny(lockTask, Task.Delay(TimeSpan.FromSeconds(10)));
 		if (!succeedingTask.Equals(lockTask))
@@ -160,7 +160,7 @@ public class RedisLockExtensionTests
 		Assert.IsTrue(extension.LockedOnKeyRefresh.ContainsKey("TestKey"), "Lock was not established");
 
 		//Trigger the end of the lock
-		await connection.GetSubscriber().PublishAsync("CacheTower.CacheLock", "TestKey");
+		await connection.GetSubscriber().PublishAsync(new("CacheTower.CacheLock", RedisChannel.PatternMode.Literal), "TestKey");
 
 		var whenAllRefreshesTask = Task.WhenAll(lockTask1, lockTask2);
 		var succeedingTask = await Task.WhenAny(whenAllRefreshesTask, Task.Delay(TimeSpan.FromSeconds(10)));

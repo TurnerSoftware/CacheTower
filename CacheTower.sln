@@ -45,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Serializers.Newt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Serializers.Protobuf", "src\CacheTower.Serializers.Protobuf\CacheTower.Serializers.Protobuf.csproj", "{436A6DF0-3DD8-4342-ACC5-EF0B8D5DF9DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheTower.Serializers.SystemTextJson", "src\CacheTower.Serializers.SystemTextJson\CacheTower.Serializers.SystemTextJson.csproj", "{4E94E3E8-3CC0-4F23-BFD7-157C8C386AFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CacheTower.Serializers.SystemTextJson", "src\CacheTower.Serializers.SystemTextJson\CacheTower.Serializers.SystemTextJson.csproj", "{4E94E3E8-3CC0-4F23-BFD7-157C8C386AFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

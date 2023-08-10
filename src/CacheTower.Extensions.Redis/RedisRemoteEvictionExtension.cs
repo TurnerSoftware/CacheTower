@@ -12,8 +12,8 @@ namespace CacheTower.Extensions.Redis
 	public class RedisRemoteEvictionExtension : ICacheChangeExtension
 	{
 		private ISubscriber Subscriber { get; }
-		private string FlushChannel { get; }
-		private string EvictionChannel { get; }
+		private RedisChannel FlushChannel { get; }
+		private RedisChannel EvictionChannel { get; }
 
 		private bool IsRegistered { get; set; }
 
@@ -39,8 +39,8 @@ namespace CacheTower.Extensions.Redis
 			}
 
 			Subscriber = connection.GetSubscriber();
-			FlushChannel = $"{channelPrefix}.RemoteFlush";
-			EvictionChannel = $"{channelPrefix}.RemoteEviction";
+			FlushChannel = new($"{channelPrefix}.RemoteFlush", RedisChannel.PatternMode.Auto);
+			EvictionChannel = new($"{channelPrefix}.RemoteEviction", RedisChannel.PatternMode.Auto);
 			FlaggedEvictions = new HashSet<string>(StringComparer.Ordinal);
 		}
 

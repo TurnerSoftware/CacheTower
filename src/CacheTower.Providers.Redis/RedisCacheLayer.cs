@@ -75,10 +75,8 @@ namespace CacheTower.Providers.Redis
 			var redisValue = await Database.StringGetAsync(cacheKey);
 			if (redisValue != RedisValue.Null)
 			{
-				using (var stream = new MemoryStream(redisValue))
-				{
-					return Options.Serializer.Deserialize<CacheEntry<T>>(stream);
-				}
+				using var stream = new MemoryStream(redisValue);
+				return Options.Serializer.Deserialize<CacheEntry<T>>(stream);
 			}
 
 			return default;
@@ -99,13 +97,11 @@ namespace CacheTower.Providers.Redis
 				return;
 			}
 
-			using (var stream = new MemoryStream())
-			{
-				Options.Serializer.Serialize(stream, cacheEntry);
-				stream.Seek(0, SeekOrigin.Begin);
-				var redisValue = RedisValue.CreateFrom(stream);
-				await Database.StringSetAsync(cacheKey, redisValue, expiryOffset);
-			}
+			using var stream = new MemoryStream();
+			Options.Serializer.Serialize(stream, cacheEntry);
+			stream.Seek(0, SeekOrigin.Begin);
+			var redisValue = RedisValue.CreateFrom(stream);
+			await Database.StringSetAsync(cacheKey, redisValue, expiryOffset);
 		}
 	}
 }

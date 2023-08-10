@@ -60,7 +60,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			extensionTwo.Register(cacheStackMockTwo);
 
 			var completionSource = new TaskCompletionSource<bool>();
-			connection.GetSubscriber().Subscribe("CacheTower.RemoteEviction").OnMessage(channelMessage =>
+			connection.GetSubscriber().Subscribe(new("CacheTower.RemoteEviction", RedisChannel.PatternMode.Literal)).OnMessage(channelMessage =>
 			{
 				if (channelMessage.Message == "TestKey")
 				{
@@ -111,7 +111,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			extensionTwo.Register(cacheStackMockTwo);
 
 			var completionSource = new TaskCompletionSource<bool>();
-			connection.GetSubscriber().Subscribe("CacheTower.RemoteEviction").OnMessage(channelMessage =>
+			connection.GetSubscriber().Subscribe(new("CacheTower.RemoteEviction", RedisChannel.PatternMode.Literal)).OnMessage(channelMessage =>
 			{
 				if (channelMessage.Message == "TestKey")
 				{
@@ -166,7 +166,7 @@ namespace CacheTower.Tests.Extensions.Redis
 			extensionTwo.Register(cacheStackMockTwo);
 
 			var completionSource = new TaskCompletionSource<bool>();
-			connection.GetSubscriber().Subscribe("CacheTower.RemoteFlush").OnMessage(channelMessage =>
+			connection.GetSubscriber().Subscribe(new("CacheTower.RemoteFlush", RedisChannel.PatternMode.Literal)).OnMessage(channelMessage =>
 			{
 				if (channelMessage.Message == StackExchange.Redis.RedisValue.EmptyString)
 				{
@@ -210,9 +210,9 @@ namespace CacheTower.Tests.Extensions.Redis
 			var subscriberMock = Substitute.For<ISubscriber>();
 
 			subscriberMock.Subscribe(Arg.Any<RedisChannel>(), Arg.Any<CommandFlags>())
-				.Returns(x => realConnection.GetSubscriber().Subscribe("DummyMessageQueue"));
+				.Returns(x => realConnection.GetSubscriber().Subscribe(new("DummyMessageQueue", RedisChannel.PatternMode.Literal)));
 			subscriberMock.Subscribe(Arg.Any<RedisChannel>(), Arg.Any<CommandFlags>())
-				.Returns(x => realConnection.GetSubscriber().Subscribe("DummyMessageQueue"));
+				.Returns(x => realConnection.GetSubscriber().Subscribe(new("DummyMessageQueue", RedisChannel.PatternMode.Literal)));
 			connectionMock.GetSubscriber(Arg.Any<object>())
 				.Returns(subscriberMock);
 
@@ -222,7 +222,7 @@ namespace CacheTower.Tests.Extensions.Redis
 
 			await cacheStackOne.GetOrSetAsync<int>("NoEvictionOnNewEntries", _ => Task.FromResult(1), new CacheSettings(TimeSpan.FromMinutes(5)));
 
-			await subscriberMock.DidNotReceive().PublishAsync("CacheTower.RemoteEviction", Arg.Any<RedisValue>(), Arg.Any<CommandFlags>());
+			await subscriberMock.DidNotReceive().PublishAsync(new("CacheTower.RemoteEviction", RedisChannel.PatternMode.Literal), Arg.Any<RedisValue>(), Arg.Any<CommandFlags>());
 		}
 	}
 }

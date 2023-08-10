@@ -45,7 +45,7 @@ public class RedisLockExtension : IDistributedLockExtension
 
 		LockedOnKeyRefresh = new ConcurrentDictionary<string, TaskCompletionSource<bool>>(StringComparer.Ordinal);
 
-		Subscriber.Subscribe(options.RedisChannel, (channel, value) =>
+		Subscriber.Subscribe(GetRedisChannel(), (channel, value) =>
 		{
 			if (!value.IsNull)
 			{
@@ -53,6 +53,8 @@ public class RedisLockExtension : IDistributedLockExtension
 			}
 		});
 	}
+
+	private RedisChannel GetRedisChannel() => new(Options.RedisChannel, RedisChannel.PatternMode.Auto);
 
 	/// <inheritdoc/>
 	public void Register(ICacheStack cacheStack)
@@ -68,7 +70,7 @@ public class RedisLockExtension : IDistributedLockExtension
 	private async ValueTask ReleaseLockAsync(string cacheKey)
 	{
 		var lockKey = string.Format(Options.KeyFormat, cacheKey);
-		await Subscriber.PublishAsync(Options.RedisChannel, cacheKey, CommandFlags.FireAndForget);
+		await Subscriber.PublishAsync(GetRedisChannel(), cacheKey, CommandFlags.FireAndForget);
 		await Database.KeyDeleteAsync(lockKey, CommandFlags.FireAndForget);
 		UnlockWaitingTasks(cacheKey);
 	}
