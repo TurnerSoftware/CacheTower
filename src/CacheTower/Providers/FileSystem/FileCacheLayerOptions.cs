@@ -13,9 +13,9 @@ public record struct FileCacheLayerOptions(
 )
 {
 	/// <summary>
-	/// The default manifest save interval of 5 minutes.
+	/// The default manifest save interval of 30 seconds.
 	/// </summary>
-	public static readonly TimeSpan DefaultManifestSaveInterval = TimeSpan.FromMinutes(5);
+	public static readonly TimeSpan DefaultManifestSaveInterval = TimeSpan.FromSeconds(30);
 
 	/// <summary>
 	/// The time interval controlling how often the cache manifest is saved to disk.
