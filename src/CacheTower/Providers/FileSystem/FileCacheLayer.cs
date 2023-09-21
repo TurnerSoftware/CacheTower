@@ -89,6 +89,7 @@ namespace CacheTower.Providers.FileSystem
 						if (File.Exists(ManifestPath))
 						{
 							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string?, ManifestEntry>>(ManifestPath);
+							CacheManifest ??= new();
 						}
 						else
 						{
@@ -97,7 +98,7 @@ namespace CacheTower.Providers.FileSystem
 								Directory.CreateDirectory(Options.DirectoryPath);
 							}
 
-							CacheManifest = new ConcurrentDictionary<string?, ManifestEntry>();
+							CacheManifest = new();
 							await SerializeFileAsync(ManifestPath, CacheManifest);
 						}
 					}
