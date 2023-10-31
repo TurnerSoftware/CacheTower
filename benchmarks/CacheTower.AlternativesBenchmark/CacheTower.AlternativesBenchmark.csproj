@@ -12,10 +12,10 @@
     <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" Version="1.2.0" />
     <PackageReference Include="CacheManager.Serialization.ProtoBuf" Version="1.2.0" />
     <PackageReference Include="CacheManager.StackExchange.Redis" Version="1.2.0" />
-    <PackageReference Include="EasyCaching.Disk" Version="1.9.0" />
-    <PackageReference Include="EasyCaching.InMemory" Version="1.9.0" />
-    <PackageReference Include="EasyCaching.Redis" Version="1.9.0" />
-    <PackageReference Include="EasyCaching.Serialization.Protobuf" Version="1.9.0" />
+    <PackageReference Include="EasyCaching.Disk" Version="1.9.2" />
+    <PackageReference Include="EasyCaching.InMemory" Version="1.9.2" />
+    <PackageReference Include="EasyCaching.Redis" Version="1.9.2" />
+    <PackageReference Include="EasyCaching.Serialization.Protobuf" Version="1.9.2" />
     <PackageReference Include="IntelligentHack.IntelligentCache" Version="3.3.0" />
     <PackageReference Include="LazyCache" Version="2.4.0" />
     <PackageReference Include="ZiggyCreatures.FusionCache" Version="0.23.0" />
