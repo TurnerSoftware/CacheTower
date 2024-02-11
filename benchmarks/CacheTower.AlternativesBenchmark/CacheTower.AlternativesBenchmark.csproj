@@ -18,7 +18,7 @@
     <PackageReference Include="EasyCaching.Serialization.Protobuf" Version="1.9.0" />
     <PackageReference Include="IntelligentHack.IntelligentCache" Version="3.3.0" />
     <PackageReference Include="LazyCache" Version="2.4.0" />
-    <PackageReference Include="ZiggyCreatures.FusionCache" Version="0.23.0" />
+    <PackageReference Include="ZiggyCreatures.FusionCache" Version="0.26.0" />
   </ItemGroup>
 
   <ItemGroup>
