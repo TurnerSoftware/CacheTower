@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.7" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
     <PackageReference Include="CacheManager.Core" Version="1.2.0" />
     <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" Version="1.2.0" />
     <PackageReference Include="CacheManager.Serialization.ProtoBuf" Version="1.2.0" />
