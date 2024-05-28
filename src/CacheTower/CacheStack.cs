@@ -329,8 +329,14 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 
 	private async ValueTask<CacheEntry<T>?> RefreshValueAsync<T>(string cacheKey, Func<T, Task<T>> asyncValueFactory, CacheSettings settings, CacheEntryStatus entryStatus)
 	{
-		if (KeyLock.AcquireLock(cacheKey))
+		if (KeyLock.TryAcquireLockOrWaitAsync(cacheKey) is Task<ICacheEntry> task)
 		{
+			//We lost race to refresh
+			return await task as CacheEntry<T>;
+		}
+		else
+		{ 
+			// we got lock
 			try
 			{
 				var previousEntry = await GetAsync<T>(cacheKey);
@@ -374,21 +380,6 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 				throw;
 			}
 		}
-		else if (entryStatus != CacheEntryStatus.Stale)
-		{
-			//Last minute check to confirm whether waiting is required
-			var currentEntry = await GetAsync<T>(cacheKey);
-			if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTimeProvider.Now)
-			{
-				KeyLock.ReleaseLock(cacheKey, currentEntry);
-				return currentEntry;
-			}
-
-			//Lock until we are notified to be unlocked
-			return await KeyLock.WaitAsync(cacheKey) as CacheEntry<T>;
-		}
-
-		return default;
 	}
 
 	/// <summary>
