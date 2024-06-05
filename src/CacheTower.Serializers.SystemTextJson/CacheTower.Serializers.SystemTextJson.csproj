@@ -8,7 +8,7 @@
 		<Authors>James Turner</Authors>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard6.0'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
 		<PackageReference Include="System.Text.Json" Version="6.0.8" />
 	</ItemGroup>
 
