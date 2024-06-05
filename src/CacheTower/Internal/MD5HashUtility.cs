@@ -17,7 +17,7 @@ internal static class MD5HashUtility
 		var bytes = Encoding.UTF8.GetBytes(value);
 		var hashBytes = HashAlgorithm.ComputeHash(bytes);
 
-#elif NETSTANDARD2_1
+#else
 	public static unsafe string ComputeHash(ReadOnlySpan<char> value)
 	{
 		var encoding = Encoding.UTF8;

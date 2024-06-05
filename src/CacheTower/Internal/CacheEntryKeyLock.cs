@@ -22,7 +22,7 @@ internal readonly struct CacheEntryKeyLock
 				keyLocks[cacheKey] = null;
 			}
 			return hasLock;
-#elif NETSTANDARD2_1
+#else
 			return keyLocks.TryAdd(cacheKey, null);
 #endif
 		}
@@ -56,7 +56,7 @@ internal readonly struct CacheEntryKeyLock
 				return true;
 			}
 			return false;
-#elif NETSTANDARD2_1
+#else
 			return keyLocks.Remove(cacheKey, out completionSource);
 #endif
 		}
