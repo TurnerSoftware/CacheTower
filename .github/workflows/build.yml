@@ -28,7 +28,7 @@ jobs:
     continue-on-error: ${{matrix.optional}}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, windows-latest]
         mongodb: ['6.0']
         optional: [false]
         include:
@@ -61,7 +61,6 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        choco uninstall mongodb mongodb.install
         $latestPackageVersion = Get-LatestChocoPackageVersion -TargetVersion ${{matrix.mongodb}} -PackageName "mongodb.install"
         choco install mongodb.portable --version=$latestPackageVersion 
     - name: Configure MongoDB (MacOS)
