@@ -73,7 +73,7 @@ jobs:
         brew services start mongodb-community@${{matrix.mongodb}}
 
     - name: Checkout
-      uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
     - name: Setup dotnet SDK
       uses: actions/setup-dotnet@v3
@@ -101,7 +101,7 @@ jobs:
     needs: build
     steps:
     - name: Checkout
-      uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
     - name: Download coverage reports
       uses: actions/download-artifact@v3
     - name: Install ReportGenerator tool
