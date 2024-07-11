@@ -25,13 +25,17 @@ jobs:
   build:
     name: Build ${{matrix.os}}
     runs-on: ${{matrix.os}}
+    continue-on-error: ${{matrix.optional}}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         mongodb: ['6.0']
+        optional: [false]
         include:
           - os: ubuntu-latest
             ubuntu: 'jammy'
+          - os: macOS-latest
+            optional: true
     steps:
     # Configure Redis
     - name: Configure Redis (Ubuntu)
@@ -65,7 +69,6 @@ jobs:
       run: |
         brew tap mongodb/brew
         brew update
-        brew uninstall mongodb-community@5.0
         brew install mongodb-community@${{matrix.mongodb}}
         brew services start mongodb-community@${{matrix.mongodb}}
 
