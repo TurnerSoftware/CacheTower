@@ -15,33 +15,45 @@ internal readonly struct CacheEntryKeyLock
 	{
 		lock (keyLocks)
 		{
-#if NETSTANDARD2_0
-			var hasLock = !keyLocks.ContainsKey(cacheKey);
-			if (hasLock)
-			{
-				keyLocks[cacheKey] = null;
-			}
-			return hasLock;
-#elif NETSTANDARD2_1
-			return keyLocks.TryAdd(cacheKey, null);
-#endif
+			return TryAddImpl(cacheKey, null);
 		}
 	}
 
-	public Task<ICacheEntry> WaitAsync(string cacheKey)
+	private bool TryAddImpl (string cacheKey, TaskCompletionSource<ICacheEntry>? value)
 	{
-		TaskCompletionSource<ICacheEntry>? completionSource;
+#if NETSTANDARD2_0
+			var needToAdd = !keyLocks.ContainsKey(cacheKey);
+			if (needToAdd)
+			{
+				keyLocks[cacheKey] = value;
+			}
+			return needToAdd;
+#elif NETSTANDARD2_1
+		return keyLocks.TryAdd(cacheKey, value);
+#endif
+	}
 
+	/// <summary>
+	/// Returns null if acquire lock succeeded or returns task that wait until another thread will release lock and publish value.
+	/// 
+	/// </summary>
+	public Task<ICacheEntry>? TryAcquireLockOrWaitAsync(string cacheKey)
+	{
 		lock (keyLocks)
 		{
-			if (!keyLocks.TryGetValue(cacheKey, out completionSource) || completionSource == null)
+			if (TryAddImpl(cacheKey, null))
+			{
+				// Lock acquired
+				return null;
+			}
+			var completionSource = keyLocks[cacheKey]; // Always exists here
+			if (completionSource == null)
 			{
 				completionSource = new TaskCompletionSource<ICacheEntry>();
 				keyLocks[cacheKey] = completionSource;
 			}
+			return completionSource.Task;
 		}
-
-		return completionSource.Task;
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
