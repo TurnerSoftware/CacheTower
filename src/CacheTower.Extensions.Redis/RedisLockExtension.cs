@@ -70,8 +70,8 @@ public class RedisLockExtension : IDistributedLockExtension
 	private async ValueTask ReleaseLockAsync(string cacheKey)
 	{
 		var lockKey = string.Format(Options.KeyFormat, cacheKey);
-		await Subscriber.PublishAsync(GetRedisChannel(), cacheKey, CommandFlags.FireAndForget);
-		await Database.KeyDeleteAsync(lockKey, CommandFlags.FireAndForget);
+		await Subscriber.PublishAsync(GetRedisChannel(), cacheKey, CommandFlags.FireAndForget).ConfigureAwait(false);
+		await Database.KeyDeleteAsync(lockKey, CommandFlags.FireAndForget).ConfigureAwait(false);
 		UnlockWaitingTasks(cacheKey);
 	}
 
@@ -86,7 +86,7 @@ public class RedisLockExtension : IDistributedLockExtension
 			var lockExists = await Database.KeyExistsAsync(lockKey).ConfigureAwait(false);
 			if (lockExists)
 			{
-				await Task.Delay(Options.LockCheckStrategy.SpinTime);
+				await Task.Delay(Options.LockCheckStrategy.SpinTime).ConfigureAwait(false);
 				continue;
 			}
 
@@ -107,7 +107,7 @@ public class RedisLockExtension : IDistributedLockExtension
 	public async ValueTask<DistributedLock> AwaitAccessAsync(string cacheKey)
 	{
 		var lockKey = string.Format(Options.KeyFormat, cacheKey);
-		var hasLock = await Database.StringSetAsync(lockKey, RedisValue.EmptyString, expiry: Options.LockTimeout, when: When.NotExists);
+		var hasLock = await Database.StringSetAsync(lockKey, RedisValue.EmptyString, expiry: Options.LockTimeout, when: When.NotExists).ConfigureAwait(false);
 		
 		if (hasLock)
 		{
@@ -132,13 +132,13 @@ public class RedisLockExtension : IDistributedLockExtension
 			});
 
 			//Last minute check to confirm whether waiting is required (in case the notification is missed)
-			if (!await Database.KeyExistsAsync(lockKey))
+			if (!await Database.KeyExistsAsync(lockKey).ConfigureAwait(false))
 			{
 				UnlockWaitingTasks(cacheKey);
 				return DistributedLock.Unlocked(cacheKey);
 			}
 
-			await completionSource.Task;
+			await completionSource.Task.ConfigureAwait(false);
 			return DistributedLock.Unlocked(cacheKey);
 		}
 	}

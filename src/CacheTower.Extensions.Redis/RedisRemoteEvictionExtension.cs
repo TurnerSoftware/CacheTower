@@ -72,7 +72,7 @@ namespace CacheTower.Extensions.Redis
 				FlaggedEvictions.Add(cacheKey);
 			}
 
-			await Subscriber.PublishAsync(EvictionChannel, cacheKey, CommandFlags.FireAndForget);
+			await Subscriber.PublishAsync(EvictionChannel, cacheKey, CommandFlags.FireAndForget).ConfigureAwait(false);
 		}
 
 		/// <remarks>
@@ -86,7 +86,7 @@ namespace CacheTower.Extensions.Redis
 				HasFlushTriggered = true;
 			}
 
-			await Subscriber.PublishAsync(FlushChannel, RedisValue.EmptyString, CommandFlags.FireAndForget);
+			await Subscriber.PublishAsync(FlushChannel, RedisValue.EmptyString, CommandFlags.FireAndForget).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc/>
@@ -122,7 +122,7 @@ namespace CacheTower.Extensions.Redis
 							var cacheLayer = cacheLayers[i];
 							if (cacheLayer is ILocalCacheLayer)
 							{
-								await cacheLayer.EvictAsync(cacheKey);
+								await cacheLayer.EvictAsync(cacheKey).ConfigureAwait(false);
 							}
 						}
 					}
@@ -146,7 +146,7 @@ namespace CacheTower.Extensions.Redis
 							var cacheLayer = cacheLayers[i];
 							if (cacheLayer is ILocalCacheLayer)
 							{
-								await cacheLayer.FlushAsync();
+								await cacheLayer.FlushAsync().ConfigureAwait(false);
 							}
 						}
 					}
