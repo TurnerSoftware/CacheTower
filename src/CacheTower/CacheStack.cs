@@ -106,10 +106,10 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		for (int i = 0, l = CacheLayers.Length; i < l; i++)
 		{
 			var layer = CacheLayers[i];
-			await layer.FlushAsync();
+			await layer.FlushAsync().ConfigureAwait(false);
 		}
 
-		await Extensions.OnCacheFlushAsync();
+		await Extensions.OnCacheFlushAsync().ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
@@ -120,7 +120,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		for (int i = 0, l = CacheLayers.Length; i < l; i++)
 		{
 			var layer = CacheLayers[i];
-			await layer.CleanupAsync();
+			await layer.CleanupAsync().ConfigureAwait(false);
 		}
 	}
 
@@ -137,10 +137,10 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		for (int i = 0, l = CacheLayers.Length; i < l; i++)
 		{
 			var layer = CacheLayers[i];
-			await layer.EvictAsync(cacheKey);
+			await layer.EvictAsync(cacheKey).ConfigureAwait(false);
 		}
 
-		await Extensions.OnCacheEvictionAsync(cacheKey);
+		await Extensions.OnCacheEvictionAsync(cacheKey).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
@@ -154,7 +154,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		}
 
 		var cacheEntry = new CacheEntry<T>(value, timeToLive);
-		await InternalSetAsync(cacheKey, cacheEntry, CacheUpdateType.AddOrUpdateEntry);
+		await InternalSetAsync(cacheKey, cacheEntry, CacheUpdateType.AddOrUpdateEntry).ConfigureAwait(false);
 		return cacheEntry;
 	}
 
@@ -173,7 +173,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 			throw new ArgumentNullException(nameof(cacheEntry));
 		}
 
-		await InternalSetAsync(cacheKey, cacheEntry, CacheUpdateType.AddOrUpdateEntry);
+		await InternalSetAsync(cacheKey, cacheEntry, CacheUpdateType.AddOrUpdateEntry).ConfigureAwait(false);
 	}
 
 	private async ValueTask InternalSetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry, CacheUpdateType cacheUpdateType)
@@ -184,7 +184,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 
 			try
 			{
-				await layer.SetAsync(cacheKey, cacheEntry);
+				await layer.SetAsync(cacheKey, cacheEntry).ConfigureAwait(false);
 			}
 			catch (CacheSerializationException ex)
 			{
@@ -192,7 +192,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 			}
 		}
 
-		await Extensions.OnCacheUpdateAsync(cacheKey, cacheEntry.Expiry, cacheUpdateType);
+		await Extensions.OnCacheUpdateAsync(cacheKey, cacheEntry.Expiry, cacheUpdateType).ConfigureAwait(false);
 	}
 
 	/// <inheritdoc/>
@@ -208,11 +208,11 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
 		{
 			var layer = CacheLayers[layerIndex];
-			if (await layer.IsAvailableAsync(cacheKey))
+			if (await layer.IsAvailableAsync(cacheKey).ConfigureAwait(false))
 			{
 				try
 				{
-					var cacheEntry = await layer.GetAsync<T>(cacheKey);
+					var cacheEntry = await layer.GetAsync<T>(cacheKey).ConfigureAwait(false);
 					if (cacheEntry != default)
 					{
 						return cacheEntry;
@@ -234,11 +234,11 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		for (var layerIndex = 0; layerIndex < CacheLayers.Length; layerIndex++)
 		{
 			var layer = CacheLayers[layerIndex];
-			if (await layer.IsAvailableAsync(cacheKey))
+			if (await layer.IsAvailableAsync(cacheKey).ConfigureAwait(false))
 			{
 				try
 				{
-					var cacheEntry = await layer.GetAsync<T>(cacheKey);
+					var cacheEntry = await layer.GetAsync<T>(cacheKey).ConfigureAwait(false);
 					if (cacheEntry != default)
 					{
 						return (layerIndex, cacheEntry);
@@ -270,7 +270,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		}
 
 		var currentTime = DateTimeProvider.Now;
-		var cacheEntryPoint = await GetWithLayerIndexAsync<T>(cacheKey);
+		var cacheEntryPoint = await GetWithLayerIndexAsync<T>(cacheKey).ConfigureAwait(false);
 		var cacheEntryStatus = CacheEntryStatus.Stale;
 		if (cacheEntryPoint != default)
 		{
@@ -302,7 +302,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 			cacheEntryStatus = CacheEntryStatus.Miss;
 		}
 
-		return (await RefreshValueAsync(cacheKey, valueFactory, settings, cacheEntryStatus))!.Value!;
+		return (await RefreshValueAsync(cacheKey, valueFactory, settings, cacheEntryStatus).ConfigureAwait(false))!.Value!;
 	}
 
 	private async ValueTask BackPopulateCacheAsync<T>(int fromIndexExclusive, string cacheKey, CacheEntry<T> cacheEntry)
@@ -314,9 +314,9 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 				for (; --fromIndexExclusive >= 0;)
 				{
 					var previousLayer = CacheLayers[fromIndexExclusive];
-					if (await previousLayer.IsAvailableAsync(cacheKey))
+					if (await previousLayer.IsAvailableAsync(cacheKey).ConfigureAwait(false))
 					{
-						await previousLayer.SetAsync(cacheKey, cacheEntry);
+						await previousLayer.SetAsync(cacheKey, cacheEntry).ConfigureAwait(false);
 					}
 				}
 			}
@@ -333,7 +333,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		{
 			try
 			{
-				var previousEntry = await GetAsync<T>(cacheKey);
+				var previousEntry = await GetAsync<T>(cacheKey).ConfigureAwait(false);
 				if (previousEntry != default && entryStatus == CacheEntryStatus.Miss && previousEntry.Expiry >= DateTimeProvider.Now)
 				{
 					//The Cache Stack will always return an unexpired value if one exists.
@@ -344,26 +344,26 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 					return previousEntry;
 				}
 
-				await using var distributedLock = await Extensions.AwaitAccessAsync(cacheKey);
+				await using var distributedLock = await Extensions.AwaitAccessAsync(cacheKey).ConfigureAwait(false);
 
 				CacheEntry<T>? cacheEntry;
 				if (distributedLock.IsLockOwner)
 				{
 					var oldValue = previousEntry != default ? previousEntry.Value : default;
-					var refreshedValue = await asyncValueFactory(oldValue!);
+					var refreshedValue = await asyncValueFactory(oldValue!).ConfigureAwait(false);
 					cacheEntry = new CacheEntry<T>(refreshedValue, settings.TimeToLive);
 					var cacheUpdateType = entryStatus switch
 					{
 						CacheEntryStatus.Miss => CacheUpdateType.AddEntry,
 						_ => CacheUpdateType.AddOrUpdateEntry
 					};
-					await InternalSetAsync(cacheKey, cacheEntry, cacheUpdateType);
+					await InternalSetAsync(cacheKey, cacheEntry, cacheUpdateType).ConfigureAwait(false);
 
 					KeyLock.ReleaseLock(cacheKey, cacheEntry);
 				}
 				else
 				{
-					cacheEntry = await GetAsync<T>(cacheKey);
+					cacheEntry = await GetAsync<T>(cacheKey).ConfigureAwait(false);
 				}
 
 				return cacheEntry;
@@ -377,7 +377,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		else if (entryStatus != CacheEntryStatus.Stale)
 		{
 			//Last minute check to confirm whether waiting is required
-			var currentEntry = await GetAsync<T>(cacheKey);
+			var currentEntry = await GetAsync<T>(cacheKey).ConfigureAwait(false);
 			if (currentEntry != null && currentEntry.GetStaleDate(settings) > DateTimeProvider.Now)
 			{
 				KeyLock.ReleaseLock(cacheKey, currentEntry);
@@ -385,7 +385,7 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 			}
 
 			//Lock until we are notified to be unlocked
-			return await KeyLock.WaitAsync(cacheKey) as CacheEntry<T>;
+			return await KeyLock.WaitAsync(cacheKey).ConfigureAwait(false) as CacheEntry<T>;
 		}
 
 		return default;
@@ -410,11 +410,11 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 			}
 			else if (layer is IAsyncDisposable asyncDisposableLayer)
 			{
-				await asyncDisposableLayer.DisposeAsync();
+				await asyncDisposableLayer.DisposeAsync().ConfigureAwait(false);
 			}
 		}
 
-		await Extensions.DisposeAsync();
+		await Extensions.DisposeAsync().ConfigureAwait(false);
 
 		Disposed = true;
 	}

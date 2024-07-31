@@ -46,34 +46,34 @@ namespace CacheTower.Providers.Database.MongoDB
 			if (!HasSetIndexes)
 			{
 				HasSetIndexes = true;
-				await EntityIndexWriter.ApplyIndexingAsync<DbCachedEntry>(Connection);
+				await EntityIndexWriter.ApplyIndexingAsync<DbCachedEntry>(Connection).ConfigureAwait(false);
 			}
 		}
 
 		/// <inheritdoc/>
 		public async ValueTask CleanupAsync()
 		{
-			await TryConfigureIndexes();
-			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new CleanupCommand() }, default);
+			await TryConfigureIndexes().ConfigureAwait(false);
+			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new CleanupCommand() }, default).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc/>
 		public async ValueTask EvictAsync(string cacheKey)
 		{
-			await TryConfigureIndexes();
-			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new EvictCommand(cacheKey) }, default);
+			await TryConfigureIndexes().ConfigureAwait(false);
+			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new EvictCommand(cacheKey) }, default).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{
-			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new FlushCommand() }, default);
+			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { new FlushCommand() }, default).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc/>
 		public async ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey)
 		{
-			await TryConfigureIndexes();
+			await TryConfigureIndexes().ConfigureAwait(false);
 
 			var provider = new MongoFrameworkQueryProvider<DbCachedEntry>(Connection);
 			var queryable = new MongoFrameworkQueryable<DbCachedEntry>(provider);
@@ -92,7 +92,7 @@ namespace CacheTower.Providers.Database.MongoDB
 		/// <inheritdoc/>
 		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			await TryConfigureIndexes();
+			await TryConfigureIndexes().ConfigureAwait(false);
 			var command = new SetCommand(new DbCachedEntry
 			{
 				CacheKey = cacheKey,
@@ -100,7 +100,7 @@ namespace CacheTower.Providers.Database.MongoDB
 				Value = cacheEntry.Value!
 			});
 
-			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { command }, default);
+			await EntityCommandWriter.WriteAsync<DbCachedEntry>(Connection, new[] { command }, default).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc/>
@@ -110,7 +110,7 @@ namespace CacheTower.Providers.Database.MongoDB
 			{
 				try
 				{
-					await TryConfigureIndexes();
+					await TryConfigureIndexes().ConfigureAwait(false);
 					IsDatabaseAvailable = true;
 				}
 				catch

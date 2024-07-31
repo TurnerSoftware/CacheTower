@@ -57,7 +57,7 @@ public class CacheStack<TContext> : CacheStack, ICacheStack<TContext>
 		{
 			using var scope = CacheContextActivator.BeginScope();
 			var context = (TContext)scope.Resolve(typeof(TContext));
-			return await getter(old, context);
-		}, settings);
+			return await getter(old, context).ConfigureAwait(false);
+		}, settings).ConfigureAwait(false);
 	}
 }

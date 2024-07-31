@@ -52,7 +52,7 @@ namespace CacheTower.Providers.Redis
 		/// <inheritdoc/>
 		public async ValueTask EvictAsync(string cacheKey)
 		{
-			await Database.KeyDeleteAsync(cacheKey);
+			await Database.KeyDeleteAsync(cacheKey).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc/>
@@ -65,14 +65,14 @@ namespace CacheTower.Providers.Redis
 			var redisEndpoints = Connection.GetEndPoints();
 			foreach (var endpoint in redisEndpoints)
 			{
-				await Connection.GetServer(endpoint).FlushDatabaseAsync(Options.DatabaseIndex);
+				await Connection.GetServer(endpoint).FlushDatabaseAsync(Options.DatabaseIndex).ConfigureAwait(false);
 			}
 		}
 
 		/// <inheritdoc/>
 		public async ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey)
 		{
-			var redisValue = await Database.StringGetAsync(cacheKey);
+			var redisValue = await Database.StringGetAsync(cacheKey).ConfigureAwait(false);
 			if (redisValue != RedisValue.Null)
 			{
 				using var stream = new MemoryStream(redisValue);
@@ -101,7 +101,7 @@ namespace CacheTower.Providers.Redis
 			Options.Serializer.Serialize(stream, cacheEntry);
 			stream.Seek(0, SeekOrigin.Begin);
 			var redisValue = RedisValue.CreateFrom(stream);
-			await Database.StringSetAsync(cacheKey, redisValue, expiryOffset);
+			await Database.StringSetAsync(cacheKey, redisValue, expiryOffset).ConfigureAwait(false);
 		}
 	}
 }

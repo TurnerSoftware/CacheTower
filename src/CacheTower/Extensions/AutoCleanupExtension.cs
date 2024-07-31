@@ -57,9 +57,9 @@ namespace CacheTower.Extensions
 				var cancellationToken = TokenSource.Token;
 				while (!cancellationToken.IsCancellationRequested)
 				{
-					await Task.Delay(Frequency, cancellationToken);
+					await Task.Delay(Frequency, cancellationToken).ConfigureAwait(false);
 					cancellationToken.ThrowIfCancellationRequested();
-					await cacheStack.CleanupAsync();
+					await cacheStack.CleanupAsync().ConfigureAwait(false);
 				}
 			}
 			catch (OperationCanceledException) { }
@@ -75,7 +75,7 @@ namespace CacheTower.Extensions
 
 			if (BackgroundTask is not null && !BackgroundTask.IsFaulted)
 			{
-				await BackgroundTask;
+				await BackgroundTask.ConfigureAwait(false);
 			}
 		}
 	}

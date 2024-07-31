@@ -50,8 +50,8 @@ namespace CacheTower.Providers.FileSystem
 				var cancellationToken = ManifestSavingCancellationTokenSource.Token;
 				while (!cancellationToken.IsCancellationRequested)
 				{
-					await Task.Delay(Options.ManifestSaveInterval, cancellationToken);
-					await SaveManifestAsync();
+					await Task.Delay(Options.ManifestSaveInterval, cancellationToken).ConfigureAwait(false);
+					await SaveManifestAsync().ConfigureAwait(false);
 				}
 			}
 			catch (OperationCanceledException) { }
@@ -61,7 +61,7 @@ namespace CacheTower.Providers.FileSystem
 		{
 			using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024);
 			using var memStream = new MemoryStream((int)stream.Length);
-			await stream.CopyToAsync(memStream);
+			await stream.CopyToAsync(memStream).ConfigureAwait(false);
 			memStream.Seek(0, SeekOrigin.Begin);
 			return Options.Serializer.Deserialize<T>(memStream);
 		}
@@ -72,7 +72,7 @@ namespace CacheTower.Providers.FileSystem
 			using var memStream = new MemoryStream();
 			Options.Serializer.Serialize(memStream, value);
 			memStream.Seek(0, SeekOrigin.Begin);
-			await memStream.CopyToAsync(stream);
+			await memStream.CopyToAsync(stream).ConfigureAwait(false);
 		}
 
 		private async Task TryLoadManifestAsync()
@@ -80,7 +80,7 @@ namespace CacheTower.Providers.FileSystem
 			//Avoid unnecessary lock contention way after manifest is loaded by checking before lock
 			if (CacheManifest is null)
 			{
-				await ManifestLock.WaitAsync();
+				await ManifestLock.WaitAsync().ConfigureAwait(false);
 				try
 				{
 					//Check that once we have lock (due to a race condition on the outer check) that we still need to load the manifest
@@ -88,7 +88,7 @@ namespace CacheTower.Providers.FileSystem
 					{
 						if (File.Exists(ManifestPath))
 						{
-							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string?, ManifestEntry>>(ManifestPath);
+							CacheManifest = await DeserializeFileAsync<ConcurrentDictionary<string?, ManifestEntry>>(ManifestPath).ConfigureAwait(false);
 							CacheManifest ??= new();
 						}
 						else
@@ -99,7 +99,7 @@ namespace CacheTower.Providers.FileSystem
 							}
 
 							CacheManifest = new();
-							await SerializeFileAsync(ManifestPath, CacheManifest);
+							await SerializeFileAsync(ManifestPath, CacheManifest).ConfigureAwait(false);
 						}
 					}
 				}
@@ -116,7 +116,7 @@ namespace CacheTower.Providers.FileSystem
 		/// <returns></returns>
 		public async Task SaveManifestAsync()
 		{
-			await ManifestLock.WaitAsync();
+			await ManifestLock.WaitAsync().ConfigureAwait(false);
 			try
 			{
 				if (!Directory.Exists(Options.DirectoryPath))
@@ -124,7 +124,7 @@ namespace CacheTower.Providers.FileSystem
 					Directory.CreateDirectory(Options.DirectoryPath);
 				}
 
-				await SerializeFileAsync(ManifestPath, CacheManifest);
+				await SerializeFileAsync(ManifestPath, CacheManifest).ConfigureAwait(false);
 			}
 			finally
 			{
@@ -135,7 +135,7 @@ namespace CacheTower.Providers.FileSystem
 		/// <inheritdoc/>
 		public async ValueTask CleanupAsync()
 		{
-			await TryLoadManifestAsync();
+			await TryLoadManifestAsync().ConfigureAwait(false);
 
 			var currentTime = DateTimeProvider.Now;
 			foreach (var cachePair in CacheManifest!)
@@ -161,7 +161,7 @@ namespace CacheTower.Providers.FileSystem
 		/// <inheritdoc/>
 		public async ValueTask EvictAsync(string cacheKey)
 		{
-			await TryLoadManifestAsync();
+			await TryLoadManifestAsync().ConfigureAwait(false);
 
 			if (CacheManifest!.TryRemove(cacheKey, out var manifestEntry))
 			{
@@ -182,7 +182,7 @@ namespace CacheTower.Providers.FileSystem
 		/// <inheritdoc/>
 		public async ValueTask FlushAsync()
 		{
-			await TryLoadManifestAsync();
+			await TryLoadManifestAsync().ConfigureAwait(false);
 
 			foreach (var manifestEntry in CacheManifest!.Values)
 			{
@@ -201,13 +201,13 @@ namespace CacheTower.Providers.FileSystem
 
 			CacheManifest.Clear();
 
-			await SaveManifestAsync();
+			await SaveManifestAsync().ConfigureAwait(false);
 		}
 
 		/// <inheritdoc/>
 		public async ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey)
 		{
-			await TryLoadManifestAsync();
+			await TryLoadManifestAsync().ConfigureAwait(false);
 
 			if (CacheManifest!.TryGetValue(cacheKey, out var manifestEntry))
 			{
@@ -220,7 +220,7 @@ namespace CacheTower.Providers.FileSystem
 						var path = Path.Combine(Options.DirectoryPath, manifestEntry.FileName);
 						if (File.Exists(path))
 						{
-							var value = await DeserializeFileAsync<T>(path);
+							var value = await DeserializeFileAsync<T>(path).ConfigureAwait(false);
 							return new CacheEntry<T>(value, manifestEntry.Expiry);
 
 						}
@@ -247,7 +247,7 @@ namespace CacheTower.Providers.FileSystem
 			{
 				try
 				{
-					await TryLoadManifestAsync();
+					await TryLoadManifestAsync().ConfigureAwait(false);
 					IsManifestAvailable = true;
 				}
 				catch
@@ -262,7 +262,7 @@ namespace CacheTower.Providers.FileSystem
 		/// <inheritdoc/>
 		public async ValueTask SetAsync<T>(string cacheKey, CacheEntry<T> cacheEntry)
 		{
-			await TryLoadManifestAsync();
+			await TryLoadManifestAsync().ConfigureAwait(false);
 
 			//Update the manifest entry with the new expiry
 			if (CacheManifest!.TryGetValue(cacheKey, out var manifestEntry))
@@ -286,7 +286,7 @@ namespace CacheTower.Providers.FileSystem
 			using (await lockObj.WriterLockAsync())
 			{
 				var path = Path.Combine(Options.DirectoryPath, manifestEntry.FileName);
-				await SerializeFileAsync(path, cacheEntry.Value);
+				await SerializeFileAsync(path, cacheEntry.Value).ConfigureAwait(false);
 			}
 		}
 
@@ -304,9 +304,9 @@ namespace CacheTower.Providers.FileSystem
 			ManifestSavingCancellationTokenSource.Cancel();
 			if (!BackgroundManifestSavingTask.IsFaulted)
 			{
-				await BackgroundManifestSavingTask;
+				await BackgroundManifestSavingTask.ConfigureAwait(false);
 			}
-			await SaveManifestAsync();
+			await SaveManifestAsync().ConfigureAwait(false);
 
 			ManifestLock.Dispose();
 

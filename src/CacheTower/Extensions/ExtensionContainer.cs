@@ -73,7 +73,7 @@ namespace CacheTower.Extensions
 			{
 				foreach (var extension in CacheChangeExtensions)
 				{
-					await extension.OnCacheUpdateAsync(cacheKey, expiry, cacheUpdateType);
+					await extension.OnCacheUpdateAsync(cacheKey, expiry, cacheUpdateType).ConfigureAwait(false);
 				}
 			}
 		}
@@ -85,7 +85,7 @@ namespace CacheTower.Extensions
 			{
 				foreach (var extension in CacheChangeExtensions)
 				{
-					await extension.OnCacheEvictionAsync(cacheKey);
+					await extension.OnCacheEvictionAsync(cacheKey).ConfigureAwait(false);
 				}
 			}
 		}
@@ -97,7 +97,7 @@ namespace CacheTower.Extensions
 			{
 				foreach (var extension in CacheChangeExtensions)
 				{
-					await extension.OnCacheFlushAsync();
+					await extension.OnCacheFlushAsync().ConfigureAwait(false);
 				}
 			}
 		}
@@ -117,7 +117,7 @@ namespace CacheTower.Extensions
 				}
 				else if (extension is IAsyncDisposable asyncDisposable)
 				{
-					await asyncDisposable.DisposeAsync();
+					await asyncDisposable.DisposeAsync().ConfigureAwait(false);
 				}
 			}
 
