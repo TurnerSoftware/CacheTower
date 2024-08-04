@@ -154,6 +154,78 @@ namespace CacheTower.Tests
 
 			await cacheStack.GetAsync<int>("KeyDoesntMatter");
 		}
+		[TestMethod]
+		public async Task Get_BackPropagatesToEarlierCacheLayers()
+		{
+			var layer1 = new MemoryCacheLayer();
+			var layer2 = new MemoryCacheLayer();
+			var layer3 = new MemoryCacheLayer();
+
+			await using var cacheStack = new CacheStack(null, new(new[] { layer1, layer2, layer3 }));
+			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
+			await layer2.SetAsync("Get_BackPropagatesToEarlierCacheLayers", cacheEntry);
+
+			Internal.DateTimeProvider.UpdateTime();
+
+			var cacheEntryFromStack = await cacheStack.GetAsync<int>("Get_BackPropagatesToEarlierCacheLayers", true);
+
+			Assert.IsNotNull(cacheEntryFromStack);
+			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack.Value);
+
+			//Give enough time for the background task back propagation to happen
+			await Task.Delay(2000);
+
+			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Get_BackPropagatesToEarlierCacheLayers"));
+			Assert.IsNull(await layer3.GetAsync<int>("Get_BackPropagatesToEarlierCacheLayers"));
+		}
+		[TestMethod]
+		public async Task Get_DoesNotBackPropagateToEarlierCacheLayers()
+		{
+			var layer1 = new MemoryCacheLayer();
+			var layer2 = new MemoryCacheLayer();
+			var layer3 = new MemoryCacheLayer();
+
+			await using var cacheStack = new CacheStack(null, new(new[] { layer1, layer2, layer3 }));
+			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
+			await layer2.SetAsync("Get_DoesNotBackPropagateToEarlierCacheLayers", cacheEntry);
+
+			Internal.DateTimeProvider.UpdateTime();
+
+			var cacheEntryFromStack = await cacheStack.GetAsync<int>("Get_DoesNotBackPropagateToEarlierCacheLayers", false);
+
+			Assert.IsNotNull(cacheEntryFromStack);
+			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack.Value);
+
+			//Give enough time for the background task back propagation to happen if it had been requested
+			await Task.Delay(2000);
+
+			Assert.IsNull(await layer1.GetAsync<int>("Get_DoesNotBackPropagateToEarlierCacheLayers"));
+			Assert.IsNull(await layer3.GetAsync<int>("Get_DoesNotBackPropagateToEarlierCacheLayers"));
+		}
+		[TestMethod]
+		public async Task Get_DoesNotBackPropagateToEarlierCacheLayersByDefault()
+		{
+			var layer1 = new MemoryCacheLayer();
+			var layer2 = new MemoryCacheLayer();
+			var layer3 = new MemoryCacheLayer();
+
+			await using var cacheStack = new CacheStack(null, new(new[] { layer1, layer2, layer3 }));
+			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
+			await layer2.SetAsync("Get_DoesNotBackPropagateToEarlierCacheLayersByDefault", cacheEntry);
+
+			Internal.DateTimeProvider.UpdateTime();
+
+			var cacheEntryFromStack = await cacheStack.GetAsync<int>("Get_DoesNotBackPropagateToEarlierCacheLayersByDefault");
+
+			Assert.IsNotNull(cacheEntryFromStack);
+			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack.Value);
+
+			//Give enough time for the background task back propagation to happen if it had been requested
+			await Task.Delay(2000);
+
+			Assert.IsNull(await layer1.GetAsync<int>("Get_DoesNotBackPropagateToEarlierCacheLayersByDefault"));
+			Assert.IsNull(await layer3.GetAsync<int>("Get_DoesNotBackPropagateToEarlierCacheLayersByDefault"));
+		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Set_ThrowsOnNullKey()
