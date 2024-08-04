@@ -154,6 +154,14 @@ namespace CacheTower.Tests
 
 			await cacheStack.GetAsync<int>("KeyDoesntMatter");
 		}
+		[DataTestMethod, ExpectedException(typeof(ArgumentNullException))]
+		[DataRow(true)]
+		[DataRow(false)]
+		public async Task Get_ThrowsOnNullKeyWithBackPopulation(bool enabled)
+		{
+			await using var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() }));
+			await cacheStack.GetAsync<int>(null, enabled);
+		}
 		[TestMethod]
 		public async Task Get_BackPopulatesToEarlierCacheLayers()
 		{
