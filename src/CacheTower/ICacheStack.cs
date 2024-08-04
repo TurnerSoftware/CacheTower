@@ -50,11 +50,31 @@ namespace CacheTower
 		/// The entry returned corresponds to the first cache layer that contains it.
 		/// <br/>
 		/// If no cache layer contains it, Null is returned.
+		/// <br/>
+		/// <br/>
+		/// Use <see cref="GetAsync{T}(string, bool)"/> to optionally perform back-population to upper cache layers if the entry is found in a lower cache layer.
 		/// </remarks>
 		/// <typeparam name="T">The type of value in the cache entry.</typeparam>
 		/// <param name="cacheKey">The cache entry's key.</param>
 		/// <returns></returns>
 		ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey);
+		/// <summary>
+		/// Retrieves the <see cref="CacheEntry{T}"/> for a given <paramref name="cacheKey"/> and 
+		/// optionally back-populates the entry if it is found in a lower cache layer.
+		/// </summary>
+		/// <remarks>
+		/// The entry returned corresponds to the first cache layer that contains it.
+		/// <br/>
+		/// If no cache layer contains it, Null is returned.
+		/// <br/>
+		/// <br/>
+		/// Specifying a <paramref name="backPopulate"/> value of <see langword="false"/> is equivalent to calling <see cref="GetAsync{T}(string)"/>.
+		/// </remarks>
+		/// <typeparam name="T">The type of value in the cache entry.</typeparam>
+		/// <param name="cacheKey">The cache entry's key.</param>
+		/// <param name="backPopulate"><see langword="true"/> to back-populate the entry to upper cache layers if it is found in a lower cache layer; otherwise, <see langword="false"/>.</param>
+		/// <returns></returns>
+		ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey, bool backPopulate);
 		/// <summary>
 		/// Attempts to retrieve the value for the given <paramref name="cacheKey"/>.
 		/// When unavailable, will fallback to use <paramref name="valueFactory"/> to generate the value, storing it in the cache.

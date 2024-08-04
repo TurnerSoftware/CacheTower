@@ -154,6 +154,86 @@ namespace CacheTower.Tests
 
 			await cacheStack.GetAsync<int>("KeyDoesntMatter");
 		}
+		[DataTestMethod, ExpectedException(typeof(ArgumentNullException))]
+		[DataRow(true)]
+		[DataRow(false)]
+		public async Task Get_ThrowsOnNullKeyWithBackPopulation(bool enabled)
+		{
+			await using var cacheStack = new CacheStack(null, new(new[] { new MemoryCacheLayer() }));
+			await cacheStack.GetAsync<int>(null, enabled);
+		}
+		[TestMethod]
+		public async Task Get_BackPopulatesToEarlierCacheLayers()
+		{
+			var layer1 = new MemoryCacheLayer();
+			var layer2 = new MemoryCacheLayer();
+			var layer3 = new MemoryCacheLayer();
+
+			await using var cacheStack = new CacheStack(null, new(new[] { layer1, layer2, layer3 }));
+			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
+			await layer2.SetAsync("Get_BackPopulatesToEarlierCacheLayers", cacheEntry);
+
+			Internal.DateTimeProvider.UpdateTime();
+
+			var cacheEntryFromStack = await cacheStack.GetAsync<int>("Get_BackPopulatesToEarlierCacheLayers", true);
+
+			Assert.IsNotNull(cacheEntryFromStack);
+			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack.Value);
+
+			//Give enough time for the background task back propagation to happen
+			await Task.Delay(2000);
+
+			Assert.AreEqual(cacheEntry, await layer1.GetAsync<int>("Get_BackPopulatesToEarlierCacheLayers"));
+			Assert.IsNull(await layer3.GetAsync<int>("Get_BackPopulatesToEarlierCacheLayers"));
+		}
+		[TestMethod]
+		public async Task Get_DoesNotBackPopulateToEarlierCacheLayers()
+		{
+			var layer1 = new MemoryCacheLayer();
+			var layer2 = new MemoryCacheLayer();
+			var layer3 = new MemoryCacheLayer();
+
+			await using var cacheStack = new CacheStack(null, new(new[] { layer1, layer2, layer3 }));
+			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
+			await layer2.SetAsync("Get_DoesNotBackPopulateToEarlierCacheLayers", cacheEntry);
+
+			Internal.DateTimeProvider.UpdateTime();
+
+			var cacheEntryFromStack = await cacheStack.GetAsync<int>("Get_DoesNotBackPopulateToEarlierCacheLayers", false);
+
+			Assert.IsNotNull(cacheEntryFromStack);
+			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack.Value);
+
+			//Give enough time for the background task back propagation to happen if it had been requested
+			await Task.Delay(2000);
+
+			Assert.IsNull(await layer1.GetAsync<int>("Get_DoesNotBackPopulateToEarlierCacheLayers"));
+			Assert.IsNull(await layer3.GetAsync<int>("Get_DoesNotBackPopulateToEarlierCacheLayers"));
+		}
+		[TestMethod]
+		public async Task Get_DoesNotBackPopulateToEarlierCacheLayersByDefault()
+		{
+			var layer1 = new MemoryCacheLayer();
+			var layer2 = new MemoryCacheLayer();
+			var layer3 = new MemoryCacheLayer();
+
+			await using var cacheStack = new CacheStack(null, new(new[] { layer1, layer2, layer3 }));
+			var cacheEntry = new CacheEntry<int>(42, TimeSpan.FromDays(1));
+			await layer2.SetAsync("Get_DoesNotBackPopulateToEarlierCacheLayersByDefault", cacheEntry);
+
+			Internal.DateTimeProvider.UpdateTime();
+
+			var cacheEntryFromStack = await cacheStack.GetAsync<int>("Get_DoesNotBackPopulateToEarlierCacheLayersByDefault");
+
+			Assert.IsNotNull(cacheEntryFromStack);
+			Assert.AreEqual(cacheEntry.Value, cacheEntryFromStack.Value);
+
+			//Give enough time for the background task back propagation to happen if it had been requested
+			await Task.Delay(2000);
+
+			Assert.IsNull(await layer1.GetAsync<int>("Get_DoesNotBackPopulateToEarlierCacheLayersByDefault"));
+			Assert.IsNull(await layer3.GetAsync<int>("Get_DoesNotBackPopulateToEarlierCacheLayersByDefault"));
+		}
 
 		[TestMethod, ExpectedException(typeof(ArgumentNullException))]
 		public async Task Set_ThrowsOnNullKey()
