@@ -228,6 +228,37 @@ public class CacheStack : ICacheStack, IFlushableCacheStack, IExtendableCacheSta
 		return default;
 	}
 
+	/// <inheritdoc/>
+	public async ValueTask<CacheEntry<T>?> GetAsync<T>(string cacheKey, bool backPopulate)
+	{
+		if (!backPopulate)
+		{
+			return await GetAsync<T>(cacheKey).ConfigureAwait(false);
+		}
+
+		ThrowIfDisposed();
+
+		if (cacheKey == null)
+		{
+			throw new ArgumentNullException(nameof(cacheKey));
+		}
+
+		var cacheEntryPoint = await GetWithLayerIndexAsync<T>(cacheKey).ConfigureAwait(false);
+		if (cacheEntryPoint == default)
+		{
+			return default;
+		}
+
+		if (cacheEntryPoint.LayerIndex == 0)
+		{
+			return cacheEntryPoint.CacheEntry;
+		}
+
+		_ = BackPopulateCacheAsync(cacheEntryPoint.LayerIndex, cacheKey, cacheEntryPoint.CacheEntry);
+
+		return cacheEntryPoint.CacheEntry;
+	}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private async ValueTask<(int LayerIndex, CacheEntry<T> CacheEntry)> GetWithLayerIndexAsync<T>(string cacheKey)
 	{
