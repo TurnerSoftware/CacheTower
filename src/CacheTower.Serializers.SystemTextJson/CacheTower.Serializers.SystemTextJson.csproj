@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
 		<Title>System.Text.Json Serializer for Cache Tower</Title>
 		<Description>System.Text.Json cache serialization for Cache Tower</Description>
 		<PackageTags>system.text.json;json;$(PackageBaseTags)</PackageTags>
 		<Authors>James Turner</Authors>
 	</PropertyGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
 		<PackageReference Include="System.Text.Json" Version="6.0.9" />
 	</ItemGroup>
 
