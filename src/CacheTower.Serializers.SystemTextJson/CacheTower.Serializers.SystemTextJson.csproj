@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.Text.Json" Version="6.0.10" />
+		<PackageReference Include="System.Text.Json" Version="6.0.11" />
 	</ItemGroup>
 
 	<ItemGroup>
