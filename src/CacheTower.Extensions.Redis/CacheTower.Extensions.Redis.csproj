@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.300" />
     <PackageReference Update="TurnerSoftware.BuildVersioning" Version="0.5.0" />
   </ItemGroup>
 
